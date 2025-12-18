@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>Login</title></head>
+<body style="text-align:center; padding-top:100px; font-family:sans-serif;">
+    <h3 data-zh="作者验证" data-en="Admin Login">作者验证</h3>
+    <input type="password" id="pw" placeholder="Password...">
+    <button onclick="go()" data-zh="进入" data-en="Enter">进入</button>
+    <script>
+        function go(){
+            if(document.getElementById('pw').value === "ClarkSuperPassword"){
+                sessionStorage.setItem('isAdmin', 'true');
+                window.location.href = 'author.html';
+            } else { alert('Wrong Password'); }
+        }
+        if(localStorage.getItem('theme')==='dark') { document.body.style.background='#1a1a1a'; document.body.style.color='#fff'; }
+    </script>
+</body>
+</html>

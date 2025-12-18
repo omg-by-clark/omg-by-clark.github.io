@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Browse</title>
+    <style>
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
+        .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .hot-btn { background: linear-gradient(45deg, #e67e22, #e74c3c); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .like-btn { cursor: pointer; border: 1px solid #ddd; padding: 5px; border-radius: 5px; background: transparent; color: inherit; }
+        .like-btn.active { background: firebrick; color: white; }
+    </style>
+</head>
+<body>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 id="pTitle" data-zh="👀 全部吐槽" data-en="👀 All Rants">👀 全部吐槽</h1>
+        <button class="hot-btn" onclick="toggleHot()" id="hBtn" data-zh="🔥 今日热搜" data-en="🔥 Top 3">🔥 今日热搜</button>
+    </div>
+    <div id="list"></div>
+    <a href="index.html" style="color: firebrick; text-decoration: none;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script>
+        let isHot = false;
+        const lang = localStorage.getItem('lang') || 'zh';
+
+        function render() {
+            const list = document.getElementById('list');
+            let posts = JSON.parse(localStorage.getItem('my_posts')) || [];
+            const myLikes = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+
+            if(isHot) {
+                posts = [...posts].sort((a,b) => b.likes - a.likes).slice(0,3);
+                document.getElementById('pTitle').innerText = (lang === 'zh' ? '🔥 今日热搜 Top 3' : '🔥 Top 3 Rants');
+                document.getElementById('hBtn').innerText = (lang === 'zh' ? '📅 查看全部' : '📅 View All');
+            } else {
+                document.getElementById('pTitle').innerText = (lang === 'zh' ? '👀 全部吐槽' : '👀 All Rants');
+                document.getElementById('hBtn').innerText = (lang === 'zh' ? '🔥 今日热搜' : '🔥 Top 3');
+            }
+
+            list.innerHTML = posts.map(p => `
+                <div class="card">
+                    <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit;"><b>${p.title}</b></a>
+                    <button class="like-btn ${myLikes.includes(p.id) ? 'active' : ''}" onclick="toggleLike('${p.id}')">👍 ${p.likes}</button>
+                </div>`).join('');
+        }
+
+        function toggleHot() { isHot = !isHot; render(); }
+        function toggleLike(id) {
+            let posts = JSON.parse(localStorage.getItem('my_posts'));
+            let myLikes = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+            const p = posts.find(x => x.id === id);
+            const idx = myLikes.indexOf(id);
+            if (idx === -1) { p.likes++; myLikes.push(id); } else { p.likes--; myLikes.splice(idx, 1); }
+            localStorage.setItem('my_posts', JSON.stringify(posts));
+            localStorage.setItem('my_liked_ids', JSON.stringify(myLikes));
+            render();
+        }
+        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+        render();
+    </script>
+</body>
+</html>

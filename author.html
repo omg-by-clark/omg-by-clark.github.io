@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Admin Console</title>
+    <style>
+        body { font-family: "Microsoft YaHei", sans-serif; background: #121212; color: #e0e0e0; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        h2 { margin: 0; letter-spacing: 1px; }
+        .back-link { color: #888; text-decoration: none; font-size: 14px; border: 1px solid #444; padding: 5px 15px; border-radius: 20px; }
+        
+        .post-card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a2a2a; }
+        .post-info b { display: block; font-size: 18px; margin-bottom: 5px; color: #fff; }
+        .post-info span { color: #666; font-size: 13px; }
+
+        .controls { display: flex; gap: 10px; }
+        .btn-ctrl { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
+        .btn-zero { background: #2c3e50; color: #3498db; }
+        .btn-del { background: #3d1a1a; color: #ff4d4d; }
+        .btn-ctrl:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        .danger-zone { margin-top: 50px; padding: 20px; border-top: 1px solid #333; text-align: center; }
+        .btn-nuke { background: #ff4d4d; color: white; width: 100%; max-width: 300px; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <script>if(sessionStorage.getItem('isAdmin')!=='true') window.location.href='login.html';</script>
+
+    <div class="header">
+        <h2 data-zh="🛡️ 系统管理" data-en="🛡️ Admin">🛡️ 系统管理</h2>
+        <a href="index.html" class="back-link" data-zh="返回主页" data-en="Home">返回主页</a>
+    </div>
+
+    <div id="adm-list"></div>
+
+    <div class="danger-zone">
+        <button class="btn-nuke" onclick="allZero()" data-zh="⚡ 全站赞数清零" data-en="⚡ Reset All Likes">⚡ 全站赞数清零</button>
+    </div>
+
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+
+        function draw() {
+            const posts = JSON.parse(localStorage.getItem('my_posts')) || [];
+            const list = document.getElementById('adm-list');
+            
+            if(posts.length === 0) {
+                list.innerHTML = `<p style="text-align:center;color:#444;">No data / 暂无吐槽</p>`;
+                return;
+            }
+
+            list.innerHTML = posts.map(p => `
+                <div class="post-card">
+                    <div class="post-info">
+                        <b>${p.title}</b>
+                        <span>ID: ${p.id} | Likes: ${p.likes}</span>
+                    </div>
+                    <div class="controls">
+                        <button class="btn-ctrl btn-zero" onclick="reset('${p.id}')">${lang==='zh'?'归零':'Zero'}</button>
+                        <button class="btn-ctrl btn-del" onclick="del('${p.id}')">${lang==='zh'?'删除':'Delete'}</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function reset(id) {
+            let posts = JSON.parse(localStorage.getItem('my_posts'));
+            posts.find(x => x.id === id).likes = 0;
+            localStorage.setItem('my_posts', JSON.stringify(posts));
+            draw();
+        }
+
+        function allZero() {
+            if(confirm('警告：此操作将清除全站所有帖子的点赞记录！')) {
+                let posts = JSON.parse(localStorage.getItem('my_posts')) || [];
+                posts.forEach(x => x.likes = 0);
+                localStorage.setItem('my_posts', JSON.stringify(posts));
+                localStorage.removeItem('my_liked_ids');
+                draw();
+            }
+        }
+
+        function del(id) {
+            if(confirm('确定永久删除这条帖子吗？')) {
+                let posts = JSON.parse(localStorage.getItem('my_posts')).filter(x => x.id !== id);
+                localStorage.setItem('my_posts', JSON.stringify(posts));
+                draw();
+            }
+        }
+
+        // 简单的多语言渲染
+        document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
+        draw();
+    </script>
+</body>
+</html>

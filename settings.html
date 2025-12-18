@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Settings</title>
+    <style>
+        :root { --bg: #fff; --text: #333; --card: #f9f9f9; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #333; }
+        body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
+        .section { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .option { margin: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        button { padding: 8px 15px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: white; }
+        .btn-save { width: 100%; padding: 15px; background: #28a745; color: white; border: none; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <h2 data-zh="⚙️ 系统设置" data-en="⚙️ System Settings">⚙️ 系统设置</h2>
+    
+    <div class="section">
+        <div class="option">
+            <span data-zh="语言 (Language)" data-en="Language">语言 (Language)</span>
+            <select id="langSelect">
+                <option value="zh">简体中文</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <div class="option">
+            <span data-zh="显示模式" data-en="Display Mode">显示模式</span>
+            <select id="themeSelect">
+                <option value="light">浅色 (Light)</option>
+                <option value="dark">深色 (Dark)</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-save" onclick="save()" data-zh="保存设置" data-en="Save Settings">保存设置</button>
+    <p style="text-align:center;"><a href="index.html" style="color:firebrick; text-decoration:none;" data-zh="取消返回" data-en="Cancel">取消返回</a></p>
+
+    <script>
+        // 初始化选择框状态
+        document.getElementById('langSelect').value = localStorage.getItem('lang') || 'zh';
+        document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'light';
+
+        function save() {
+            localStorage.setItem('lang', document.getElementById('langSelect').value);
+            localStorage.setItem('theme', document.getElementById('themeSelect').value);
+            alert('Settings Saved! / 设置已保存！');
+            window.location.href = 'index.html';
+        }
+
+        // 页面内语言即时预览
+        function apply() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            const mode = localStorage.getItem('theme') || 'light';
+            document.body.className = (mode === 'dark' ? 'dark' : '');
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+            });
+        }
+        apply();
+    </script>
+</body>
+</html>

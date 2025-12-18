@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Detail</title>
+    <style>
+        :root { --bg: #fff; --text: #333; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; }
+        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.8; background: var(--bg); color: var(--text); }
+    </style>
+</head>
+<body>
+    <h1 id="t"></h1>
+    <div id="c" style="white-space: pre-wrap; font-size: 1.2em;"></div>
+    <hr><a href="othersPost.html" data-zh="⬅️ 返回列表" data-en="⬅️ Back to List">⬅️ 返回列表</a>
+    <script>
+        const id = new URLSearchParams(window.location.search).get('id');
+        const p = (JSON.parse(localStorage.getItem('my_posts')) || []).find(x => x.id === id);
+        if (p) { document.getElementById('t').innerText = p.title; document.getElementById('c').innerText = p.content; }
+        const lang = localStorage.getItem('lang') || 'zh';
+        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+    </script>
+</body>
+</html>
