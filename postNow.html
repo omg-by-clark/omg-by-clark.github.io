@@ -2,52 +2,58 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8"><title>Post Now</title>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root { --bg: #fff; --text: #333; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; }
-        body { font-family: "Microsoft YaHei", -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
-        
-        /* 核心修改：强制输入框使用页面字体，并调整字号 */
-        input, textarea { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            box-sizing: border-box; 
-            font-family: inherit; /* 继承 body 的漂亮字体 */
-            font-size: 16px;      /* 增大字号，看着不费劲 */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        
-        body.dark input, body.dark textarea { background: #333; color: white; border: 1px solid #555; }
-        
-        .btn { background: #28a745; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 8px; margin-top: 10px; font-size: 16px; }
-        .btn-exit { background: transparent; color: #888; border: 1px solid #ccc; margin-top: 15px; font-weight: normal; font-size: 14px; }
-        body.dark .btn-exit { border-color: #555; color: #aaa; }
+        :root { --bg: #fff; --text: #333; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --brand: #ff6b81; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
+        .btn { background: #28a745; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 8px; font-size: 16px; transition: 0.3s; }
     </style>
 </head>
 <body>
     <h1 data-zh="💥 编写吐槽" data-en="💥 Post Rant">💥 编写吐槽</h1>
     <form id="pForm">
-        <input type="text" id="t" data-zh-ph="起一个响亮的名字..." data-en-ph="Rant Title..." required>
-        <textarea id="c" rows="10" data-zh-ph="请开始你的表演..." data-en-ph="Start your story..." required></textarea>
+        <input type="text" id="n" data-zh-ph="你的大名..." data-en-ph="Your Nickname..." required>
+        <input type="text" id="t" data-zh-ph="起个标题..." data-en-ph="Rant Title..." required>
+        <textarea id="c" rows="8" data-zh-ph="请开始你的表演..." data-en-ph="Start your story..." required></textarea>
         <button type="submit" class="btn" data-zh="立即发布" data-en="Publish Now">立即发布</button>
     </form>
-    <button class="btn btn-exit" onclick="location.href='post.html'" data-zh="❌ 取消并退出" data-en="❌ Cancel & Exit">❌ 取消并退出</button>
+    <button onclick="location.href='post.html'" style="background:none; border:none; color:#888; margin-top:20px; cursor:pointer;" data-zh="❌ 取消退出" data-en="❌ Cancel">❌ 取消退出</button>
 
     <script>
+        // 【第一步】必须最先初始化
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEactM8uPq", // 填入了你截图中的 Key
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
+
         const lang = localStorage.getItem('lang') || 'zh';
         if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+        
         document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
         document.querySelectorAll('[data-zh-ph]').forEach(el => { el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph')); });
 
-        document.getElementById('pForm').addEventListener('submit', function(e) {
+        document.getElementById('pForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const post = { id: "id-" + Date.now(), title: document.getElementById('t').value, content: document.getElementById('c').value, likes: 0 };
-            let posts = JSON.parse(localStorage.getItem('my_posts')) || [];
-            posts.unshift(post);
-            localStorage.setItem('my_posts', JSON.stringify(posts));
-            window.location.href = 'othersPost.html';
+            try {
+                const Post = AV.Object.extend('Post');
+                const post = new Post();
+                post.set('nickname', document.getElementById('n').value);
+                post.set('title', document.getElementById('t').value);
+                post.set('content', document.getElementById('c').value);
+                post.set('likes', 0);
+                
+                const result = await post.save();
+                let myPosts = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
+                myPosts.push(result.id);
+                localStorage.setItem('my_authored_ids', JSON.stringify(myPosts));
+                window.location.href = 'othersPost.html';
+            } catch (err) {
+                alert("发布失败，请检查网络或LeanCloud设置：" + err.message);
+            }
         });
     </script>
 </body>

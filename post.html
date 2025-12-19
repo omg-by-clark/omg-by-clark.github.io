@@ -22,6 +22,11 @@
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
     </script>
 </body>
 </html>

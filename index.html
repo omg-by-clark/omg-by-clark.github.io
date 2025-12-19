@@ -3,45 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>omg.net</title>
+    <title>omg-by-Clark</title>
     <style>
-        :root { --bg: #fffdf5; --text: #333; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; }
-        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; text-align: center; }
-        h1 { color: firebrick; font-size: 2.5em; margin-top: 50px; }
-        .main-nav { margin-top: 40px; display: flex; flex-direction: column; gap: 20px; }
-        .btn-main { text-decoration: none; padding: 25px; font-size: 1.5em; font-weight: bold; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); color: white; transition: 0.3s; }
-        .btn-post { background: #e74c3c; }
-        .btn-view { background: #f39c12; }
-        .footer { margin-top: 100px; display: flex; justify-content: center; gap: 20px; border-top: 1px solid #eee; padding-top: 20px; }
-        .footer-link { color: #888; text-decoration: none; font-size: 0.9em; }
+        :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; --brand-bg: rgba(255, 71, 87, 0.05); }
+        body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; --brand-bg: rgba(255, 107, 129, 0.1); }
+        body { font-family: "Microsoft YaHei", sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: var(--bg); color: var(--text); transition: all 0.5s ease; text-align: center; animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: var(--brand); font-size: 2.2em; font-family: "Consolas", monospace; padding: 15px 25px; border: 4px solid var(--brand); display: inline-block; border-radius: 12px; background: var(--brand-bg); box-shadow: 8px 8px 0px var(--brand); transition: 0.3s; }
+        .main-nav { margin-top: 60px; display: flex; flex-direction: column; gap: 25px; }
+        .btn-main { text-decoration: none; padding: 25px; font-size: 1.5em; font-weight: bold; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white; transition: 0.3s; }
+        .btn-post { background: linear-gradient(135deg, #ff4757, #ee5253); }
+        .btn-view { background: linear-gradient(135deg, #ffa502, #ff7f50); }
+        .btn-main:hover { transform: scale(1.05); }
+        .footer { margin-top: 100px; padding-top: 30px; display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(128,128,128,0.2); }
+        .footer-link { color: var(--text); text-decoration: none; opacity: 0.6; font-weight: 500; }
     </style>
 </head>
 <body>
-    <h1 data-zh="欢迎来到 omg.github.io" data-en="Welcome to omg.net">欢迎来到 omg.net</h1>
-    <p data-zh="🔥 释放吐槽能量" data-en="🔥 Release your frustration">🔥 释放吐槽能量</p>
-
-    <div class="main-nav">
+    <h1>omg-by-Clark.github.io</h1>
+    <p data-zh="🔥 吐槽能量站：同步全网的不爽" data-en="🔥 Rant Energy Hub: Syncing Rants Globally">🔥 吐槽能量站：同步全网的不爽</p>
+    <nav class="main-nav">
         <a href="post.html" class="btn-main btn-post" data-zh="🤬 我要发帖" data-en="🤬 Create Post">🤬 我要发帖</a>
-        <a href="othersPost.html" class="btn-main btn-view" data-zh="👀 随便看看" data-en="👀 View Posts">👀 随便看看</a>
-        
-    </div>
-
-    <div class="footer">
+        <a href="othersPost.html" class="btn-main btn-view" data-zh="👀 随便看看" data-en="👀 View Plaza">👀 随便看看</a>
+    </nav>
+    <footer class="footer">
         <a href="settings.html" class="footer-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
         <a href="login.html" class="footer-link" data-zh="👑 作者" data-en="👑 Admin">👑 作者</a>
-    </div>
-
+    </footer>
     <script>
-        function applySettings() {
-            const mode = localStorage.getItem('theme') || 'light';
+        function apply() {
+            document.body.className = (localStorage.getItem('theme') === 'dark' ? 'dark' : '');
             const lang = localStorage.getItem('lang') || 'zh';
-            document.body.className = (mode === 'dark' ? 'dark' : '');
-            document.querySelectorAll('[data-zh]').forEach(el => {
-                el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-            });
+            document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
         }
-        applySettings();
+        apply();
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
     </script>
 </body>
 </html>

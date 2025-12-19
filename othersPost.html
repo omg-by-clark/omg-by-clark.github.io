@@ -1,61 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"><title>Browse</title>
+    <meta charset="UTF-8"><title>Plaza</title>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root { --bg: #fffdf5; --text: #333; --card: #fff; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; }
-        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
-        .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .hot-btn { background: linear-gradient(45deg, #e67e22, #e74c3c); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .like-btn { cursor: pointer; border: 1px solid #ddd; padding: 5px; border-radius: 5px; background: transparent; color: inherit; }
-        .like-btn.active { background: firebrick; color: white; }
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.5s; }
+        .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+        .info { font-size: 0.8em; color: #888; margin-top: 5px; }
+        .del-btn { color: #ff4d4d; font-size: 0.9em; cursor: pointer; border: none; background: none; margin-left: 10px; font-weight: bold; }
+        .hot-btn { background: linear-gradient(45deg, var(--brand), #ffa502); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 id="pTitle" data-zh="👀 全部吐槽" data-en="👀 All Rants">👀 全部吐槽</h1>
-        <button class="hot-btn" onclick="toggleHot()" id="hBtn" data-zh="🔥 今日热搜" data-en="🔥 Top 3">🔥 今日热搜</button>
+        <h1 data-zh="👀 吐槽广场" data-en="👀 Rant Plaza">👀 吐槽广场</h1>
+        <button class="hot-btn" onclick="toggleHot()" id="hBtn" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
     </div>
-    <div id="list"></div>
-    <a href="index.html" style="color: firebrick; text-decoration: none;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    <div id="list" style="min-height: 300px;">加载中...</div>
+    <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEactM8uPq",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
+
         let isHot = false;
-        const lang = localStorage.getItem('lang') || 'zh';
+        const myAuthored = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
 
-        function render() {
+        async function render() {
             const list = document.getElementById('list');
-            let posts = JSON.parse(localStorage.getItem('my_posts')) || [];
-            const myLikes = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+            const query = new AV.Query('Post');
+            if(isHot) query.descending('likes').limit(3);
+            else query.descending('createdAt');
 
-            if(isHot) {
-                posts = [...posts].sort((a,b) => b.likes - a.likes).slice(0,3);
-                document.getElementById('pTitle').innerText = (lang === 'zh' ? '🔥 今日热搜 Top 3' : '🔥 Top 3 Rants');
-                document.getElementById('hBtn').innerText = (lang === 'zh' ? '📅 查看全部' : '📅 View All');
-            } else {
-                document.getElementById('pTitle').innerText = (lang === 'zh' ? '👀 全部吐槽' : '👀 All Rants');
-                document.getElementById('hBtn').innerText = (lang === 'zh' ? '🔥 今日热搜' : '🔥 Top 3');
+            const posts = await query.find();
+            list.innerHTML = posts.map(p => {
+                const d = p.attributes;
+                const time = p.createdAt.toLocaleString();
+                const canDelete = myAuthored.includes(p.id);
+                return `
+                    <div class="card">
+                        <div style="flex:1">
+                            <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit; font-size:1.1em;"><b>${d.title}</b></a>
+                            <div class="info">👤 ${d.nickname} | 📅 ${time} 
+                                ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">删除</button>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="like('${p.id}')" style="background:none; border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer; color:inherit;">👍 ${d.likes || 0}</button>
+                    </div>`;
+            }).join('') || "目前还没有吐槽，快去抢沙发！";
+        }
+
+        async function deletePost(id) {
+            if(confirm('确定删除你的这条帖子吗？')) {
+                const post = AV.Object.createWithoutData('Post', id);
+                await post.destroy();
+                render();
             }
+        }
 
-            list.innerHTML = posts.map(p => `
-                <div class="card">
-                    <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit;"><b>${p.title}</b></a>
-                    <button class="like-btn ${myLikes.includes(p.id) ? 'active' : ''}" onclick="toggleLike('${p.id}')">👍 ${p.likes}</button>
-                </div>`).join('');
+        async function like(id) {
+            const post = AV.Object.createWithoutData('Post', id);
+            post.increment('likes', 1);
+            await post.save();
+            render();
         }
 
         function toggleHot() { isHot = !isHot; render(); }
-        function toggleLike(id) {
-            let posts = JSON.parse(localStorage.getItem('my_posts'));
-            let myLikes = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
-            const p = posts.find(x => x.id === id);
-            const idx = myLikes.indexOf(id);
-            if (idx === -1) { p.likes++; myLikes.push(id); } else { p.likes--; myLikes.splice(idx, 1); }
-            localStorage.setItem('my_posts', JSON.stringify(posts));
-            localStorage.setItem('my_liked_ids', JSON.stringify(myLikes));
-            render();
-        }
         if(localStorage.getItem('theme')==='dark') document.body.className='dark';
         render();
     </script>

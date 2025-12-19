@@ -1,18 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>Login</title></head>
-<body style="text-align:center; padding-top:100px; font-family:sans-serif;">
-    <h3 data-zh="作者验证" data-en="Admin Login">作者验证</h3>
-    <input type="password" id="pw" placeholder="Password...">
-    <button onclick="go()" data-zh="进入" data-en="Enter">进入</button>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+    <style>
+        :root { --bg: #fffdf5; --text: #333; }
+    </style>
+</head>
+
+<body style="text-align:center; padding-top:100px; font-family:sans-serif; background:#121212; color:#fff;">
+    <h2 data-zh="👑 管理员验证" data-en="👑 Admin Login">👑 管理员验证</h2>
+    <input type="password" id="pw" placeholder="Password..." style="padding:10px; border-radius:5px;">
+    <button onclick="go()" style="padding:10px 20px; cursor:pointer;">验证</button>
+    <br><br>
+    <a href="index.html" style="color:#888; text-decoration:none;">🏠 返回首页</a>
     <script>
-        function go(){
-            if(document.getElementById('pw').value === "ClarkSuperPassword"){
+        function go() {
+            if (document.getElementById('pw').value === "ClarkSuperPassword") {
                 sessionStorage.setItem('isAdmin', 'true');
                 window.location.href = 'author.html';
-            } else { alert('Wrong Password'); }
+            } else { alert('Error'); }
         }
-        if(localStorage.getItem('theme')==='dark') { document.body.style.background='#1a1a1a'; document.body.style.color='#fff'; }
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
     </script>
 </body>
+
 </html>

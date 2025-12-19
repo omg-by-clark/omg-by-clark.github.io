@@ -1,13 +1,32 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8"><title>Tips</title>
+    <meta charset="UTF-8">
+    <title>Tips</title>
     <style>
-        :root { --bg: #fff; --text: #333; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; }
-        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 20px; background: var(--bg); color: var(--text); line-height: 2; }
+        :root {
+            --bg: #fff;
+            --text: #333;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+        }
+
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 2;
+        }
     </style>
 </head>
+
 <body>
     <h1 data-zh="🚩 发帖建议" data-en="🚩 Advice">🚩 发帖建议</h1>
     <ul>
@@ -18,10 +37,17 @@
     <a href="post.html" data-zh="⬅️ 返回" data-en="⬅️ Back">⬅️ 返回</a>
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
-        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+        if (localStorage.getItem('theme') === 'dark') document.body.className = 'dark';
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });
+        // 初始化 LeanCloud 云端大脑
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
     </script>
 </body>
+
 </html>
