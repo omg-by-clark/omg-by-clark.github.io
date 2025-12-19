@@ -1,23 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8"><title>Admin Control</title>
+    <meta charset="UTF-8">
+    <title>Admin Control</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .post-card { background: #1e1e1e; border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; }
-        .btn-del { background: #ff4757; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        body {
+            font-family: sans-serif;
+            background: #121212;
+            color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .post-card {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-del {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
     <h2>👑 全站后台管理</h2>
     <div id="admin-list">加载中...</div>
     <br><a href="index.html" style="color:#888;">返回首页</a>
 
     <script>
+        // 统一使用这个正确的电源块
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEactM8uPq",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
@@ -37,7 +65,7 @@
         }
 
         async function realDelete(id) {
-            if(confirm('作为站长，你确定要永久删除这条全网可见的帖子吗？')) {
+            if (confirm('作为站长，你确定要永久删除这条全网可见的帖子吗？')) {
                 const post = AV.Object.createWithoutData('Post', id);
                 await post.destroy();
                 draw();
@@ -46,4 +74,5 @@
         draw();
     </script>
 </body>
+
 </html>
