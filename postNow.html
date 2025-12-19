@@ -79,38 +79,38 @@
 
 
     <script>
-        // 1. 把正确的电源放在最前面！
-        AV.init({
-            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEactM8uPq",
-            serverURL: "https://m7kenaw2.api.lncldglobal.com"
-        });
+    // 1. 把正确的电源放在最前面！
+    AV.init({
+        appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+        appKey: "O9DYEDbkHLvecHlEactM8uPq", 
+        serverURL: "https://m7kenaw2.api.lncldglobal.com"
+    });
 
-        const lang = localStorage.getItem('lang') || 'zh';
-        if (localStorage.getItem('theme') === 'dark') document.body.className = 'dark';
+    const lang = localStorage.getItem('lang') || 'zh';
+    if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+    
+    // 渲染语言
+    document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
+    document.querySelectorAll('[data-zh-ph]').forEach(el => { el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph')); });
 
-        // 渲染语言
-        document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
-        document.querySelectorAll('[data-zh-ph]').forEach(el => { el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph')); });
-
-        // 发帖逻辑
-        document.getElementById('pForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            try {
-                const Post = AV.Object.extend('Post');
-                const post = new Post();
-                post.set('nickname', document.getElementById('n').value);
-                post.set('title', document.getElementById('t').value);
-                post.set('content', document.getElementById('c').value);
-                post.set('likes', 0);
-
-                await post.save(); // 现在这里不会报错了，因为电源已经接通
-                window.location.href = 'othersPost.html';
-            } catch (err) {
-                alert("发布失败：建议检查网络或代码中的 AppKey。错误信息：" + err.message);
-            }
-        });
-    </script>
+    // 发帖逻辑
+    document.getElementById('pForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            const Post = AV.Object.extend('Post');
+            const post = new Post();
+            post.set('nickname', document.getElementById('n').value);
+            post.set('title', document.getElementById('t').value);
+            post.set('content', document.getElementById('c').value);
+            post.set('likes', 0);
+            
+            await post.save(); // 现在这里不会报错了，因为电源已经接通
+            window.location.href = 'othersPost.html';
+        } catch (err) {
+            alert("发布失败：建议检查网络或代码中的 AppKey。错误信息：" + err.message);
+        }
+    });
+</script>
 
 </body>
 
