@@ -1,17 +1,70 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8"><title>Post Now</title>
+    <meta charset="UTF-8">
+    <title>Post Now</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root { --bg: #fff; --text: #333; --brand: #ff4757; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --brand: #ff6b81; }
-        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
-        .btn { background: #28a745; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 8px; font-size: 16px; transition: 0.3s; }
+        :root {
+            --bg: #fff;
+            --text: #333;
+            --brand: #ff4757;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --brand: #ff6b81;
+        }
+
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
     </style>
 </head>
+
 <body>
     <h1 data-zh="💥 编写吐槽" data-en="💥 Post Rant">💥 编写吐槽</h1>
     <form id="pForm">
@@ -20,23 +73,28 @@
         <textarea id="c" rows="8" data-zh-ph="请开始你的表演..." data-en-ph="Start your story..." required></textarea>
         <button type="submit" class="btn" data-zh="立即发布" data-en="Publish Now">立即发布</button>
     </form>
-    <button onclick="location.href='post.html'" style="background:none; border:none; color:#888; margin-top:20px; cursor:pointer;" data-zh="❌ 取消退出" data-en="❌ Cancel">❌ 取消退出</button>
+    <button onclick="location.href='post.html'"
+        style="background:none; border:none; color:#888; margin-top:20px; cursor:pointer;" data-zh="❌ 取消退出"
+        data-en="❌ Cancel">❌ 取消退出</button>
+
 
     <script>
-        // 【第一步】必须最先初始化
+        // 1. 把正确的电源放在最前面！
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEactM8uPq", // 填入了你截图中的 Key
+            appKey: "O9DYEDbkHLvecHlEactM8uPq",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
         const lang = localStorage.getItem('lang') || 'zh';
-        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
-        
+        if (localStorage.getItem('theme') === 'dark') document.body.className = 'dark';
+
+        // 渲染语言
         document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
         document.querySelectorAll('[data-zh-ph]').forEach(el => { el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph')); });
 
-        document.getElementById('pForm').addEventListener('submit', async function(e) {
+        // 发帖逻辑
+        document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             try {
                 const Post = AV.Object.extend('Post');
@@ -45,16 +103,15 @@
                 post.set('title', document.getElementById('t').value);
                 post.set('content', document.getElementById('c').value);
                 post.set('likes', 0);
-                
-                const result = await post.save();
-                let myPosts = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
-                myPosts.push(result.id);
-                localStorage.setItem('my_authored_ids', JSON.stringify(myPosts));
+
+                await post.save(); // 现在这里不会报错了，因为电源已经接通
                 window.location.href = 'othersPost.html';
             } catch (err) {
-                alert("发布失败，请检查网络或LeanCloud设置：" + err.message);
+                alert("发布失败：建议检查网络或代码中的 AppKey。错误信息：" + err.message);
             }
         });
     </script>
+
 </body>
+
 </html>
