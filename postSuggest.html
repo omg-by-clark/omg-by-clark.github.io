@@ -24,6 +24,21 @@
             color: var(--text);
             line-height: 2;
         }
+    
+    /* 显眼的返回按钮样式 */
+    .back-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        color: var(--brand);
+        border: 2px solid var(--brand);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-btn:active { transform: scale(1.1); }
+
+
     </style>
 </head>
 
@@ -34,7 +49,9 @@
         <li data-zh="💧 请不要发无意义水帖" data-en="💧 No spamming">💧 请不要发无意义水帖</li>
         <li data-zh="🔥 优质槽点会被顶上热搜" data-en="🔥 Quality rants get to Hot">🔥 优质槽点会被顶上热搜</li>
     </ul>
-    <a href="post.html" data-zh="⬅️ 返回" data-en="⬅️ Back">⬅️ 返回</a>
+
+    <a href="post.html" class="back-btn" data-zh="⬅️ 返回菜单" data-en="⬅️ Back to Menu">⬅️ 返回菜单</a>
+
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.className = 'dark';

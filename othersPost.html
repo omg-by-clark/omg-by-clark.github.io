@@ -5,99 +5,69 @@
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
         :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
-        /* 1. 适配深色模式样式 */
         body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
         .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .info { font-size: 0.85em; color: #888; margin-top: 5px; }
-        .del-btn { color: #ff4d4d; font-size: 0.9em; cursor: pointer; border: none; background: none; margin-left: 10px; font-weight: bold; }
+        /* 站长要求的点击放大动效 */
+        button:active { transform: scale(1.1); transition: 0.1s; }
         .hot-btn { background: linear-gradient(45deg, var(--brand), #ffa502); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h1 data-zh="👀 吐槽广场" data-en="👀 Rant Plaza">👀 吐槽广场</h1>
-        <button class="hot-btn" onclick="toggleHot()" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
+        <button id="hBtn" class="hot-btn" onclick="toggleHot()" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
     </div>
     <div id="list" style="min-height: 200px;">加载中... / Loading...</div>
     <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        // 3. 统一初始化
-        AV.init({
-            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEact4ANKO",
-            serverURL: "https://m7kenaw2.api.lncldglobal.com"
-        });
-
-        // 4. 同步系统设置：语言与皮肤
+        AV.init({ appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", appKey: "O9DYEDbkHLvecHlEact4ANKO", serverURL: "https://m7kenaw2.api.lncldglobal.com" });
         const lang = localStorage.getItem('lang') || 'zh';
         if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
-        // 立即执行一次静态语言转换
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-        });
+        document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
 
         let isHot = false;
-        const myAuthored = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
-
         async function render() {
             const list = document.getElementById('list');
+            const hBtn = document.getElementById('hBtn');
             const myLiked = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
             const isDarkMode = document.body.classList.contains('dark');
+
+            // 修复 Top 3 按钮文字反馈
+            if(isHot) { hBtn.innerText = (lang === 'zh' ? '⬅️ 全部' : '⬅️ All'); hBtn.style.opacity = '0.7'; }
+            else { hBtn.innerText = (lang === 'zh' ? '🔥 热搜' : '🔥 Top 3'); hBtn.style.opacity = '1'; }
 
             try {
                 const query = new AV.Query('Post');
                 isHot ? query.descending('likes').limit(3) : query.descending('createdAt');
                 const posts = await query.find();
-
                 list.innerHTML = posts.map(p => {
                     const isLiked = myLiked.includes(p.id);
-                    const canDelete = myAuthored.includes(p.id);
-                    const likesCount = p.get('likes') || 0;
-
-                    // 🔥 核心变色逻辑
+                    // 站长要求的颜色反转：深色模式已赞变浅(#f0f0f0)，未赞变深(#333)
                     let bStyle = isDarkMode ? 
                         (isLiked ? 'background:#f0f0f0; color:#1a1a1a;' : 'background:#333; color:#f0f0f0;') : 
                         (isLiked ? 'background:#333; color:white;' : 'background:#fff; color:inherit;');
-
-                    return `
-                        <div class="card">
-                            <div style="flex:1">
-                                <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit; font-size:1.1em;"><b>${p.get('title')}</b></a>
-                                <div class="info">👤 ${p.get('nickname')} | 👍 ${likesCount}
-                                    ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">${lang === 'zh' ? '删除' : 'Delete'}</button>` : ''}
-                                </div>
-                            </div>
-                            <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1em;">
-                                👍 ${likesCount}
-                            </button>
-                        </div>`;
-                }).join('') || (lang === 'zh' ? "目前还没有吐槽" : "No posts yet.");
-            } catch (err) {
-                list.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-            }
+                    return `<div class="card">
+                        <div style="flex:1">
+                            <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit; font-size:1.1em;"><b>${p.get('title')}</b></a>
+                            <div style="font-size:0.8em; color:#888;">👤 ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</div>
+                        </div>
+                        <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; cursor:pointer; font-weight:bold;">👍 ${p.get('likes') || 0}</button>
+                    </div>`;
+                }).join('');
+            } catch (err) { list.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`; }
         }
-
         async function toggleLike(id) {
             let likedIds = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
             const idx = likedIds.indexOf(id);
             const post = AV.Object.createWithoutData('Post', id);
-            if (idx === -1) { post.increment('likes', 1); likedIds.push(id); }
-            else { post.increment('likes', -1); likedIds.splice(idx, 1); }
+            idx === -1 ? (post.increment('likes', 1), likedIds.push(id)) : (post.increment('likes', -1), likedIds.splice(idx, 1));
             await post.save();
             localStorage.setItem('my_liked_ids', JSON.stringify(likedIds));
             render();
         }
-
-        async function deletePost(id) {
-            if(confirm(lang === 'zh' ? '确定删除？' : 'Delete this post?')) {
-                await AV.Object.createWithoutData('Post', id).destroy();
-                render();
-            }
-        }
-
         function toggleHot() { isHot = !isHot; render(); }
         render();
     </script>
