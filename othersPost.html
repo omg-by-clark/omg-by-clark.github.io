@@ -1,91 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="UTF-8">
-    <title>吐槽广场 Plaza</title>
-    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
-    <style>
-        :root {
-            --bg: #fffdf5;
-            --text: #333;
-            --card: #fff;
-            --brand: #ff4757;
-        }
-
-        body.dark {
-            --bg: #1a1a1a;
-            --text: #f0f0f0;
-            --card: #2d2d2d;
-            --brand: #ff6b81;
-        }
-
-        body {
-            font-family: sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: var(--bg);
-            color: var(--text);
-            transition: 0.5s;
-        }
-
-        .card {
-            background: var(--card);
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .info {
-            font-size: 0.8em;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .del-btn {
-            color: #ff4d4d;
-            font-size: 0.9em;
-            cursor: pointer;
-            border: none;
-            background: none;
-            margin-left: 10px;
-            font-weight: bold;
-        }
-
-        .hot-btn {
-            background: linear-gradient(45deg, var(--brand), #ffa502);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 data-zh="👀 吐槽广场" data-en="👀 Rant Plaza">👀 吐槽广场</h1>
-        <button class="hot-btn" onclick="toggleHot()" id="hBtn" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
-    </div>
-    <div id="list" style="min-height: 300px;">加载中...</div>
-    <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页"
-        data-en="🏠 Back Home">🏠 返回首页</a>
-
-    <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8"><title>Plaza</title>
+    <meta charset="UTF-8"><title>吐槽广场 Plaza</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
         :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
-        /* 1. 修复深色模式样式，确保背景和文字变色 */
+        /* 深色模式全局样式 */
         body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
         .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
@@ -103,14 +23,13 @@
     <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        // 2. 统一初始化，确保 4ANKO
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
-        // 3. 进入页面立即检查深色模式设置
+        // 立即同步深色模式状态
         if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
         let isHot = false;
@@ -125,21 +44,21 @@
                 const query = new AV.Query('Post');
                 if(isHot) query.descending('likes').limit(3);
                 else query.descending('createdAt');
-
                 const posts = await query.find();
+
                 list.innerHTML = posts.map(p => {
                     const d = p.attributes;
                     const isLiked = myLiked.includes(p.id);
                     const canDelete = myAuthored.includes(p.id);
 
-                    // 🔥 4. 核心逻辑：根据深色模式反转点赞颜色
-                    let btnStyle = '';
+                    // 🔥 核心逻辑：点赞按钮颜色根据模式反转
+                    let bStyle = '';
                     if (isDarkMode) {
-                        // 深色模式下：点赞是浅色，没点赞是深色
-                        btnStyle = isLiked ? 'background:#f0f0f0; color:#1a1a1a;' : 'background:#333; color:#f0f0f0;';
+                        // 深色模式：已赞变浅(#f0f0f0)，未赞是深(#333)
+                        bStyle = isLiked ? 'background:#f0f0f0; color:#1a1a1a;' : 'background:#333; color:#f0f0f0;';
                     } else {
-                        // 浅色模式下：点赞是深色，没点赞是浅色
-                        btnStyle = isLiked ? 'background:#333; color:white;' : 'background:#fff; color:inherit;';
+                        // 浅色模式：已赞变深(#333)，未赞是白(#fff)
+                        bStyle = isLiked ? 'background:#333; color:white;' : 'background:#fff; color:inherit;';
                     }
 
                     return `
@@ -150,12 +69,10 @@
                                     ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">删除</button>` : ''}
                                 </div>
                             </div>
-                            <button onclick="toggleLike('${p.id}')" style="${btnStyle} border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer;">👍</button>
+                            <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer; font-weight:bold;">👍</button>
                         </div>`;
-                }).join('') || "目前还没有吐槽";
-            } catch (err) {
-                list.innerHTML = `<p style="color:red;">❌ 加载失败：${err.message}</p>`;
-            }
+                }).join('') || "暂无吐槽";
+            } catch (err) { list.innerHTML = `<p style="color:red;">加载失败：${err.message}</p>`; }
         }
 
         async function toggleLike(id) {
@@ -169,15 +86,9 @@
             render();
         }
 
-        async function deletePost(id) {
-            if(confirm('确定删除？')) { await AV.Object.createWithoutData('Post', id).destroy(); render(); }
-        }
-
+        async function deletePost(id) { if(confirm('确定删除？')) { await AV.Object.createWithoutData('Post', id).destroy(); render(); } }
         function toggleHot() { isHot = !isHot; render(); }
         render();
     </script>
 </body>
-</html>
-</body>
-
 </html>

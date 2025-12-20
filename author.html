@@ -1,89 +1,77 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <title>Admin Control</title>
+    <title>Admin Control - 吐槽站后台</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            background: #121212;
-            color: #fff;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .post-card {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .btn-del {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+        body { font-family: sans-serif; background: #121212; color: #fff; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .post-card { background: #1e1e1e; border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-group { display: flex; gap: 10px; }
+        button { border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-cmt { background: #28a745; color: white; } /* 管理评论-绿色 */
+        .btn-zero { background: #ffa502; color: white; } /* 赞数清零-橙色 */
+        .btn-del { background: #ff4757; color: white; } /* 删除帖子-红色 */
+        button:hover { opacity: 0.8; transform: scale(1.05); }
     </style>
 </head>
-
 <body>
-    <h2>👑 全站后台管理</h2>
-    <div id="admin-list">加载中...</div>
-    <br><a href="index.html" style="color:#888;">返回首页</a>
+    <h2 style="color: #ff4757;">👑 全站后台管理中心</h2>
+    <div id="admin-list">数据读取中...</div>
+    <br><a href="index.html" style="color:#888; text-decoration: none;">🏠 返回首页</a>
 
     <script>
+        // 1. 初始化电源
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
+        // 2. 渲染列表
         async function draw() {
-            const query = new AV.Query('Post');
-            query.descending('createdAt');
-            const posts = await query.find();
-            document.getElementById('admin-list').innerHTML = posts.map(p => `
-            <div class="post-card">
-                <div>
-                    <b>${p.get('title')}</b><br>
-                    <small>作者: ${p.get('nickname')} | 赞: ${p.get('likes') || 0}</small>
-                </div>
-                <div>
-                    <button onclick="location.href='content.html?id=${p.id}'" style="background:#28a745; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">管评论</button>
-                    <button onclick="resetLikes('${p.id}')" style="background:#ffa502; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">赞清零</button>
-                    <button onclick="realDelete('${p.id}')" style="background:#ff4757; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">删帖</button>
-                </div>
-            </div>`).join('');
+            try {
+                const query = new AV.Query('Post');
+                query.descending('createdAt');
+                const posts = await query.find();
+                
+                document.getElementById('admin-list').innerHTML = posts.map(p => `
+                    <div class="post-card">
+                        <div>
+                            <b style="font-size:1.1em;">${p.get('title')}</b><br>
+                            <small style="color:#aaa;">作者: ${p.get('nickname')} | 赞: ${p.get('likes') || 0}</small>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-cmt" onclick="location.href='content.html?id=${p.id}'">管理评论</button>
+                            <button class="btn-zero" onclick="resetLikes('${p.id}')">赞数清零</button>
+                            <button class="btn-del" onclick="realDelete('${p.id}')">删除帖子</button>
+                        </div>
+                    </div>`).join('') || "目前数据库里空空如也";
+            } catch (err) {
+                document.getElementById('admin-list').innerHTML = `<p style="color:red;">加载失败：${err.message}</p>`;
+            }
         }
 
-        // 🔥 赞数强制清零功能
-        async function resetLikes(postId) {
-            if (confirm('确定要把这条吐槽的能量（赞数）清空吗？')) {
-                const post = AV.Object.createWithoutData('Post', postId);
+        // 3. 赞数强制清零逻辑
+        async function resetLikes(id) {
+            if(confirm('站长，确定要把这条吐槽的赞数彻底清零吗？')) {
+                const post = AV.Object.createWithoutData('Post', id);
                 post.set('likes', 0);
                 await post.save();
-                draw();
+                draw(); // 刷新界面
             }
         }
 
-        async function realDelete(postId) {
-            if (confirm('确定永久删除这条帖子吗？')) {
-                await AV.Object.createWithoutData('Post', postId).destroy();
-                draw();
+        // 4. 彻底删除帖子逻辑
+        async function realDelete(id) {
+            if(confirm('【警告】作为站长，你确定要永久删除这条全网可见的帖子吗？此操作不可撤销！')) {
+                const post = AV.Object.createWithoutData('Post', id);
+                await post.destroy();
+                draw(); // 刷新界面
             }
         }
+
         draw();
     </script>
 </body>
-
 </html>
