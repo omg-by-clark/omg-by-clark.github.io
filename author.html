@@ -8,18 +8,37 @@
     <style>
         /* 保持深色管理风格 */
         body { background: #121212; color: #fff; font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .post-card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
         
-        /* 1.1倍果冻缩放特效 */
-        button:active, .back-link:active { transform: scale(1.1); transition: 0.1s; }
+        .post-card { 
+            background: #1e1e1e; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-info { display: flex; justify-content: space-between; align-items: flex-start; }
         
-        .btn-del { background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        /* 按钮通用样式与 1.1倍缩放 */
+        button { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; }
+        button:active { transform: scale(1.1); }
+
+        /* 你要求的特定颜色 */
+        .btn-del { background: #ff4757; color: white; } /* 删除：红色 */
+        .btn-reset { background: #f1c40f; color: #333; } /* 点赞清零：黄色底 */
+        .btn-cmt { background: #2ecc71; color: white; } /* 评论管理：绿色底 */
+        
         .back-link { color: #888; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 20px; }
     </style>
 </head>
 <body>
     <script>
-        // 权限校验逻辑
+        // 权限双重校验
         if (localStorage.getItem('isAdmin') !== 'true' && window.name !== 'isAdmin_true') {
             window.location.href = 'index.html';
         }
@@ -42,7 +61,6 @@
             serverURL: "https://m7kenaw2.api.lncldglobal.com" 
         });
 
-        // 统一应用语言翻译
         function applyLang() {
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
@@ -56,36 +74,58 @@
                 const posts = await query.find();
                 
                 if (posts.length === 0) {
-                    listEl.innerHTML = `<p style="color:#888">${lang === 'zh' ? '暂无帖子' : 'No posts found'}</p>`;
+                    listEl.innerHTML = `<p style="color:#888">${lang === 'zh' ? '暂无帖子' : 'No posts'}</p>`;
                     return;
                 }
 
                 listEl.innerHTML = posts.map(p => `
                     <div class="post-card">
-                        <div>
-                            <b>${p.get('title')}</b>
-                            <br>
-                            <small>${lang === 'zh' ? '作者' : 'By'}: ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small>
+                        <div class="post-info">
+                            <div>
+                                <b style="font-size:1.2em;">${p.get('title')}</b>
+                                <br>
+                                <small style="color:#888;">${lang === 'zh' ? '作者' : 'By'}: ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small>
+                            </div>
                         </div>
-                        <button class="btn-del" onclick="del('${p.id}')">
-                            ${lang === 'zh' ? '删除' : 'Delete'}
-                        </button>
+                        <div class="btn-group">
+                            <button class="btn-cmt" onclick="location.href='content.html?id=${p.id}'">
+                                ${lang === 'zh' ? '🛡️ 评论管理' : '🛡️ Comments'}
+                            </button>
+                            
+                            <button class="btn-reset" onclick="resetLikes('${p.id}')">
+                                ${lang === 'zh' ? '♻️ 点赞清零' : '♻️ Reset Likes'}
+                            </button>
+                            
+                            <button class="btn-del" onclick="del('${p.id}')">
+                                ${lang === 'zh' ? '🗑️ 删除帖子' : '🗑️ Delete'}
+                            </button>
+                        </div>
                     </div>`).join('');
             } catch (err) { 
                 listEl.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`; 
             }
         }
 
-        // 删除逻辑与中文确认弹窗
+        // 功能：点赞清零
+        async function resetLikes(id) {
+            const msg = lang === 'zh' ? '确定要清零点赞数吗？' : 'Reset likes to 0?';
+            if(confirm(msg)) {
+                const post = AV.Object.createWithoutData('Post', id);
+                post.set('likes', 0);
+                await post.save();
+                draw();
+            }
+        }
+
+        // 功能：删除帖子
         async function del(id) { 
-            const msg = lang === 'zh' ? '确定要删除此贴吗？此操作不可撤销！' : 'Are you sure? This cannot be undone!';
+            const msg = lang === 'zh' ? '确定要删除此贴吗？' : 'Delete this post?';
             if(confirm(msg)) { 
                 await AV.Object.createWithoutData('Post', id).destroy(); 
                 draw(); 
             } 
         }
 
-        // 启动页面
         applyLang();
         draw();
     </script>
