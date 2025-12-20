@@ -1,126 +1,64 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <title>作者验证 Admin Login</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root {
-            --bg: #fffdf5;
-            --text: #333;
-            --brand: #ff4757;
-        }
-
-        /* 1. 自动适配深色模式，解决你说的看不清问题 */
-        body.dark {
-            --bg: #121212;
-            --text: #f1f2f6;
-            --brand: #ff6b81;
-        }
-
-        body {
-            text-align: center;
-            padding-top: 100px;
-            font-family: sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            transition: 0.3s;
-        }
-
-        input {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #222;
-            color: #fff;
-            width: 200px;
-        }
-
-        /* 2. 站长要求的点击放大动效 */
-        button {
-            padding: 10px 25px;
-            cursor: pointer;
-            border-radius: 8px;
-            border: none;
-            background: #eee;
-            color: #000;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        button:active {
-            transform: scale(1.1);
-        }
-
-        .back-link {
-            color: #888;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        .back-link:active {
-            transform: scale(1.1);
-            color: var(--brand);
-        }
+        :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; }
+        body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; }
+        body { text-align: center; padding-top: 100px; font-family: sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; width: 200px; }
+        button { padding: 10px 25px; cursor: pointer; border-radius: 8px; border: none; background: #eee; color: #000; font-weight: bold; transition: 0.2s; }
+        button:active { transform: scale(1.1); }
+        .back-link { color: #888; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: bold; }
+        .back-link:active { transform: scale(1.1); color: var(--brand); }
     </style>
 </head>
-
 <body>
     <h2 data-zh="👑 管理员验证" data-en="👑 Admin Login">👑 管理员验证</h2>
-
     <div style="display: inline-flex; gap: 10px; align-items: center;">
         <input type="password" id="pw" data-zh-ph="请输入密码..." data-en-ph="Enter Password...">
         <button onclick="go()" data-zh="验证" data-en="Verify">验证</button>
     </div>
-
     <br><br>
     <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        // 4. 初始化电源
+        // 1. 初始化电源
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
-        // 5. 补全被我“吃掉”的翻译应用逻辑
+        // 2. 翻译逻辑已修复：现在它能完美工作了
         function applyLanguage() {
             const lang = localStorage.getItem('lang') || 'zh';
             const isDark = localStorage.getItem('theme') === 'dark';
-
             if (isDark) document.body.classList.add('dark');
 
-            // 转换所有带 data-zh 的文字
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
             });
-
-            // 转换输入框的提示文字 (Placeholder)
             document.querySelectorAll('[data-zh-ph]').forEach(el => {
                 el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
             });
         }
 
-
-        const input = document.getElementById('pw').value.trim();
-        if (!input) return;
-
+        // 3. 登录验证函数
         function go() {
-            const input = document.getElementById('pw').value.trim();
-            if (!input) return;
+            const inputVal = document.getElementById('pw').value.trim();
+            if (!inputVal) {
+                alert(localStorage.getItem('lang') === 'en' ? "Please enter password!" : "请输入密码！");
+                return;
+            }
 
-            // 进行xxxxxx编码
-            const encodedInput = btoa(input);
+            // Base64 编码验证
+            const encodedInput = btoa(inputVal);
+            const correctEncoded = "Q2xhcmtTdXBlclBhc3N3b3Jk";
 
-            // 预设的xxxxxx字符串
-            const correctXXXXXX = "Q2xhcmtTdXBlclBhc3N3b3Jk";
-
-            if (encodedInput === correctXXXXXX) {
-                // 验证通过
+            if (encodedInput === correctEncoded) {
                 sessionStorage.setItem('isAdmin', 'true');
                 window.location.href = 'author.html';
             } else {
@@ -129,10 +67,8 @@
             }
         }
 
-
-        // 页面加载即刻执行翻译
+        // 页面加载执行翻译
         applyLanguage();
     </script>
 </body>
-
 </html>
