@@ -1,15 +1,72 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"><title>Settings</title>
+    <meta charset="UTF-8">
+    <title>系统设置 System Settings - omg-by-Clark</title>
     <style>
-        :root { --bg: #fff; --text: #333; --card: #f9f9f9; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #333; }
-        body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
-        .section { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .option { margin: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-        button { padding: 8px 15px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: white; }
-        .btn-save { width: 100%; padding: 15px; background: #28a745; color: white; border: none; font-size: 1.1em; }
+        :root { --bg: #fff; --text: #333; --card: #f9f9f9; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #333; --brand: #ff6b81; }
+        
+        body { 
+            font-family: sans-serif; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: var(--bg); 
+            color: var(--text); 
+            transition: 0.3s; 
+        }
+
+        h2 { color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: 10px; }
+
+        /* 🔥 找回你原始的卡片感 */
+        .section { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .option { 
+            margin: 15px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        select { 
+            padding: 8px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            background: var(--bg); 
+            color: var(--text);
+        }
+
+        /* 🔥 补全 1.1 倍点击缩放 */
+        .btn-save { 
+            width: 100%; 
+            padding: 15px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            font-size: 1.1em; 
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .btn-save:active { transform: scale(1.1); }
+
+        .cancel-link { 
+            display: block; 
+            text-align: center; 
+            margin-top: 20px; 
+            color: firebrick; 
+            text-decoration: none; 
+            font-weight: bold;
+        }
+        .cancel-link:active { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -33,21 +90,26 @@
     </div>
 
     <button class="btn-save" onclick="save()" data-zh="保存设置" data-en="Save Settings">保存设置</button>
-    <p style="text-align:center;"><a href="index.html" style="color:firebrick; text-decoration:none;" data-zh="取消返回" data-en="Cancel">取消返回</a></p>
+    <a href="index.html" class="cancel-link" data-zh="🏠 取消返回" data-en="🏠 Cancel">🏠 取消返回</a>
 
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
         // 初始化选择框状态
         document.getElementById('langSelect').value = localStorage.getItem('lang') || 'zh';
         document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'light';
 
         function save() {
-            localStorage.setItem('lang', document.getElementById('langSelect').value);
-            localStorage.setItem('theme', document.getElementById('themeSelect').value);
-            alert('Settings Saved! / 设置已保存！');
+            const lang = document.getElementById('langSelect').value;
+            const theme = document.getElementById('themeSelect').value;
+            localStorage.setItem('lang', lang);
+            localStorage.setItem('theme', theme);
+            
+            // 提示也要双语
+            alert(lang === 'zh' ? '设置已保存！' : 'Settings Saved!');
             window.location.href = 'index.html';
         }
 
-        // 页面内语言即时预览
+        // 页面内即时预览逻辑
         function apply() {
             const lang = localStorage.getItem('lang') || 'zh';
             const mode = localStorage.getItem('theme') || 'light';
@@ -57,6 +119,8 @@
             });
         }
         apply();
+
+        // 电源模块
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",

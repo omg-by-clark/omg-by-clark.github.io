@@ -1,32 +1,28 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"><title>Menu</title>
+    <meta charset="UTF-8"><title>菜单 Menu - omg-by-Clark</title>
     <style>
-        :root { --bg: #fffdf5; --text: #333; --card: #fff; }
-        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; }
-        body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); }
-        .card { background: var(--card); margin: 15px 0; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
+        body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        /* 🔥 找回你的阴影和边距 */
+        .card { background: var(--card); margin: 15px 0; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        .card:active { transform: scale(1.05); }
         a { text-decoration: none; color: var(--text); font-weight: bold; display: block; }
+        .back-home { color:#888; text-decoration:none; display:inline-block; margin-top:20px; font-weight:bold; }
+        .back-home:active { transform: scale(1.1); color: var(--brand); }
     </style>
 </head>
 <body>
     <h2 data-zh="🤬 菜单" data-en="🤬 Menu">🤬 菜单</h2>
     <div class="card"><a href="postSuggest.html" data-zh="🤔 先看建议" data-en="🤔 Read Advice">🤔 先看建议</a></div>
     <div class="card"><a href="postNow.html" data-zh="💥 直接发帖" data-en="💥 Post Now">💥 直接发帖</a></div>
-    <a href="index.html" style="color:#888;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    <a href="index.html" class="back-home" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
     <script>
-        const mode = localStorage.getItem('theme') || 'light';
         const lang = localStorage.getItem('lang') || 'zh';
-        if(mode==='dark') document.body.className='dark';
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-        });
-        AV.init({
-            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEact4ANKO",
-            serverURL: "https://m7kenaw2.api.lncldglobal.com"
-        });
+        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+        document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
     </script>
 </body>
 </html>

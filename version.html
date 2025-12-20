@@ -1,144 +1,33 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-<head>
-    <meta charset="UTF-8">
-    <title>更新日志 Version Log - v1.4.3</title>
-    <style>
-        :root {
-            --bg: #fffdf5;
-            --text: #333;
-            --brand: #ff4757;
-            --card: #fff;
-        }
-
-        body.dark {
-            --bg: #121212;
-            --text: #f1f2f6;
-            --brand: #ff6b81;
-            --card: #1e1e1e;
-        }
-
-        body {
-            font-family: sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: var(--bg);
-            color: var(--text);
-            transition: 0.3s;
-        }
-
-        h1 {
-            color: var(--brand);
-            border-bottom: 2px solid var(--brand);
-            padding-bottom: 10px;
-        }
-
-        .v-card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .v-tag {
-            background: var(--brand);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-right: 10px;
-        }
-
-        .v-title {
-            list-style: none;
-            font-weight: bold;
-            color: var(--brand);
-            margin-left: -20px;
-            margin-bottom: 5px;
-            font-size: 1.1em;
-        }
-
-        .back-link {
-            color: var(--brand);
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.1s;
-            display: inline-block;
-        }
-
-        .back-link:active {
-            transform: scale(1.1);
-        }
-
-        ul {
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-    </style>
-</head>
-
 <body>
     <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
-
+    
     <div class="v-card">
         <h3><span class="v-tag">v1.4.1</span> 2025-12-20</h3>
         <ul>
-            <li class="v-title">v1.4.1</li>
-            <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">
-                🚀 新增：全站按钮点击放大 1.1 倍特效</li>
-            <li data-zh="✨ 新增：🧾 更新日志页面" data-en="✨ New: Version Log page">
-                ✨ 新增：🧾 更新日志页面</li>
-            <li data-zh="🌓 修复：深色模式点赞按钮颜色反转逻辑" data-en="🌓 Fix: Dark mode like button color inversion">
-                🌓 修复：深色模式点赞按钮颜色反转逻辑</li>
-            <li data-zh="🔒 修复：将作者认证方法改为哈希校验"
-                data-en="🔒 Fix: Migrated admin authentication to SHA-256 hash validation">
-                🔒 修复：将作者认证方法改为哈希校验</li>
+            <li class="v-title">v1.4.1 - Security & UI</li>
+            <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">🚀 新增：全站按钮点击放大 1.1 倍特效</li>
+            <li data-zh="✨ 新增：🧾 更新日志页面" data-en="✨ New: Version Log page">✨ 新增：🧾 更新日志页面</li>
+            <li data-zh="🌓 修复：深色模式点赞按钮颜色反转逻辑" data-en="🌓 Fix: Dark mode like button color inversion">🌓 修复：深色模式点赞按钮颜色反转逻辑</li>
+            <li data-zh="🔒 修复：将作者认证方法改为哈希校验" data-en="🔒 Fix: Migrated admin authentication to SHA-256 hash validation">🔒 修复：将作者认证方法改为哈希校验</li>
         </ul>
     </div>
 
     <div class="v-card">
         <h3><span class="v-tag">v1.4.2</span> 2025-12-20</h3>
         <ul>
-            <li class="v-title">v1.4.2</li>
-            <li data-zh="🔨 优化：将认证方法改为某种不为人知的编码以增强全环境兼容性" 
-                data-en="🔨 Opt: Switched authentication to others for better environment compatibility">
-                🔨 优化：将认证方法改为某种不为人知的编码以增强全环境兼容性</li>
-            <li data-zh="📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题" 
-                data-en="📱 Fix: Resolved connection issues on certain Android mobile browsers">
-                📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题</li>
+            <li class="v-title">v1.4.2 - Compatibility</li>
+            <li data-zh="🔨 优化：将认证方法改为 Base64 编码以增强全环境兼容性" data-en="🔨 Opt: Switched to Base64 for better compatibility">🔨 优化：将认证方法改为 Base64</li>
+            <li data-zh="📱 修复：解决安卓浏览器无法连接云端的问题" data-en="📱 Fix: Resolved Android connection issues">📱 修复：解决安卓浏览器连接问题</li>
         </ul>
     </div>
 
     <div class="v-card">
         <h3><span class="v-tag">v1.4.3</span> 2025-12-20</h3>
         <ul>
-            <li class="v-title">v1.4.3</li>
-            <li data-zh="🍎 修复：针对苹果 iOS Safari 的请求终止（Terminated）报错进行协议加固" data-en="🍎 Fix: Hardened protocol for iOS Safari connection errors">
-                🍎 修复：针对苹果 iOS Safari 的请求终止报错进行协议加固</li>
-            <li data-zh="🌐 规范：全站页面标题（Title）统一规范为“中英双语”格式" data-en="🌐 Norm: Unified all page titles into bilingual format">
-                🌐 规范：全站页面标题统一规范为“中英双语”格式</li>
-            <li data-zh="🚀 优化：全站按钮点击放大 1.1 倍特效（增加交互反馈）" data-en="🚀 Opt: Click-to-enlarge 1.1x effect for all buttons">
-                🚀 优化：全站按钮点击放大 1.1 倍特效</li>
+            <li class="v-title">v1.4.3 - iOS & Brand</li>
+            <li data-zh="🍎 修复：针对苹果 iOS Safari 的请求终止报错进行协议加固" data-en="🍎 Fix: Hardened protocol for iOS Safari">🍎 修复：针对苹果 iOS Safari 的请求终止报错进行协议加固</li>
+            <li data-zh="🌐 规范：全站页面标题统一规范为“中英双语”格式" data-en="🌐 Norm: Unified bilingual titles">🌐 规范：全站页面标题统一规范为“中英双语”</li>
+            <li data-zh="⌨️ 找回：首页经典的 Consolas 字体代码风标题" data-en="⌨️ Restore: Classic Consolas font title for index">⌨️ 找回：首页经典的 Consolas 字体代码风标题</li>
         </ul>
     </div>
-
-    <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
-
-    <script>
-        const lang = localStorage.getItem('lang') || 'zh';
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-        });
-    </script>
-</body>
-
-</html>
+    </body>
