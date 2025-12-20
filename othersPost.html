@@ -1,9 +1,54 @@
-<style>
-    /* 修复深色模式下按钮的对比度 */
-    body.dark .card { border: 1px solid #444; }
-    .back-link { display: block; margin: 30px 0; text-align: center; font-size: 1.1em; }
-</style>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吐槽广场 Plaza - omg-by-Clark</title>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
+    <style>
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
+        
+        body { 
+            font-family: sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: var(--bg); 
+            color: var(--text); 
+            transition: 0.3s; 
+        }
 
+        /* 帖子卡片样式：增加手型指针和过渡动画 */
+        .card { 
+            background: var(--card); 
+            margin: 15px 0; 
+            padding: 15px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            cursor: pointer; 
+            transition: transform 0.1s;
+        }
+
+        /* 1.1 倍点击缩放效果 */
+        .card:active, button:active, .back-link:active { transform: scale(1.1); }
+        
+        .hot-btn { background: var(--brand); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        
+        /* 底部导航链接 */
+        .back-link { 
+            display: inline-block; 
+            margin-top: 30px; 
+            color: var(--brand); 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 1.1em;
+        }
+    </style>
+</head>
 <body>
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza">👀 吐槽广场 Plaza</h1>
@@ -12,23 +57,16 @@
 
     <div id="list">加载中...</div>
 
-    <div style="border-top: 1px solid var(--brand); margin-top: 20px;">
-        <a href="index.html" class="back-link" data-zh="🏠 返回首页 Back Home" data-en="🏠 Back Home">🏠 返回首页 Back Home</a>
-    </div>
+    <a href="index.html" class="back-link" data-zh="🏠 返回首页 Back Home" data-en="🏠 Back Home">🏠 返回首页 Back Home</a>
 
     <script>
+        // 初始化 LeanCloud
         AV.init({ appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", appKey: "O9DYEDbkHLvecHlEact4ANKO", serverURL: "https://m7kenaw2.api.lncldglobal.com" });
         
-        // 1. 立即应用主题和语言
-        function applySettings() {
-            const isDark = localStorage.getItem('theme') === 'dark';
-            document.body.className = isDark ? 'dark' : '';
-            const lang = localStorage.getItem('lang') || 'zh';
-            document.querySelectorAll('[data-zh]').forEach(el => {
-                el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-            });
-        }
-        applySettings();
+        const lang = localStorage.getItem('lang') || 'zh';
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
+        let isHot = false;
 
         async function render() {
             const list = document.getElementById('list');
@@ -43,25 +81,51 @@
                 list.innerHTML = posts.map(p => {
                     const isLiked = myLiked.includes(p.id);
                     let bStyle = "";
-                    
+
+                    // 严格执行深色模式点赞逻辑：点赞后浅色，没点赞深色
                     if (isDarkMode) {
-                        // 深色模式：点赞后变浅色(#f0f0f0)，未点赞保持深色(#333)
-                        bStyle = isLiked ? "background:#f0f0f0; color:#111;" : "background:#333; color:#f0f0f0;";
+                        bStyle = isLiked ? 'background:#f0f0f0; color:#111;' : 'background:#333; color:#f0f0f0;';
                     } else {
-                        // 浅色模式：点赞后变深色(#333)，未点赞保持浅色(#fff)
-                        bStyle = isLiked ? "background:#333; color:#fff;" : "background:#fff; color:#333;";
+                        bStyle = isLiked ? 'background:#333; color:#fff;' : 'background:#fff; color:inherit;';
                     }
 
-                    return `<div class="card">
-                        <div><b>${p.get('title')}</b><br><small>👤 ${p.get('nickname') || '路人'} | 👍 ${p.get('likes') || 0}</small></div>
-                        <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">👍 ${p.get('likes') || 0}</button>
+                    // 🔥 核心修复：添加 onclick 跳转到详情页，并使用 event.stopPropagation() 防止点赞时跳转
+                    return `
+                    <div class="card" onclick="location.href='content.html?id=${p.id}'">
+                        <div>
+                            <b style="font-size:1.1em;">${p.get('title')}</b>
+                            <br>
+                            <small>👤 ${p.get('nickname') || '路人'} | 👍 ${p.get('likes') || 0}</small>
+                        </div>
+                        <button onclick="event.stopPropagation(); toggleLike('${p.id}')" 
+                                style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">
+                            👍 ${p.get('likes') || 0}
+                        </button>
                     </div>`;
                 }).join('');
             } catch (err) { 
                 list.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
             }
         }
-        // ... toggleLike 和 toggleHot 逻辑保持 ...
+
+        async function toggleLike(id) {
+            let likedIds = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+            const idx = likedIds.indexOf(id);
+            const post = AV.Object.createWithoutData('Post', id);
+            idx === -1 ? (post.increment('likes', 1), likedIds.push(id)) : (post.increment('likes', -1), likedIds.splice(idx, 1));
+            await post.save(); 
+            localStorage.setItem('my_liked_ids', JSON.stringify(likedIds)); 
+            render();
+        }
+
+        function toggleHot() { isHot = !isHot; render(); }
+
+        // 执行翻译逻辑
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+
         render();
     </script>
 </body>
+</html>
