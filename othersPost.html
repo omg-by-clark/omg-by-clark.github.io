@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"><title>Plaza</title>
+    <meta charset="UTF-8"><title>吐槽广场 Plaza</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
         :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
@@ -22,17 +22,20 @@
     <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        AV.init({
-            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEact4ANKO",
-            serverURL: "https://m7kenaw2.api.lncldglobal.com"
-        });
+    // 1. 统一电源，必须在最前面
+    AV.init({
+        appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+        appKey: "O9DYEDbkHLvecHlEact4ANKO", // 使用你电脑成功的 4ANKO
+        serverURL: "https://m7kenaw2.api.lncldglobal.com"
+    });
 
-        let isHot = false;
-        const myAuthored = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
+    let isHot = false;
+    // 获取我发布的帖子 ID
+    const myAuthored = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
 
-        async function render() {
-            const list = document.getElementById('list');
+    async function render() {
+        const list = document.getElementById('list');
+        try {
             const query = new AV.Query('Post');
             if(isHot) query.descending('likes').limit(3);
             else query.descending('createdAt');
@@ -50,29 +53,52 @@
                                 ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">删除</button>` : ''}
                             </div>
                         </div>
-                        <button onclick="like('${p.id}')" style="background:none; border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer; color:inherit;">👍 ${d.likes || 0}</button>
+                        <button id="like-btn-${p.id}" onclick="like('${p.id}')" style="background:none; border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer; color:inherit;">👍 ${d.likes || 0}</button>
                     </div>`;
             }).join('') || "目前还没有吐槽，快去抢沙发！";
+        } catch (err) {
+            list.innerHTML = "<p style='color:red;'>数据加载失败，请刷新页面。</p>";
+            console.error(err);
+        }
+    }
+
+    // 🔥 升级版点赞逻辑：防止一个人狂点
+    async function like(id) {
+        // 先检查本地记录，看是否点过
+        let likedIds = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+        
+        if (likedIds.includes(id)) {
+            alert("你已经给过这条吐槽能量了，每人只能点赞一次哦！");
+            return;
         }
 
-        async function deletePost(id) {
-            if(confirm('确定删除你的这条帖子吗？')) {
-                const post = AV.Object.createWithoutData('Post', id);
-                await post.destroy();
-                render();
-            }
-        }
-
-        async function like(id) {
+        try {
             const post = AV.Object.createWithoutData('Post', id);
             post.increment('likes', 1);
             await post.save();
+            
+            // 点赞成功后，把 ID 存入本地“已赞名单”
+            likedIds.push(id);
+            localStorage.setItem('my_liked_ids', JSON.stringify(likedIds));
+            
+            // 重新刷新列表显示最新数字
+            render();
+        } catch (err) {
+            alert("点赞失败：" + err.message);
+        }
+    }
+
+    async function deletePost(id) {
+        if(confirm('确定删除你的这条帖子吗？')) {
+            const post = AV.Object.createWithoutData('Post', id);
+            await post.destroy();
             render();
         }
+    }
 
-        function toggleHot() { isHot = !isHot; render(); }
-        if(localStorage.getItem('theme')==='dark') document.body.className='dark';
-        render();
-    </script>
+    function toggleHot() { isHot = !isHot; render(); }
+    if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+    render();
+</script>
 </body>
 </html>
