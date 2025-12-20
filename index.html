@@ -3,33 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>omg-by-Clark</title>
+    <title>omg-by-Clark v1.4</title>
     <style>
         :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; --brand-bg: rgba(255, 71, 87, 0.05); }
         body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; --brand-bg: rgba(255, 107, 129, 0.1); }
-        body { font-family: "Microsoft YaHei", sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: var(--bg); color: var(--text); transition: all 0.5s ease; text-align: center; animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        h1 { color: var(--brand); font-size: 2.2em; font-family: "Consolas", monospace; padding: 15px 25px; border: 4px solid var(--brand); display: inline-block; border-radius: 12px; background: var(--brand-bg); box-shadow: 8px 8px 0px var(--brand); transition: 0.3s; }
-        .main-nav { margin-top: 60px; display: flex; flex-direction: column; gap: 25px; }
-        .btn-main { text-decoration: none; padding: 25px; font-size: 1.5em; font-weight: bold; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white; transition: 0.3s; }
+        body { font-family: "Microsoft YaHei", sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: var(--bg); color: var(--text); transition: all 0.5s ease; text-align: center; }
+        h1 { color: var(--brand); font-size: 2.2em; font-family: "Consolas", monospace; padding: 15px 25px; border: 4px solid var(--brand); display: inline-block; border-radius: 12px; background: var(--brand-bg); box-shadow: 8px 8px 0px var(--brand); }
+        
+        .main-nav { margin-top: 50px; display: flex; flex-direction: column; gap: 20px; }
+        .btn-main { text-decoration: none; padding: 20px; font-size: 1.3em; font-weight: bold; border-radius: 20px; color: white; transition: 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        /* 🔥 点击放大动效（1.1倍） */
+        .btn-main:active { transform: scale(1.1); }
+        
         .btn-post { background: linear-gradient(135deg, #ff4757, #ee5253); }
         .btn-view { background: linear-gradient(135deg, #ffa502, #ff7f50); }
-        .btn-main:hover { transform: scale(1.05); }
-        .footer { margin-top: 100px; padding-top: 30px; display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(128,128,128,0.2); }
-        .footer-link { color: var(--text); text-decoration: none; opacity: 0.6; font-weight: 500; }
+        /* 🧾 更新日志专属配色 */
+        .btn-version { background: linear-gradient(135deg, #3867d6, #4b7bec); }
+
+        .footer { margin-top: 80px; padding-top: 30px; display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(128,128,128,0.2); }
+        .footer-link { color: var(--text); text-decoration: none; opacity: 0.6; font-weight: 500; transition: 0.2s; }
+        .footer-link:active { transform: scale(1.1); opacity: 1; }
     </style>
 </head>
 <body>
     <h1>omg-by-Clark.github.io</h1>
-    <p data-zh="🔥 吐槽能量站：同步全网的不爽" data-en="🔥 Rant Energy Hub: Syncing Rants Globally">🔥 吐槽能量站：同步全网的不爽</p>
+    <p data-zh="🔥 吐槽能量站 v1.4" data-en="🔥 Rant Energy Hub v1.4">🔥 吐槽能量站 v1.4</p>
+    
     <nav class="main-nav">
         <a href="post.html" class="btn-main btn-post" data-zh="🤬 我要发帖" data-en="🤬 Create Post">🤬 我要发帖</a>
         <a href="othersPost.html" class="btn-main btn-view" data-zh="👀 随便看看" data-en="👀 View Plaza">👀 随便看看</a>
+        <a href="version.html" class="btn-main btn-version" data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</a>
     </nav>
+
     <footer class="footer">
         <a href="settings.html" class="footer-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
         <a href="login.html" class="footer-link" data-zh="👑 作者" data-en="👑 Admin">👑 作者</a>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
         function apply() {
             document.body.className = (localStorage.getItem('theme') === 'dark' ? 'dark' : '');

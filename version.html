@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Update Log - v1.4</title>
+    <style>
+        :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; --card: #fff; }
+        body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; --card: #1e1e1e; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        h1 { color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: 10px; }
+        .v-card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: left; }
+        .v-tag { background: var(--brand); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 10px; }
+        
+        /* 🔥 站长要求的点击放大特效 */
+        .back-link { color: var(--brand); text-decoration: none; font-weight: bold; transition: 0.1s; display: inline-block; }
+        .back-link:active { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+    <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
+    
+    <div class="v-card">
+        <h3><span class="v-tag">v1.4.0</span> 2025-12-20</h3>
+        <ul>
+            <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">🚀 新增：全站按钮点击放大 1.1 倍特效</li>
+            <li data-zh="✨ 新增：🧾 更新日志页面" data-en="✨ New: Version Log page">✨ 新增：🧾 更新日志页面</li>
+            <li data-zh="🌐 修复：管理员验证界面中英双语切换" data-en="🌐 Fix: Admin UI translation sync">🌐 修复：管理员验证界面中英双语切换</li>
+            <li data-zh="🛠️ 修复：后台管理按钮名称及“管理评论”功能" data-en="🛠️ Fix: Admin button names & Comment management">🛠️ 修复：后台管理按钮名称及“管理评论”功能</li>
+            <li data-zh="🌓 修复：深色模式点赞按钮颜色反转逻辑" data-en="🌓 Fix: Dark mode like button color inversion">🌓 修复：深色模式点赞按钮颜色反转逻辑</li>
+        </ul>
+    </div>
+
+    <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+    </script>
+</body>
+</html>
