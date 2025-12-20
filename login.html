@@ -1,36 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; }
-        /* 1. 自动适配深色模式，解决你说的看不清问题 */
-        body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; }
-        body { text-align: center; padding-top: 100px; font-family: sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
-        
-        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; width: 200px; }
-        
-        /* 2. 站长要求的点击放大动效 */
-        button { 
-            padding: 10px 25px; cursor: pointer; border-radius: 8px; border: none; 
-            background: #eee; color: #000; font-weight: bold; transition: 0.2s; 
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --brand: #ff4757;
         }
-        button:active { transform: scale(1.1); }
-        
-        .back-link { color: #888; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: bold; }
-        .back-link:active { transform: scale(1.1); color: var(--brand); }
+
+        /* 1. 自动适配深色模式，解决你说的看不清问题 */
+        body.dark {
+            --bg: #121212;
+            --text: #f1f2f6;
+            --brand: #ff6b81;
+        }
+
+        body {
+            text-align: center;
+            padding-top: 100px;
+            font-family: sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: 0.3s;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            width: 200px;
+        }
+
+        /* 2. 站长要求的点击放大动效 */
+        button {
+            padding: 10px 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: #eee;
+            color: #000;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(1.1);
+        }
+
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .back-link:active {
+            transform: scale(1.1);
+            color: var(--brand);
+        }
     </style>
 </head>
+
 <body>
     <h2 data-zh="👑 管理员验证" data-en="👑 Admin Login">👑 管理员验证</h2>
-    
+
     <div style="display: inline-flex; gap: 10px; align-items: center;">
         <input type="password" id="pw" data-zh-ph="请输入密码..." data-en-ph="Enter Password...">
         <button onclick="go()" data-zh="验证" data-en="Verify">验证</button>
     </div>
-    
+
     <br><br>
     <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
@@ -46,8 +91,8 @@
         function applyLanguage() {
             const lang = localStorage.getItem('lang') || 'zh';
             const isDark = localStorage.getItem('theme') === 'dark';
-            
-            if(isDark) document.body.classList.add('dark');
+
+            if (isDark) document.body.classList.add('dark');
 
             // 转换所有带 data-zh 的文字
             document.querySelectorAll('[data-zh]').forEach(el => {
@@ -60,14 +105,26 @@
             });
         }
 
-        function go() {
-            // 使用你的超强密码
-            if (document.getElementById('pw').value === "ClarkSuperPassword") {
+        async function go() {
+            const input = document.getElementById('pw').value.trim();
+            if (!input) return;
+
+            // 1. 将输入的密码进行哈希处理
+            const msgBuffer = new TextEncoder().encode(input);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            // 2. 预设的 ClarkSuperPassword 密文
+            const correctHash = "7c067d5583783a33945c71701e6702d733190f8f8f2b7b5123d46777651a0d8a";
+            // 为了防止密码泄露，使用哈希值进行计算和严重
+            if (inputHash === correctHash) {
+                // 验证通过
                 sessionStorage.setItem('isAdmin', 'true');
                 window.location.href = 'author.html';
-            } else { 
-                const currentLang = localStorage.getItem('lang') || 'zh';
-                alert(currentLang === 'zh' ? '密码错误！' : 'Wrong Password!'); 
+            } else {
+                const lang = localStorage.getItem('lang') || 'zh';
+                alert(lang === 'zh' ? '验证失败！' : 'Auth Failed!');
             }
         }
 
@@ -75,4 +132,5 @@
         applyLanguage();
     </script>
 </body>
+
 </html>
