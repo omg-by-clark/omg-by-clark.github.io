@@ -78,77 +78,106 @@
     <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页"
         data-en="🏠 Back Home">🏠 返回首页</a>
 
+    <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><title>Plaza</title>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
+    <style>
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
+        /* 1. 修复深色模式样式，确保背景和文字变色 */
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .info { font-size: 0.8em; color: #888; margin-top: 5px; }
+        .del-btn { color: #ff4d4d; font-size: 0.9em; cursor: pointer; border: none; background: none; margin-left: 10px; font-weight: bold; }
+        .hot-btn { background: linear-gradient(45deg, var(--brand), #ffa502); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 data-zh="👀 吐槽广场" data-en="👀 Rant Plaza">👀 吐槽广场</h1>
+        <button class="hot-btn" onclick="toggleHot()" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
+    </div>
+    <div id="list" style="min-height: 300px;">加载中...</div>
+    <a href="index.html" style="color: var(--brand); text-decoration: none; font-weight: bold;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
     <script>
-        // 1. 统一电源插头
+        // 2. 统一初始化，确保 4ANKO
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",
             serverURL: "https://m7kenaw2.api.lncldglobal.com"
         });
 
+        // 3. 进入页面立即检查深色模式设置
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
         let isHot = false;
         const myAuthored = JSON.parse(localStorage.getItem('my_authored_ids')) || [];
 
         async function render() {
             const list = document.getElementById('list');
-            // 获取本地“已点赞”的名单
             const myLiked = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
+            const isDarkMode = document.body.classList.contains('dark');
 
             try {
                 const query = new AV.Query('Post');
-                if (isHot) query.descending('likes').limit(3);
+                if(isHot) query.descending('likes').limit(3);
                 else query.descending('createdAt');
 
                 const posts = await query.find();
                 list.innerHTML = posts.map(p => {
                     const d = p.attributes;
-                    const time = p.createdAt.toLocaleString();
-                    const canDelete = myAuthored.includes(p.id);
-                    // 关键点：检查本地名单，如果在里面，就给按钮加个“liked”样式
                     const isLiked = myLiked.includes(p.id);
-                    const btnStyle = isLiked ? 'background:#333; color:white;' : 'background:none; color:inherit;';
+                    const canDelete = myAuthored.includes(p.id);
+
+                    // 🔥 4. 核心逻辑：根据深色模式反转点赞颜色
+                    let btnStyle = '';
+                    if (isDarkMode) {
+                        // 深色模式下：点赞是浅色，没点赞是深色
+                        btnStyle = isLiked ? 'background:#f0f0f0; color:#1a1a1a;' : 'background:#333; color:#f0f0f0;';
+                    } else {
+                        // 浅色模式下：点赞是深色，没点赞是浅色
+                        btnStyle = isLiked ? 'background:#333; color:white;' : 'background:#fff; color:inherit;';
+                    }
 
                     return `
-                    <div class="card">
-                        <div style="flex:1">
-                            <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit;"><b>${d.title}</b></a>
-                            <div class="info">👤 ${d.nickname} | 📅 ${time} 
-                                ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">删除</button>` : ''}
+                        <div class="card">
+                            <div style="flex:1">
+                                <a href="content.html?id=${p.id}" style="text-decoration:none; color:inherit;"><b>${d.title}</b></a>
+                                <div class="info">👤 ${d.nickname} | 👍 ${d.likes || 0}
+                                    ${canDelete ? `<button class="del-btn" onclick="deletePost('${p.id}')">删除</button>` : ''}
+                                </div>
                             </div>
-                        </div>
-                        <button onclick="toggleLike('${p.id}')" style="${btnStyle} border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer;">👍 ${d.likes || 0}</button>
-                    </div>`;
+                            <button onclick="toggleLike('${p.id}')" style="${btnStyle} border:1px solid #ddd; padding:8px; border-radius:8px; cursor:pointer;">👍</button>
+                        </div>`;
                 }).join('') || "目前还没有吐槽";
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                list.innerHTML = `<p style="color:red;">❌ 加载失败：${err.message}</p>`;
+            }
         }
 
-        // 🔥 升级版：开关式点赞
         async function toggleLike(id) {
             let likedIds = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
             const index = likedIds.indexOf(id);
             const post = AV.Object.createWithoutData('Post', id);
-
-            if (index === -1) {
-                // 还没点过赞：变深色，赞+1
-                post.increment('likes', 1);
-                likedIds.push(id);
-            } else {
-                // 已经点过了：变回浅色，赞-1
-                post.increment('likes', -1);
-                likedIds.splice(index, 1);
-            }
-
+            if (index === -1) { post.increment('likes', 1); likedIds.push(id); }
+            else { post.increment('likes', -1); likedIds.splice(index, 1); }
             await post.save();
             localStorage.setItem('my_liked_ids', JSON.stringify(likedIds));
-            render(); // 刷新界面
+            render();
         }
 
         async function deletePost(id) {
-            if (confirm('确定删除？')) { await AV.Object.createWithoutData('Post', id).destroy(); render(); }
+            if(confirm('确定删除？')) { await AV.Object.createWithoutData('Post', id).destroy(); render(); }
         }
+
         function toggleHot() { isHot = !isHot; render(); }
         render();
     </script>
+</body>
+</html>
 </body>
 
 </html>
