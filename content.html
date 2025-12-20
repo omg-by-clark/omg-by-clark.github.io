@@ -79,42 +79,53 @@
         data-en="⬅️ Back">⬅️ 返回广场</a>
 
     <script>
-        // 1. 电源置顶
-        AV.init({
-            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-            appKey: "O9DYEDbkHLvecHlEact4ANKO",
-            serverURL: "https://m7kenaw2.api.lncldglobal.com"
-        });
+    // 1. 电源置顶，统一使用 4ANKO
+    AV.init({
+        appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+        appKey: "O9DYEDbkHLvecHlEact4ANKO",
+        serverURL: "https://m7kenaw2.api.lncldglobal.com"
+    });
 
-        const id = new URLSearchParams(window.location.search).get('id');
-        const isAdmin = sessionStorage.getItem('isAdmin') === 'true'; // 检查管理员身份
+    const id = new URLSearchParams(window.location.search).get('id');
+    const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
-        async function loadCmts() {
+    async function load() {
+        try {
+            const query = new AV.Query('Post');
+            const p = await query.get(id); // 获取帖子内容
+            document.getElementById('t').innerText = p.get('title');
+            document.getElementById('info').innerText = `👤 ${p.get('nickname')} | 📅 ${p.createdAt.toLocaleString()}`;
+            document.getElementById('c').innerText = p.get('content');
+            
+            // 加载帖子成功后，再加载评论
+            await loadCmts();
+        } catch (err) {
+            // 🔥 如果失败，把错误显示在原本“加载中”的位置
+            document.getElementById('c').innerHTML = `<p style="color:red;">❌ 加载失败：${err.message}</p>`;
+        }
+    }
+
+    async function loadCmts() {
+        try {
             const query = new AV.Query('Comment');
             query.equalTo('postId', id);
             query.ascending('createdAt');
             const cmts = await query.find();
-
+            
             document.getElementById('cmt-list').innerHTML = cmts.map(c => `
-            <div class="cmt-item" style="display:flex; justify-content:space-between; align-items:center;">
-                <div><b>${c.get('nickname')}:</b> ${c.get('content')}</div>
-                ${isAdmin ? `<button onclick="delCmt('${c.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:0.8em;">删除</button>` : ''}
-            </div>`).join('') || '<p style="color:#888">暂无评论</p>';
+                <div class="cmt-item" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${c.get('nickname')}:</b> ${c.get('content')}</div>
+                    ${isAdmin ? `<button onclick="delCmt('${c.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:0.8em;">删除</button>` : ''}
+                </div>`).join('') || '<p style="color:#888">暂无评论</p>';
+        } catch (err) {
+            document.getElementById('cmt-list').innerHTML = `<p style="color:red;">评论区加载失败：${err.message}</p>`;
         }
+    }
 
-        // 🔥 删除评论逻辑
-        async function delCmt(cmtId) {
-            if (confirm('确定要删除这条评论吗？')) {
-                try {
-                    const c = AV.Object.createWithoutData('Comment', cmtId);
-                    await c.destroy();
-                    loadCmts(); // 刷新评论列表
-                } catch (err) { alert("删除失败：" + err.message); }
-            }
-        }
-
-        // ... 其他原有的 load() 和 addCmt() 函数保持不变 ...
-    </script>
+    // ... 其他 addCmt 和 delCmt 函数保持不变 ...
+    if(localStorage.getItem('theme')==='dark') document.body.className='dark';
+    load();
+</script>
 </body>
 
 </html>
