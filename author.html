@@ -42,7 +42,6 @@
     <br><a href="index.html" style="color:#888;">返回首页</a>
 
     <script>
-        // 统一使用这个正确的电源块
         AV.init({
             appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
             appKey: "O9DYEDbkHLvecHlEact4ANKO",
@@ -54,20 +53,32 @@
             query.descending('createdAt');
             const posts = await query.find();
             document.getElementById('admin-list').innerHTML = posts.map(p => `
-                <div class="post-card">
-                    <div>
-                        <b>${p.get('title')}</b> (ID: ${p.id})<br>
-                        <small>作者: ${p.get('nickname')} | 赞: ${p.get('likes')}</small>
-                    </div>
-                    <button class="btn-del" onclick="realDelete('${p.id}')">永久删除</button>
+            <div class="post-card">
+                <div>
+                    <b>${p.get('title')}</b><br>
+                    <small>作者: ${p.get('nickname')} | 赞: ${p.get('likes') || 0}</small>
                 </div>
-            `).join('');
+                <div>
+                    <button onclick="location.href='content.html?id=${p.id}'" style="background:#28a745; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">管评论</button>
+                    <button onclick="resetLikes('${p.id}')" style="background:#ffa502; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">赞清零</button>
+                    <button onclick="realDelete('${p.id}')" style="background:#ff4757; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">删帖</button>
+                </div>
+            </div>`).join('');
         }
 
-        async function realDelete(id) {
-            if (confirm('作为站长，你确定要永久删除这条全网可见的帖子吗？')) {
-                const post = AV.Object.createWithoutData('Post', id);
-                await post.destroy();
+        // 🔥 赞数强制清零功能
+        async function resetLikes(postId) {
+            if (confirm('确定要把这条吐槽的能量（赞数）清空吗？')) {
+                const post = AV.Object.createWithoutData('Post', postId);
+                post.set('likes', 0);
+                await post.save();
+                draw();
+            }
+        }
+
+        async function realDelete(postId) {
+            if (confirm('确定永久删除这条帖子吗？')) {
+                await AV.Object.createWithoutData('Post', postId).destroy();
                 draw();
             }
         }
