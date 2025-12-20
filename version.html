@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <title>更新日志 Version Log - v1.4.3</title>
@@ -10,17 +9,17 @@
             --text: #333;
             --brand: #ff4757;
             --card: #fff;
+            --line: #eee;
         }
-
         body.dark {
             --bg: #121212;
             --text: #f1f2f6;
             --brand: #ff6b81;
             --card: #1e1e1e;
+            --line: #333;
         }
-
         body {
-            font-family: sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             max-width: 600px;
             margin: 0 auto;
             padding: 40px 20px;
@@ -28,104 +27,89 @@
             color: var(--text);
             transition: 0.3s;
         }
-
-        h1 {
-            color: var(--brand);
-            border-bottom: 2px solid var(--brand);
-            padding-bottom: 10px;
-        }
-
-        .v-card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
+        /* 找回 Consolas 灵魂，用于版本标签 */
         .v-tag {
+            font-family: Consolas, Monaco, monospace;
             background: var(--brand);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-right: 10px;
-        }
-
-        .v-title {
-            list-style: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
             font-weight: bold;
-            color: var(--brand);
-            margin-left: -20px;
-            margin-bottom: 5px;
-            font-size: 1.1em;
         }
-
+        h1 {
+            font-family: Consolas, monospace;
+            color: var(--brand);
+            border-bottom: 2px solid var(--brand);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+        }
+        .v-card {
+            position: relative;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: 1px solid var(--line);
+        }
+        /* 移除重复的版本号标题，改用简洁的主题描述 */
+        .v-theme {
+            display: block;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--brand);
+        }
+        ul { padding-left: 20px; margin: 0; }
+        li { margin-bottom: 10px; line-height: 1.6; list-style-type: '👉 '; }
+        
         .back-link {
+            display: inline-block;
+            margin-top: 20px;
             color: var(--brand);
             text-decoration: none;
             font-weight: bold;
-            transition: 0.1s;
-            display: inline-block;
+            transition: 0.2s;
         }
-
-        .back-link:active {
-            transform: scale(1.1);
-        }
-
-        ul {
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
+        .back-link:active { transform: scale(1.1); }
     </style>
 </head>
-
 <body>
     <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
 
     <div class="v-card">
-        <h3><span class="v-tag">v1.4.1</span> 2025-12-20</h3>
+        <span class="v-tag">v1.4.1</span> <small style="opacity:0.6; margin-left:10px;">2025-12-20</small>
+        <span class="v-theme" data-zh="💎 UI 动效与安全加固" data-en="💎 UI & Security Boost">💎 UI 动效与安全加固</span>
         <ul>
-            <li class="v-title" data-zh="💎 安全与特效增强" data-en="💎 Security & UI Boost">💎 安全与特效增强</li>
-            <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">
-                🚀 新增：全站按钮点击放大 1.1 倍特效</li>
-            <li data-zh="✨ 新增：🧾 更新日志页面" data-en="✨ New: Version Log page">
-                ✨ 新增：🧾 更新日志页面</li>
-            <li data-zh="🌓 修复：深色模式点赞按钮颜色反转逻辑" data-en="🌓 Fix: Dark mode like button color inversion">
-                🌓 修复：深色模式点赞按钮颜色反转逻辑</li>
-            <li data-zh="🔒 修复：将作者认证方法改为哈希校验"
-                data-en="🔒 Fix: Migrated admin authentication to SHA-256 hash validation">
-                🔒 修复：将作者认证方法改为哈希校验</li>
+            <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍果冻动效" data-en="🚀 New: 1.1x click-to-enlarge jelly effect">全站按钮点击放大 1.1 倍特效</li>
+            <li data-zh="✨ 新增：🧾 独立更新日志页面" data-en="✨ New: Standalone Version Log page">新增：🧾 更新日志页面</li>
+            <li data-zh="🌓 修复：深色模式点赞按钮颜色异常问题" data-en="🌓 Fix: Dark mode like button color issues">修复：深色模式点赞按钮颜色反转逻辑</li>
+            <li data-zh="🔒 修复：作者认证机制升级（哈希预研）" data-en="🔒 Fix: Admin auth upgrade (Hash validation)">将作者认证方法改为哈希校验</li>
         </ul>
     </div>
 
     <div class="v-card">
-        <h3><span class="v-tag">v1.4.2</span> 2025-12-20</h3>
+        <span class="v-tag">v1.4.2</span> <small style="opacity:0.6; margin-left:10px;">2025-12-20</small>
+        <span class="v-theme" data-zh="🌍 全环境兼容性优化" data-en="🌍 Compatibility Optimization">🌍 全环境兼容性优化</span>
         <ul>
-            <li class="v-title" data-zh="🌍 环境兼容性优化" data-en="🌍 Compatibility Fix">🌍 环境兼容性优化</li>
-            <li data-zh="🔨 优化：更新认证逻辑以适配跨平台访问" 
-                data-en="Opt: Updated auth logic for cross-platform support">
-                🔨 优化：更新认证逻辑以适配跨平台访问</li>
-            <li data-zh="📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题" 
-                data-en="📱 Fix: Resolved connection issues on certain Android mobile browsers">
-                📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题</li>
+            <li data-zh="🔨 优化：将认证方法改为某种神秘编码以防泄密" 
+                data-en="🔨 Opt: Switched auth to a mysterious encoding for privacy">
+                将认证方法改为某种我不能说的编码以增强兼容性</li>
+            <li data-zh="📱 修复：解决安卓手机部分浏览器无法发帖的问题" data-en="📱 Fix: Resolved posting issues on Android browsers">解决安卓浏览器下部分环境下无法连接云端的问题</li>
         </ul>
     </div>
 
-    <div class="v-card">
-        <h3><span class="v-tag">v1.4.3</span> 2025-12-20</h3>
+    <div class="v-card" style="border: 2px solid var(--brand);">
+        <span class="v-tag">v1.4.3</span> <small style="opacity:0.6; margin-left:10px;">2025-12-20</small>
+        <span class="v-theme" data-zh="🍎 苹果 iOS 加固与品牌回归" data-en="🍎 iOS Hardening & Branding">🍎 iOS 加固与品牌回归</span>
         <ul>
-            <li class="v-title" data-zh="🍎 iOS 加固与标题规范" data-en="🍎 iOS Ready & Title Norm">🍎 iOS 加固与标题规范</li>
-            <li data-zh="🍎 修复：针对苹果 iOS Safari 的请求终止（Terminated）报错进行协议加固" data-en="🍎 Fix: Hardened protocol for iOS Safari connection errors">
-                🍎 修复：针对苹果 iOS Safari 的请求终止报错进行协议加固</li>
-            <li data-zh="🌐 规范：全站页面标题（Title）统一规范为“中英双语”格式" data-en="🌐 Norm: Unified all page titles into bilingual format">
-                🌐 规范：全站页面标题统一规范为“中英双语”格式</li>
+            <li data-zh="🍎 修复：针对苹果 iOS Safari 的连接终止报错进行加固" data-en="🍎 Fix: Hardened protocol for iOS Safari errors">
+                针对苹果 iOS Safari 的请求终止（Terminated）报错进行协议加固</li>
+            <li data-zh="🌐 规范：全站页面标题统一规范为“中英双语”" data-en="🌐 Norm: Unified bilingual page titles">
+                全站页面标题统一规范为“中英双语”格式</li>
             <li data-zh="⌨️ 找回：首页经典的 Consolas 字体代码风标题" data-en="⌨️ Restore: Classic Consolas font title for index">
-                ⌨️ 找回：首页经典的 Consolas 字体代码风标题</li>
+                找回：首页经典的 Consolas 字体代码风标题</li>
         </ul>
     </div>
 
@@ -134,11 +118,9 @@
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });
     </script>
 </body>
-
 </html>
