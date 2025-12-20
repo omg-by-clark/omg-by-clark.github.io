@@ -1,72 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <title>吐槽广场 Plaza</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        :root {
-            --bg: #fffdf5;
-            --text: #333;
-            --card: #fff;
-            --brand: #ff4757;
-        }
-
-        body.dark {
-            --bg: #1a1a1a;
-            --text: #f0f0f0;
-            --card: #2d2d2d;
-            --brand: #ff6b81;
-        }
-
-        body {
-            font-family: sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .card {
-            background: var(--card);
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        button:active {
-            transform: scale(1.1);
-            transition: 0.1s;
-        }
-
-        .hot-btn {
-            background: var(--brand);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        :root { --bg: #fffdf5; --text: #333; --card: #fff; --brand: #ff4757; }
+        body.dark { --bg: #1a1a1a; --text: #f0f0f0; --card: #2d2d2d; --brand: #ff6b81; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        .card { background: var(--card); margin: 15px 0; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* 🔥 1.1 倍缩放动效 */
+        button:active, .back-link:active { transform: scale(1.1); transition: 0.1s; }
+        
+        .hot-btn { background: var(--brand); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .back-link { display: inline-block; margin-top: 20px; color: var(--brand); text-decoration: none; font-weight: bold; }
     </style>
 </head>
-
 <body>
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h1 data-zh="👀 吐槽广场" data-en="👀 Rant Plaza">👀 吐槽广场</h1>
         <button id="hBtn" class="hot-btn" onclick="toggleHot()" data-zh="🔥 热搜" data-en="🔥 Top 3">🔥 热搜</button>
     </div>
+
     <div id="list">Loading...</div>
+
+    <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
     <script>
+        // 初始化 LeanCloud
         AV.init({ appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", appKey: "O9DYEDbkHLvecHlEact4ANKO", serverURL: "https://m7kenaw2.api.lncldglobal.com" });
+        
         const lang = localStorage.getItem('lang') || 'zh';
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
         let isHot = false;
+
         async function render() {
             const list = document.getElementById('list');
             const myLiked = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
@@ -76,29 +45,37 @@
                 const posts = await query.find();
                 list.innerHTML = posts.map(p => {
                     const isLiked = myLiked.includes(p.id);
-                    let bStyle = document.body.classList.contains('dark') ?
-                        (isLiked ? 'background:#f0f0f0; color:#111;' : 'background:#333; color:#f0f0f0;') :
+                    let bStyle = document.body.classList.contains('dark') ? 
+                        (isLiked ? 'background:#f0f0f0; color:#111;' : 'background:#333; color:#f0f0f0;') : 
                         (isLiked ? 'background:#333; color:#fff;' : 'background:#fff; color:inherit;');
                     return `<div class="card">
-                        <div><b>${p.get('title')}</b><br><small>👤 ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small></div>
-                        <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; font-weight:bold;">👍 ${p.get('likes') || 0}</button>
+                        <div><b>${p.get('title')}</b><br><small>👤 ${p.get('nickname') || '路人'} | 👍 ${p.get('likes') || 0}</small></div>
+                        <button onclick="toggleLike('${p.id}')" style="${bStyle} border:1px solid #ddd; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">👍 ${p.get('likes') || 0}</button>
                     </div>`;
                 }).join('');
-            } catch (err) {
+            } catch (err) { 
                 list.innerHTML = `<p style="color:red;">Error: ${err.message}. <br>🍎 苹果手机请在 Safari 设置中关闭“隐藏 IP 地址”。</p>`;
             }
         }
+
         async function toggleLike(id) {
             let likedIds = JSON.parse(localStorage.getItem('my_liked_ids')) || [];
             const idx = likedIds.indexOf(id);
             const post = AV.Object.createWithoutData('Post', id);
             idx === -1 ? (post.increment('likes', 1), likedIds.push(id)) : (post.increment('likes', -1), likedIds.splice(idx, 1));
-            await post.save(); localStorage.setItem('my_liked_ids', JSON.stringify(likedIds)); render();
+            await post.save(); 
+            localStorage.setItem('my_liked_ids', JSON.stringify(likedIds)); 
+            render();
         }
+
         function toggleHot() { isHot = !isHot; render(); }
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+        // 执行双语
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+
         render();
     </script>
 </body>
-
 </html>
