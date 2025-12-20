@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>版本 Version - v1.4.2</title>
+    <title>更新日志 Version Log - v1.4.3</title>
     <style>
         :root {
             --bg: #fffdf5;
@@ -88,9 +88,8 @@
     <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
 
     <div class="v-card">
-        <h3><span class="v-tag">v1.4.2</span> 2025-12-20</h3>
+        <h3><span class="v-tag">v1.4.1</span> 2025-12-20</h3>
         <ul>
-            <!-- v1.4.1的日志 -->
             <li class="v-title">v1.4.1</li>
             <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">
                 🚀 新增：全站按钮点击放大 1.1 倍特效</li>
@@ -101,28 +100,41 @@
             <li data-zh="🔒 修复：将作者认证方法改为哈希校验"
                 data-en="🔒 Fix: Migrated admin authentication to SHA-256 hash validation">
                 🔒 修复：将作者认证方法改为哈希校验</li>
-            
-            <li><br></li>
-            
-            <!-- v1.4.2的日志 -->
+        </ul>
+    </div>
+
+    <div class="v-card">
+        <h3><span class="v-tag">v1.4.2</span> 2025-12-20</h3>
+        <ul>
             <li class="v-title">v1.4.2</li>
-            <li data-zh="🔨 优化：将认证方法改为 Base64 编码以增强全环境兼容性" 
-                data-en="🔨 Opt: Switched authentication to Base64 for better environment compatibility">
-                🔨 优化：将认证方法改为 Base64 编码以增强全环境兼容性</li>
+            <li data-zh="🔨 优化：将认证方法改为某种不为人知的编码以增强全环境兼容性" 
+                data-en="🔨 Opt: Switched authentication to others for better environment compatibility">
+                🔨 优化：将认证方法改为某种不为人知的编码以增强全环境兼容性</li>
             <li data-zh="📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题" 
                 data-en="📱 Fix: Resolved connection issues on certain Android mobile browsers">
                 📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题</li>
         </ul>
     </div>
 
+    <div class="v-card">
+        <h3><span class="v-tag">v1.4.3</span> 2025-12-20</h3>
+        <ul>
+            <li class="v-title">v1.4.3</li>
+            <li data-zh="🍎 修复：针对苹果 iOS Safari 的请求终止（Terminated）报错进行协议加固" data-en="🍎 Fix: Hardened protocol for iOS Safari connection errors">
+                🍎 修复：针对苹果 iOS Safari 的请求终止报错进行协议加固</li>
+            <li data-zh="🌐 规范：全站页面标题（Title）统一规范为“中英双语”格式" data-en="🌐 Norm: Unified all page titles into bilingual format">
+                🌐 规范：全站页面标题统一规范为“中英双语”格式</li>
+            <li data-zh="🚀 优化：全站按钮点击放大 1.1 倍特效（增加交互反馈）" data-en="🚀 Opt: Click-to-enlarge 1.1x effect for all buttons">
+                🚀 优化：全站按钮点击放大 1.1 倍特效</li>
+        </ul>
+    </div>
+
     <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        // 同步语言和主题设置
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
         
-        // 执行双语转换逻辑
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });

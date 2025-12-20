@@ -1,48 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"><title>管理中心 Admin</title>
+    <meta charset="UTF-8">
+    <title>管理后台 Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .post-card { background: #1e1e1e; border: 1px solid #333; padding: 20px; margin-bottom: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-group { display: flex; gap: 10px; }
-        button { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        body { background: #121212; color: #fff; font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .post-card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
         button:active { transform: scale(1.1); }
-        .btn-cmt { background: #28a745; color: white; }
-        .btn-zero { background: #ffa502; color: white; }
-        .btn-del { background: #ff4757; color: white; }
+        .btn-del { background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2 data-zh="👑 全站后台管理中心" data-en="👑 Admin Dashboard">👑 全站后台管理中心</h2>
+    <script>
+        // 🔥 权限双重校验：localStorage + window.name
+        if (localStorage.getItem('isAdmin') !== 'true' && window.name !== 'isAdmin_true') {
+            window.location.href = 'index.html';
+        }
+    </script>
+    <h2>👑 Admin Dashboard</h2>
     <div id="admin-list">Loading...</div>
-    <br><a href="index.html" style="color:#888; text-decoration: none;">🏠 返回首页</a>
+    <br><a href="index.html" style="color:#888; text-decoration: none;">🏠 Home</a>
 
     <script>
         AV.init({ appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", appKey: "O9DYEDbkHLvecHlEact4ANKO", serverURL: "https://m7kenaw2.api.lncldglobal.com" });
-        const lang = localStorage.getItem('lang') || 'zh';
-
-        document.querySelectorAll('[data-zh]').forEach(el => { el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en')); });
-
         async function draw() {
             try {
-                const query = new AV.Query('Post');
-                query.descending('createdAt');
+                const query = new AV.Query('Post').descending('createdAt');
                 const posts = await query.find();
                 document.getElementById('admin-list').innerHTML = posts.map(p => `
                     <div class="post-card">
-                        <div><b>${p.get('title')}</b><br><small>Author: ${p.get('nickname')} | Likes: ${p.get('likes') || 0}</small></div>
-                        <div class="btn-group">
-                            <button class="btn-cmt" onclick="location.href='content.html?id=${p.id}'">${lang==='zh'?'管理评论':'Manage Comments'}</button>
-                            <button class="btn-zero" onclick="resetLikes('${p.id}')">${lang==='zh'?'赞数清零':'Reset Likes'}</button>
-                            <button class="btn-del" onclick="realDelete('${p.id}')">${lang==='zh'?'删除帖子':'Delete Post'}</button>
-                        </div>
+                        <div><b>${p.get('title')}</b><br><small>By: ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small></div>
+                        <button class="btn-del" onclick="del('${p.id}')">Delete</button>
                     </div>`).join('');
             } catch (err) { console.error(err); }
         }
-        async function resetLikes(id) { if(confirm('赞数清零？')) { const post = AV.Object.createWithoutData('Post', id); post.set('likes', 0); await post.save(); draw(); } }
-        async function realDelete(id) { if(confirm('删除帖子？')) { await AV.Object.createWithoutData('Post', id).destroy(); draw(); } }
+        async function del(id) { if(confirm('确定删除此贴？')) { await AV.Object.createWithoutData('Post', id).destroy(); draw(); } }
         draw();
     </script>
 </body>
