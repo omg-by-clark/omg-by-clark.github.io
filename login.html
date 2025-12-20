@@ -105,20 +105,21 @@
             });
         }
 
-        async function go() {
+
+        const input = document.getElementById('pw').value.trim();
+        if (!input) return;
+
+        function go() {
             const input = document.getElementById('pw').value.trim();
             if (!input) return;
 
-            // 1. 将输入的密码进行哈希处理
-            const msgBuffer = new TextEncoder().encode(input);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            // 进行xxxxxx编码
+            const encodedInput = btoa(input);
 
-            // 2. 预设的 ClarkSuperPassword 密文
-            const correctHash = "f065db489aa64019ebcf3d9b236c074479e85cd41ee638fb971b804b538f0e3d";
-            // 为了防止密码泄露，使用哈希值进行计算和验证
-            if (inputHash === correctHash) {
+            // 预设的xxxxxx字符串
+            const correctXXXXXX = "Q2xhcmtTdXBlclBhc3N3b3Jk";
+
+            if (encodedInput === correctXXXXXX) {
                 // 验证通过
                 sessionStorage.setItem('isAdmin', 'true');
                 window.location.href = 'author.html';
@@ -127,6 +128,7 @@
                 alert(lang === 'zh' ? '验证失败！' : 'Auth Failed!');
             }
         }
+
 
         // 页面加载即刻执行翻译
         applyLanguage();

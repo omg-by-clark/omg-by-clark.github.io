@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>版本 Version - v1.4.1</title>
+    <title>版本 Version - v1.4.2</title>
     <style>
         :root {
             --bg: #fffdf5;
@@ -53,6 +53,15 @@
             margin-right: 10px;
         }
 
+        .v-title {
+            list-style: none;
+            font-weight: bold;
+            color: var(--brand);
+            margin-left: -20px;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
         .back-link {
             color: var(--brand);
             text-decoration: none;
@@ -64,6 +73,14 @@
         .back-link:active {
             transform: scale(1.1);
         }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
@@ -71,25 +88,39 @@
     <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
 
     <div class="v-card">
-        <h3><span class="v-tag">v1.4.1</span> 2025-12-20</h3>
+        <h3><span class="v-tag">v1.4.2</span> 2025-12-20</h3>
         <ul>
+            <li class="v-title">v1.4.1</li>
             <li data-zh="🚀 新增：全站按钮点击放大 1.1 倍特效" data-en="🚀 New: Click-to-enlarge (1.1x) on all buttons">
-                🚀 新增：全站按钮点击放大1.1 倍特效</li>
+                🚀 新增：全站按钮点击放大 1.1 倍特效</li>
             <li data-zh="✨ 新增：🧾 更新日志页面" data-en="✨ New: Version Log page">
                 ✨ 新增：🧾 更新日志页面</li>
             <li data-zh="🌓 修复：深色模式点赞按钮颜色反转逻辑" data-en="🌓 Fix: Dark mode like button color inversion">
-                🌓修复：深色模式点赞按钮颜色反转逻辑</li>
+                🌓 修复：深色模式点赞按钮颜色反转逻辑</li>
             <li data-zh="🔒 修复：将作者认证方法改为哈希校验"
                 data-en="🔒 Fix: Migrated admin authentication to SHA-256 hash validation">
                 🔒 修复：将作者认证方法改为哈希校验</li>
+            
+            <li><br></li>
+            
+            <li class="v-title">v1.4.2</li>
+            <li data-zh="🔨 优化：将认证方法改为 Base64 编码以增强全环境兼容性" 
+                data-en="🔨 Opt: Switched authentication to Base64 for better environment compatibility">
+                🔨 优化：将认证方法改为 Base64 编码以增强全环境兼容性</li>
+            <li data-zh="📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题" 
+                data-en="📱 Fix: Resolved connection issues on certain Android mobile browsers">
+                📱 修复：解决安卓浏览器下部分环境下无法连接云端的问题</li>
         </ul>
     </div>
 
     <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
+        // 同步语言和主题设置
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
+        // 执行双语转换逻辑
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });
