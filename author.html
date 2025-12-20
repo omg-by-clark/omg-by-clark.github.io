@@ -2,40 +2,91 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>管理后台 Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 Admin Dashboard - omg-by-Clark</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
+        /* 保持深色管理风格 */
         body { background: #121212; color: #fff; font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         .post-card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        button:active { transform: scale(1.1); }
+        
+        /* 1.1倍果冻缩放特效 */
+        button:active, .back-link:active { transform: scale(1.1); transition: 0.1s; }
+        
         .btn-del { background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .back-link { color: #888; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 20px; }
     </style>
 </head>
 <body>
     <script>
-        // 🔥 权限双重校验：localStorage + window.name
+        // 权限校验逻辑
         if (localStorage.getItem('isAdmin') !== 'true' && window.name !== 'isAdmin_true') {
             window.location.href = 'index.html';
         }
     </script>
-    <h2>👑 Admin Dashboard</h2>
-    <div id="admin-list">Loading...</div>
-    <br><a href="index.html" style="color:#888; text-decoration: none;">🏠 Home</a>
+
+    <h2 data-zh="👑 管理员后台" data-en="👑 Admin Dashboard">👑 管理员后台</h2>
+    
+    <div id="admin-list" data-zh="加载中..." data-en="Loading...">加载中...</div>
+    
+    <br>
+    <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
     <script>
-        AV.init({ appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", appKey: "O9DYEDbkHLvecHlEact4ANKO", serverURL: "https://m7kenaw2.api.lncldglobal.com" });
+        const lang = localStorage.getItem('lang') || 'zh';
+        
+        // 初始化 LeanCloud
+        AV.init({ 
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI", 
+            appKey: "O9DYEDbkHLvecHlEact4ANKO", 
+            serverURL: "https://m7kenaw2.api.lncldglobal.com" 
+        });
+
+        // 统一应用语言翻译
+        function applyLang() {
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+            });
+        }
+
         async function draw() {
+            const listEl = document.getElementById('admin-list');
             try {
                 const query = new AV.Query('Post').descending('createdAt');
                 const posts = await query.find();
-                document.getElementById('admin-list').innerHTML = posts.map(p => `
+                
+                if (posts.length === 0) {
+                    listEl.innerHTML = `<p style="color:#888">${lang === 'zh' ? '暂无帖子' : 'No posts found'}</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = posts.map(p => `
                     <div class="post-card">
-                        <div><b>${p.get('title')}</b><br><small>By: ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small></div>
-                        <button class="btn-del" onclick="del('${p.id}')">Delete</button>
+                        <div>
+                            <b>${p.get('title')}</b>
+                            <br>
+                            <small>${lang === 'zh' ? '作者' : 'By'}: ${p.get('nickname')} | 👍 ${p.get('likes') || 0}</small>
+                        </div>
+                        <button class="btn-del" onclick="del('${p.id}')">
+                            ${lang === 'zh' ? '删除' : 'Delete'}
+                        </button>
                     </div>`).join('');
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                listEl.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`; 
+            }
         }
-        async function del(id) { if(confirm('确定删除此贴？')) { await AV.Object.createWithoutData('Post', id).destroy(); draw(); } }
+
+        // 删除逻辑与中文确认弹窗
+        async function del(id) { 
+            const msg = lang === 'zh' ? '确定要删除此贴吗？此操作不可撤销！' : 'Are you sure? This cannot be undone!';
+            if(confirm(msg)) { 
+                await AV.Object.createWithoutData('Post', id).destroy(); 
+                draw(); 
+            } 
+        }
+
+        // 启动页面
+        applyLang();
         draw();
     </script>
 </body>
