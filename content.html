@@ -3,31 +3,50 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>详情 Details - omg-by-Clark</title>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <style>
         :root {
-            --bg: #fff;
+            --bg: #fffdf5;
             --text: #333;
             --brand: #ff4757;
+            --card: #fff;
         }
 
+        /* 深色模式变量 */
         body.dark {
             --bg: #1a1a1a;
             --text: #f0f0f0;
             --brand: #ff6b81;
+            --card: #2d2d2d;
         }
 
         body {
             font-family: sans-serif;
             max-width: 600px;
-            margin: 30px auto;
+            margin: 0 auto;
             padding: 20px;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            transition: 0.3s;
         }
 
+        h1 { color: var(--brand); }
+
+        /* 文章内容区域 */
+        #c {
+            white-space: pre-wrap;
+            font-size: 1.1em;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            min-height: 100px;
+        }
+
+        /* 评论区样式 */
         .cmt-box {
             margin-top: 50px;
             border-top: 2px solid var(--brand);
@@ -39,13 +58,18 @@
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
+        /* 输入框适配 */
         input {
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #ddd;
-            margin-right: 5px;
+            background: var(--card);
+            color: var(--text);
         }
 
         .btn-send {
@@ -55,77 +79,140 @@
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-send:active { transform: scale(1.1); }
+
+        /* 底部导航 */
+        .nav-links {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
-    <h1 id="t"></h1>
-    <div id="info"
-        style="color:#888; font-size:0.9em; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-    </div>
-    <div id="c" style="white-space: pre-wrap; font-size: 1.1em;">加载中...</div>
+    <h1 id="t">加载中...</h1>
+    <div id="info" style="color:#888; font-size:0.9em; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
+    
+    <div id="c">正在从云端抓取吐槽内容...</div>
 
     <div class="cmt-box">
         <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
         <div id="cmt-list"></div>
-        <div style="margin-top:20px; display:flex;">
+        
+        <div style="margin-top:20px; display:flex; gap:10px;">
             <input type="text" id="cN" data-zh-ph="昵称" data-en-ph="Name" style="width:80px;">
             <input type="text" id="cC" data-zh-ph="神评由此诞生..." data-en-ph="Write a comment..." style="flex:1">
             <button onclick="addCmt()" class="btn-send" data-zh="发送" data-en="Send">发送</button>
         </div>
     </div>
-    <br><a href="othersPost.html" style="color:var(--brand); text-decoration:none;" data-zh="⬅️ 返回广场"
-        data-en="⬅️ Back">⬅️ 返回广场</a>
+
+    <div class="nav-links">
+        <a href="othersPost.html" style="color:var(--brand);" data-zh="⬅️ 返回广场" data-en="⬅️ Back to Plaza">⬅️ 返回广场</a>
+        <a href="index.html" style="color:#888;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    </div>
 
     <script>
-    // 1. 电源置顶，统一使用 4ANKO
-    AV.init({
-        appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
-        appKey: "O9DYEDbkHLvecHlEact4ANKO",
-        serverURL: "https://m7kenaw2.api.lncldglobal.com"
-    });
+        // 1. 初始化 LeanCloud
+        AV.init({
+            appId: "M7KeNAw2myFEaXvSEJPbtPpA-MdYXbMMI",
+            appKey: "O9DYEDbkHLvecHlEact4ANKO",
+            serverURL: "https://m7kenaw2.api.lncldglobal.com"
+        });
 
-    const id = new URLSearchParams(window.location.search).get('id');
-    const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+        const id = new URLSearchParams(window.location.search).get('id');
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const lang = localStorage.getItem('lang') || 'zh';
 
-    async function load() {
-        try {
-            const query = new AV.Query('Post');
-            const p = await query.get(id); // 获取帖子内容
-            document.getElementById('t').innerText = p.get('title');
-            document.getElementById('info').innerText = `👤 ${p.get('nickname')} | 📅 ${p.createdAt.toLocaleString()}`;
-            document.getElementById('c').innerText = p.get('content');
-            
-            // 加载帖子成功后，再加载评论
-            await loadCmts();
-        } catch (err) {
-            // 🔥 如果失败，把错误显示在原本“加载中”的位置
-            document.getElementById('c').innerHTML = `<p style="color:red;">❌ 加载失败：${err.message}</p>`;
+        // 2. 应用主题与语言
+        function applySettings() {
+            if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+            });
+            document.querySelectorAll('[data-zh-ph]').forEach(el => {
+                el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
+            });
         }
-    }
 
-    async function loadCmts() {
-        try {
-            const query = new AV.Query('Comment');
-            query.equalTo('postId', id);
-            query.ascending('createdAt');
-            const cmts = await query.find();
-            
-            document.getElementById('cmt-list').innerHTML = cmts.map(c => `
-                <div class="cmt-item" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><b>${c.get('nickname')}:</b> ${c.get('content')}</div>
-                    ${isAdmin ? `<button onclick="delCmt('${c.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:0.8em;">删除</button>` : ''}
-                </div>`).join('') || '<p style="color:#888">暂无评论</p>';
-        } catch (err) {
-            document.getElementById('cmt-list').innerHTML = `<p style="color:red;">评论区加载失败：${err.message}</p>`;
+        // 3. 加载帖子内容
+        async function load() {
+            const contentEl = document.getElementById('c');
+            if (!id) {
+                contentEl.innerHTML = `<p style="color:red;">❌ 错误：未识别到帖子ID。</p>`;
+                return;
+            }
+
+            try {
+                const query = new AV.Query('Post');
+                const p = await query.get(id);
+                document.getElementById('t').innerText = p.get('title');
+                document.getElementById('info').innerText = `👤 ${p.get('nickname')} | 📅 ${p.createdAt.toLocaleString()}`;
+                contentEl.innerText = p.get('content');
+                
+                await loadCmts();
+            } catch (err) {
+                contentEl.innerHTML = `<p style="color:red;">❌ 加载失败：${err.message}</p>`;
+            }
         }
-    }
 
-    // ... 其他 addCmt 和 delCmt 函数保持不变 ...
-    if(localStorage.getItem('theme')==='dark') document.body.className='dark';
-    load();
-</script>
+        // 4. 加载评论列表
+        async function loadCmts() {
+            try {
+                const query = new AV.Query('Comment');
+                query.equalTo('postId', id);
+                query.ascending('createdAt');
+                const cmts = await query.find();
+                
+                document.getElementById('cmt-list').innerHTML = cmts.map(c => `
+                    <div class="cmt-item">
+                        <div><b>${c.get('nickname')}:</b> ${c.get('content')}</div>
+                        ${isAdmin ? `<button onclick="delCmt('${c.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:0.8em;">删除</button>` : ''}
+                    </div>`).join('') || `<p style="color:#888">${lang === 'zh' ? '暂无评论' : 'No comments yet'}</p>`;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // 5. 新增评论
+        async function addCmt() {
+            const n = document.getElementById('cN').value.trim();
+            const c = document.getElementById('cC').value.trim();
+            if (!n || !c) return alert(lang === 'zh' ? '请填写完整' : 'Please fill all fields');
+
+            try {
+                const Comment = AV.Object.extend('Comment');
+                const cmt = new Comment();
+                cmt.set('postId', id);
+                cmt.set('nickname', n);
+                cmt.set('content', c);
+                await cmt.save();
+                document.getElementById('cC').value = '';
+                loadCmts();
+            } catch (err) {
+                alert('评论失败：' + err.message);
+            }
+        }
+
+        // 6. 删除评论 (管理员权限)
+        async function delCmt(cmtId) {
+            if (confirm(lang === 'zh' ? '确定删除？' : 'Delete this?')) {
+                await AV.Object.createWithoutData('Comment', cmtId).destroy();
+                loadCmts();
+            }
+        }
+
+        // 启动
+        applySettings();
+        load();
+    </script>
 </body>
-
 </html>

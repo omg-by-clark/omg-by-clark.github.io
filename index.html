@@ -8,21 +8,11 @@
         :root { --bg: #fffdf5; --text: #333; --brand: #ff4757; }
         body.dark { --bg: #121212; --text: #f1f2f6; --brand: #ff6b81; }
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background: var(--bg); color: var(--text); transition: 0.5s; text-align: center; }
-        
-        /* 🔥 找回你的 Consolas 经典标题 */
-        h1 { 
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-            color: var(--brand); 
-            padding: 15px; 
-            border: 4px solid var(--brand); 
-            display: inline-block; 
-            border-radius: 12px; 
-            box-shadow: 6px 6px 0px var(--brand); 
-        }
-
+        /* 🔥 找回 Consolas 经典标题 */
+        h1 { font-family: Consolas, Monaco, monospace; color: var(--brand); padding: 15px; border: 4px solid var(--brand); display: inline-block; border-radius: 12px; box-shadow: 6px 6px 0px var(--brand); }
         .main-nav { margin-top: 50px; display: flex; flex-direction: column; gap: 20px; }
         .btn-main { text-decoration: none; padding: 20px; font-size: 1.2em; font-weight: bold; border-radius: 15px; color: white; transition: 0.1s; }
-        .btn-main:active { transform: scale(1.1); } /* 1.1倍缩放 */
+        .btn-main:active { transform: scale(1.1); }
         .btn-post { background: linear-gradient(135deg, #ff4757, #ee5253); }
         .btn-view { background: linear-gradient(135deg, #ffa502, #ff7f50); }
         .btn-version { background: linear-gradient(135deg, #3867d6, #4b7bec); }
