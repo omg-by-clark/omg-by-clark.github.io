@@ -8,9 +8,9 @@ const postId = urlParams.get('id');
 function getNickStyle(inventory) {
     if (!inventory) return '';
     const now = new Date();
-    // ID 100: 改良版彩虹色
+    // ID 100: 彩虹色昵称
     if (inventory['100'] && new Date(inventory['100']) > now) {
-        return 'background: linear-gradient(to right, #f38ba8, #fab387, #f9e2af, #c4d695, #a6e3a1, #89dceb, #89b4fa, #cba6f7); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+        return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
     }
     // ID 101: 极客蓝
     if (inventory['101'] && new Date(inventory['101']) > now) {

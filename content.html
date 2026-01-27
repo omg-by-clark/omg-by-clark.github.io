@@ -90,7 +90,6 @@
             transform: scale(1.1);
         }
 
-        /* === 🏆 等级勋章 - 真正全量补完版 === */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -102,24 +101,72 @@
             display: inline-block;
         }
 
-        .lv-log { background: #8b5a2b; color: white; } /* 原木 */
-        .lv-iron { background: #4a4a4a; color: white; } /* 黑铁 */
-        .lv-bronze { background: #cd7f32; color: white; } /* 青铜 (补回) */
-        .lv-silver { background: #e0e0e0; color: #333; } /* 白银 */
-        .lv-gold { background: #ffd700; color: #856404; } /* 黄金 */
-        .lv-diamond { background: #b9f2ff; color: #007bff; } /* 钻石 */
-        
-        .lv-king { /* 王者 */
-            background: linear-gradient(45deg, #ffd700, #ffaa00);
-            color: #fff; padding-right: 18px;
+        .lv-log {
+            background: #8b5a2b;
+            color: white;
         }
-        .lv-king::after { content: "V"; position: absolute; right: 4px; font-style: italic; font-weight: 900; }
 
-        .lv-epic { /* 史诗 */
-            background: linear-gradient(45deg, #a333c8, #6d28d9);
-            color: white; padding-right: 18px;
+        /* 原木 */
+        .lv-iron {
+            background: #4a4a4a;
+            color: white;
         }
-        .lv-epic::after { content: "V"; position: absolute; right: 4px; font-style: italic; font-weight: 900; }
+
+        /* 黑铁 */
+        .lv-bronze {
+            background: #cd7f32;
+            color: white;
+        }
+
+        /* 青铜 */
+        .lv-silver {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* 白银 */
+        .lv-gold {
+            background: #ffd700;
+            color: #856404;
+        }
+
+        /* 黄金 */
+        .lv-diamond {
+            background: #b9f2ff;
+            color: #007bff;
+        }
+
+        /* 钻石 */
+
+        .lv-king {
+            /* 王者 */
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #fff;
+            padding-right: 18px;
+        }
+
+        .lv-king::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            font-style: italic;
+            font-weight: 900;
+        }
+
+        .lv-epic {
+            /* 史诗 */
+            background: linear-gradient(45deg, #a333c8, #6d28d9);
+            color: white;
+            padding-right: 18px;
+        }
+
+        .lv-epic::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            font-style: italic;
+            font-weight: 900;
+        }
 
         .nav-links {
             margin-top: 40px;
@@ -138,7 +185,8 @@
 
 <body>
     <h1 id="t">...</h1>
-    <div id="info" style="color:#888; font-size:0.9em; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
+    <div id="info"
+        style="color:#888; font-size:0.9em; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
     </div>
 
     <div id="c">Loading...</div>

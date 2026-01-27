@@ -182,7 +182,7 @@
 
             listEl.innerHTML = posts.map(p => `
                 <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small> | ❤️ ${p.likes || 0}
+                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small> | 👍 ${p.likes || 0}
                     <div class="btn-group">
                         <button class="btn-cmt" onclick="loadComments(${p.id}, '${p.title}')">💬 ${lang === 'zh' ? "管理评论" : "Comments"}</button>
                         <button class="btn-reset" onclick="resetPostLikes(${p.id})">📍 ${lang === 'zh' ? "帖子赞清零" : "Reset Likes"}</button>
