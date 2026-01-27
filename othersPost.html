@@ -378,7 +378,7 @@
         async function render() {
             // 🚀 计时开始
             const startTime = performance.now();
-            console.log("%c[System] 开始请求 Supabase 数据...", "color: #1e66f5; font-weight: bold;");
+            console.log("%c[加载] 开始请求数据...", "color: #1e66f5; font-weight: bold;");
 
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const lang = localStorage.getItem('lang') || 'zh';
@@ -428,14 +428,14 @@
                 const endTime = performance.now();
                 const totalTime = (endTime - startTime).toFixed(2);
                 console.log(
-                    `%c[Success] 渲染完成！\n%c加载耗时: %c${totalTime}ms`,
+                    `%c[成功] 渲染完成！\n%c加载耗时: %c${totalTime}ms`,
                     "color: #40a02b; font-weight: bold; font-size: 14px;",
                     "color: #333;",
                     "color: #ff4757; font-weight: bold; font-size: 16px; text-decoration: underline;"
                 );
 
                 if (totalTime > 800) {
-                    console.warn(`[Warning] 加载超过 ${totalTime}ms，建议检查网络延迟或优化数据库索引。`);
+                    console.warn(`[警告] 加载超过 ${totalTime}ms，建议检查网络。`);
                 }
 
             } catch (err) {
