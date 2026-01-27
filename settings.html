@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 Settings - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #ffffff;
+            --brand: #ff4757;
+            --green: #28a745;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --card: #2d2d2d;
+            --brand: #ff6b81;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        h2 {
+            color: var(--brand);
+            border-bottom: 2px solid var(--brand);
+            padding-bottom: 12px;
+            text-align: center;
+            font-size: 1.6rem;
+            margin-top: 30px;
+        }
+
+        .section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            margin: 25px 0;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s;
+        }
+
+        .option {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--brand);
+        }
+
+        /* 🚀 按钮特效：保持 1.1 倍点击放大 */
+        .btn-save {
+            width: 100%;
+            padding: 16px;
+            background: var(--green);
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-save:active {
+            transform: scale(1.1);
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: transform 0.1s;
+        }
+
+        .cancel-link:active {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <h2 data-zh="⚙️ 系统设置" data-en="⚙️ System Settings">⚙️ 系统设置</h2>
+
+    <div class="section">
+        <div class="option">
+            <span data-zh="语言 (Language)" data-en="Language">语言 (Language)</span>
+            <select id="langSelect">
+                <option value="zh">简体中文</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="option">
+            <span data-zh="显示模式" data-en="Display Mode">显示模式</span>
+            <select id="themeSelect">
+                <option value="light">浅色 (Light)</option>
+                <option value="dark">深色 (Dark)</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-save" onclick="save()" data-zh="保存设置" data-en="Save Settings">保存设置</button>
+
+    <a href="home.html" class="cancel-link" data-zh="🏠 取消返回" data-en="🏠 Cancel">🏠 取消返回</a>
+
+    <script>
+        /**
+         * 初始化状态：读取本地存储偏好
+         */
+        const savedLang = localStorage.getItem('lang') || 'zh';
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.getElementById('langSelect').value = savedLang;
+        document.getElementById('themeSelect').value = savedTheme;
+
+        /**
+         * 保存逻辑：更新本地存储并跳转
+         */
+        function save() {
+            const lang = document.getElementById('langSelect').value;
+            const theme = document.getElementById('themeSelect').value;
+            localStorage.setItem('lang', lang);
+            localStorage.setItem('theme', theme);
+
+            // 双语保存成功提示
+            const msg = lang === 'zh' ? '✅ 设置已保存！' : '✅ Settings Saved!';
+            alert(msg);
+            window.location.href = 'home.html';
+        }
+
+        /**
+         * 实时应用：根据当前存储渲染主题和翻译
+         */
+        function apply() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            const mode = localStorage.getItem('theme') || 'light';
+
+            // 切换主题样式类
+            document.body.className = (mode === 'dark' ? 'dark' : '');
+
+            // 批量应用双语翻译文本
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                const zhText = el.getAttribute('data-zh');
+                const enText = el.getAttribute('data-en');
+                el.innerText = (lang === 'zh' ? zhText : enText);
+            });
+        }
+
+        // 初始化渲染
+        apply();
+    </script>
+</body>
+
+</html>

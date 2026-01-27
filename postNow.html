@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编写吐槽 - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --brand: #ff4757;
+            /* ^红色 */
+            --green: #6fcf2f;
+            /* ^使用 Catppuccin Frappe 绿色的改版 */
+        }
+
+        body.dark {
+            --bg: #121212;
+            --text: #f1f2f6;
+            --brand: #ff6b81;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .id-box {
+            margin-bottom: 20px;
+            opacity: 0.8;
+            font-size: 0.9em;
+            text-align: left;
+            width: 100%;
+        }
+
+        input,
+        textarea {
+            font-family: Microsoft YaHei, Pingfang SC;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        body.dark input,
+        body.dark textarea {
+            font-family: Microsoft YaHei, Pingfang SC;
+            background: #1e1e1e;
+            border-color: #444;
+            color: #fff;
+        }
+
+        /* 立即发布按钮：采用你截图里的绿色 */
+        .btn-post {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        /* 返回首页按钮：采用你其他页面的红色样式 */
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: 0.1s;
+        }
+
+        /* 统一 1.1 倍缩放 */
+        .btn-post:active,
+        .back-link:active {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 data-zh="💥 编写吐槽" data-en="💥 Write Rant">💥 编写吐槽</h1>
+
+        <div class="id-box">
+            <span data-zh="当前身份：" data-en="Identity: ">当前身份：</span>
+            <b id="who-am-i">...</b>
+        </div>
+
+        <form id="pForm">
+            <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..." placeholder="起个标题……" required>
+            <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
+                required></textarea>
+
+            <button type="submit" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
+        </form>
+
+        <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script>
+        // 初始化：检查登录 & 深色模式
+        const user = localStorage.getItem('username');
+        const lang = localStorage.getItem('lang') || 'zh';
+
+        function init() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+            if (!user) {
+                alert(lang === 'zh' ? "请先登录！" : "Please login first!");
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('who-am-i').innerText = user;
+
+            // 翻译
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+            });
+            document.querySelectorAll('[data-zh-ph]').forEach(el => {
+                el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
+            });
+        }
+        init();
+
+        // 提交逻辑
+        document.getElementById('pForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const title = document.getElementById('t').value.trim();
+            const content = document.getElementById('c').value.trim();
+
+            // 1. 发帖
+            const { error: postErr } = await _supabase.from('posts').insert([{
+                nickname: user,
+                title: title,
+                content: content,
+                likes: 0
+            }]);
+
+            if (postErr) {
+                alert("Error: " + postErr.message);
+            } else {
+                // 2. 自动加 10 分
+                const { data: userData } = await _supabase.from('users').select('points').eq('username', user).single();
+                const newPts = (userData ? userData.points : 0) + 10;
+
+                await _supabase.from('users').update({ points: newPts }).eq('username', user);
+                localStorage.setItem('userPoints', newPts);
+
+                alert(lang === 'zh' ? "发布成功！积分+10" : "Success! Points +10");
+                window.location.href = 'othersPost.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

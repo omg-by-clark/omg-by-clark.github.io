@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>首页 Home - omg-by-Clark</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+    <h1>omg-by-Clark.github.io</h1>
+    <p data-zh="🔥 吐槽能量站 v1.8" data-en="🔥 Rant Hub v1.8">🔥 吐槽能量站 v1.8</p>
+
+    <nav class="main-nav">
+        <a href="postNow.html" class="btn-main btn-post" data-zh="🤬 我要发帖" data-en="🤬 Post Now">🤬 我要发帖</a>
+        <a href="othersPost.html" class="btn-main btn-view" data-zh="👀 随便看看" data-en="👀 Plaza">👀 随便看看</a>
+        <a href="version.html" class="btn-main btn-version" data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</a>
+        <a href="info.html" class="btn-main btn-info" data-zh="👤 个人信息" data-en="👤 Info">👤 个人信息</a>
+    </nav>
+
+    <footer class="footer">
+        <a href="settings.html" class="footer-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
+        <a href="author.html" id="admin-link" class="footer-link" data-zh="👑 作者" data-en="👑 Admin">👑 作者</a>
+        <a href="javascript:void(0)" onclick="logout()" class="footer-link" style="color:#ff4757;" data-zh="🚪 退出登录"
+            data-en="🚪 Logout">🚪 退出登录</a>
+    </footer>
+
+    <script>
+        /**
+         * 核心：应用全局主题、语言及权限控制
+         */
+        function apply() {
+            // 1. 同步深色模式
+            const theme = localStorage.getItem('theme') || 'light';
+            document.body.className = (theme === 'dark') ? 'dark' : '';
+
+            // 2. 同步语言翻译
+            const lang = localStorage.getItem('lang') || 'zh';
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                const zh = el.getAttribute('data-zh');
+                const en = el.getAttribute('data-en');
+                el.innerText = (lang === 'zh') ? zh : en;
+            });
+
+            // 3. 核心权限：作者按钮的显隐控制
+            const currentUser = localStorage.getItem('username');
+            const adminLink = document.getElementById('admin-link');
+            const adminUsers = ['小鱼儿', '小鱼儿小号'];
+
+            if (adminLink) {
+                if (adminUsers.includes(currentUser)) {
+                    // 如果匹配作者身份，显式展示
+                    adminLink.style.display = 'inline-block';
+                } else {
+                    // 🚨 非作者身份，直接移除 DOM 节点，不留痕迹
+                    adminLink.remove();
+                }
+            }
+        }
+
+        // 页面资源加载完成后执行
+        window.onload = apply;
+
+        /**
+         * 安全退出登录逻辑
+         */
+        function logout() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            const msg = (lang === 'zh') ? '确定要退出登录吗？' : 'Are you sure you want to logout?';
+
+            if (confirm(msg)) {
+                // 清理所有敏感本地缓存
+                localStorage.removeItem('username');
+                localStorage.removeItem('isAdmin');
+                localStorage.removeItem('userPoints');
+
+                // 强制返回登录首页
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 再次确保 apply 执行
+        apply();
+    </script>
+</body>
+
+</html>

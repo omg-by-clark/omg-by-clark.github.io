@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>作者验证 Admin Login - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5; /* 修改背景颜色为 #fffdf5 */
+            --text: #333;
+            --brand: #ff4757;
+        }
+
+        body.dark {
+            --bg: #121212;
+            --text: #f1f2f6;
+            --brand: #ff6b81;
+        }
+
+        body {
+            text-align: center;
+            padding-top: 100px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            transition: 0.3s;
+        }
+
+        /* 统一输入框风格 */
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            width: 220px;
+        }
+
+        button {
+            padding: 10px 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: #eee;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(1.1);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #888;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:active {
+            transform: scale(1.1);
+            color: var(--brand);
+        }
+    </style>
+</head>
+
+<body>
+    <h2 data-zh="👑 管理员验证" data-en="👑 Admin Login">👑 管理员验证</h2>
+    <div style="display: inline-flex; gap: 10px; align-items: center;">
+        <input type="password" id="pw" data-zh-ph="请输入密码..." data-en-ph="Enter Password...">
+        <button onclick="go()" data-zh="验证" data-en="Verify">验证</button>
+    </div>
+    <br>
+    <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script src="login.js"></script>
+    <script>
+        // 初始化基础界面显示逻辑
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        const lang = localStorage.getItem('lang') || 'zh';
+        document.querySelectorAll('[data-zh]').forEach(el => { 
+            el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'); 
+        });
+        document.querySelectorAll('[data-zh-ph]').forEach(el => { 
+            el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'); 
+        });
+    </script>
+</body>
+</html>

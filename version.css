@@ -1,0 +1,102 @@
+:root {
+    --bg: #fffdf5;
+    --text: #333;
+    --brand: #ff4757;
+    --card: #fff;
+    --line: #eee;
+}
+
+body.dark {
+    --bg: #121212;
+    --text: #f1f2f6;
+    --brand: #ff6b81;
+    --card: #1e1e1e;
+    --line: #333;
+}
+
+body {
+    font-family: sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--bg);
+    color: var(--text);
+    transition: 0.3s;
+}
+
+h1 {
+    font-family: Microsoft YaHei, PingFang SC, Helvetica, sans-serif;
+    color: var(--brand);
+    border-bottom: 2px solid var(--brand);
+    padding-bottom: 15px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.v-card {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    border: 1px solid var(--line);
+    position: relative;
+}
+
+.v-card-highlight {
+    background: linear-gradient(135deg, #ff6b81, #ff4757); /* 添加渐变背景 */
+    color: white; /* 突出显示的文字颜色 */
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.5); /* 更强的阴影效果 */
+    border: none; /* 去掉边框 */
+}
+
+.v-card-highlight .v-tag {
+    background: white;
+    color: var(--brand);
+}
+
+.v-card-highlight .v-theme {
+    color: white; /* 修改为白色，与其他内容一致 */
+}
+
+.v-tag {
+    font-family: Consolas, monospace;
+    background: var(--brand);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.v-theme {
+    display: block;
+    margin: 15px 0 10px 0;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--brand);
+}
+
+ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+    list-style-type: none;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--brand);
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.back-link:active {
+    transform: scale(1.1);
+}

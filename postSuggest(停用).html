@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!-- postSuggest.html -->
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>发帖建议 Tips - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5; /* 修改背景颜色为 #fffdf5 */
+            --text: #333;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+        }
+
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 2;
+        }
+    
+    /* 显眼的返回按钮样式 */
+    .back-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        color: var(--brand);
+        border: 2px solid var(--brand);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-btn:active { transform: scale(1.1); }
+
+
+    </style>
+</head>
+
+<body>
+    <h1 data-zh="🚩 发帖建议" data-en="🚩 Advice">🚩 发帖建议</h1>
+    <ul>
+        <li data-zh="🚫 不建议发脏话" data-en="🚫 No profanity">🚫 不建议发脏话</li>
+        <li data-zh="💧 请不要发无意义水帖" data-en="💧 No spamming">💧 请不要发无意义水帖</li>
+        <li data-zh="🔥 优质槽点会被顶上热搜" data-en="🔥 Quality rants get to Hot">🔥 优质槽点会被顶上热搜</li>
+    </ul>
+
+    <a href="post.html" class="back-btn" data-zh="⬅️ 返回菜单" data-en="⬅️ Back to Menu">⬅️ 返回菜单</a>
+
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark') document.body.className = 'dark';
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+    </script>
+</body>
+
+</html>

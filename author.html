@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作者后台 Admin - omg-by-Clark</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script>
+        // 核心权限校验
+        const adminUsers = ['小鱼儿', '小鱼儿小号'];
+        const currentUser = localStorage.getItem('username');
+        if (!adminUsers.includes(currentUser)) {
+            alert("非法访问：检测到非作者身份 / Unauthorized Access!");
+            window.location.href = 'index.html';
+        }
+    </script>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #fff;
+            --brand: #ff4757;
+        }
+
+        body.dark {
+            --bg: #121212;
+            --text: #f1f2f6;
+            --card: #1e1e1e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            transition: 0.3s;
+        }
+
+        .section-box {
+            background: var(--card);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h2,
+        h3 {
+            color: var(--brand);
+            border-bottom: 2px solid var(--brand);
+            padding-bottom: 12px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-del {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #f1c40f;
+            color: #333;
+        }
+
+        .btn-cmt {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 data-zh="👑 管理员后台" data-en="👑 Admin Dashboard">👑 管理员后台</h2>
+
+    <div class="section-box">
+        <h3 data-zh="👥 用户积分管理" data-en="👥 User Points">👥 用户积分管理</h3>
+        <div id="user-admin-list">Loading Users...</div>
+    </div>
+
+    <div class="section-box">
+        <h3 data-zh="📝 帖子管理" data-en="📝 Posts Admin">📝 帖子管理</h3>
+        <div id="admin-list">Loading Posts...</div>
+    </div>
+
+    <div class="section-box" id="cmt-admin-section" style="display:none;">
+        <h3 data-zh="💬 正在管理评论" data-en="💬 Comment Admin">💬 正在管理评论</h3>
+        <div id="comment-list"></div>
+    </div>
+
+    <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+        /**
+         * 🛡️ 安全转义：防止 XSS
+         */
+        function esc(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function loadUsers() {
+            const listEl = document.getElementById('user-admin-list');
+            const { data: users } = await _supabase.from('users').select('*').order('points', { ascending: false });
+
+            listEl.innerHTML = users.map(u => `
+                <div class="item-row">
+                    <span>👤 <b>${esc(u.username)}</b> | 💰 Points: <b>${u.points}</b></span>
+                    <button class="btn-edit" onclick="changePoints('${u.username}', ${u.points})">⚙️ Edit</button>
+                </div>`).join('');
+        }
+
+        async function changePoints(name, cur) {
+            const promptMsg = lang === 'zh' ? `修改 ${name} 的积分：` : `Change points for ${name}:`;
+            const val = prompt(promptMsg, cur);
+            if (!val) return;
+            const { error } = await _supabase.from('users').update({ points: parseInt(val) }).eq('username', name);
+            if (!error) { alert("Updated!"); loadUsers(); }
+        }
+
+        async function draw() {
+            const listEl = document.getElementById('admin-list');
+            const { data: posts } = await _supabase.from('posts').select('*').order('created_at', { ascending: false });
+
+            listEl.innerHTML = posts.map(p => `
+                <div style="border-bottom:1px solid #eee; padding:15px 0;">
+                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small>
+                    <div class="btn-group">
+                        <button class="btn-cmt" onclick="loadComments(${p.id}, '${p.title}')">💬 管理评论</button>
+                        <button class="btn-del" onclick="delPost(${p.id})">🗑️ 删除此帖</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function delPost(id) {
+            const msg = lang === 'zh' ? "确定要删除吗？" : "Sure to delete?";
+            if (confirm(msg)) {
+                await _supabase.from('posts').delete().eq('id', id);
+                draw();
+            }
+        }
+
+        loadUsers();
+        draw();
+
+        // 动态同步静态文本翻译
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吐槽广场 Plaza - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #fff;
+            --brand: #ff4757;
+            --unliked: #ccc;
+            --hot-border: #ff6b81; /* 新增：热门边框色 */
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --card: #2d2d2d;
+            --brand: #ff6b81;
+            --unliked: #666;
+            --hot-border: #ff6b81;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            /* 修改：加宽到 1000px 以容纳双栏 */
+            max-width: 1000px; 
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            transition: 0.3s;
+        }
+
+        /* === 核心布局容器：左右分栏 === */
+        .layout-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start; /* 顶部对齐 */
+        }
+
+        /* 左侧：全部帖子 */
+        .col-all {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* 右侧：热门 Top 5 */
+        .col-hot {
+            flex: 1;
+            min-width: 0;
+            /* 修改：Top 5 专属红框 */
+            border: 2px solid var(--hot-border);
+            border-radius: 12px;
+            padding: 20px;
+            background: rgba(255, 107, 129, 0.02);
+            height: fit-content;
+        }
+
+        /* 手机端适配：变回单栏 */
+        @media (max-width: 768px) {
+            .layout-container {
+                flex-direction: column-reverse; /* 手机上把热门放上面？如果不喜欢可以去掉-reverse */
+            }
+            .col-hot {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .section-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card {
+            background: var(--card);
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .card:active {
+            transform: scale(0.99);
+        }
+
+        .like-btn {
+            background: var(--unliked);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            min-width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .like-btn.active {
+            background: var(--brand);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* === 等级徽章系统 === */
+        .lv-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 5px;
+            vertical-align: middle;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .lv-log { background: #a1662f; }
+        .lv-iron { background: #555555; }
+        .lv-bronze { background: #cd7f32; } 
+        .lv-silver { background: #e0e0e0; color: #000; text-shadow: none; }
+        .lv-gold { background: #ffd700; color: black; text-shadow: none; }
+        .lv-diamond { background: #add8e6; color: #0000ff; text-shadow: none; }
+        .lv-king { background: #ffd700; color: #ff8c00; text-shadow: none; } 
+        .lv-epic { 
+            background: linear-gradient(135deg, #ff00cc, #333399);
+            box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+        }
+
+        .loading span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin: 0 6px;
+            background: var(--brand);
+            border-radius: 50%;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-15px); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="margin-bottom: 20px;">
+        <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza" style="text-align: center;">👀 吐槽广场 Plaza</h1>
+    </div>
+
+    <div class="layout-container">
+
+        <div class="col-all">
+            <h2 class="section-title" data-zh="📃 全部帖子" data-en="📃 All Posts">📃 全部帖子</h2>
+            <div id="list-all">
+                <div class="loading"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+
+        <div class="col-hot">
+            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜 Top 5</h2>
+            <div id="list-hot">
+                <div class="loading"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+
+    <script>
+        // 内存缓存
+        let postsCache = [];
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * ⚡️ 核心优化：乐观 UI 更新
+         */
+        async function handleLike(event, postId) {
+            event.stopPropagation(); 
+            const btn = event.currentTarget;
+            const countSpan = btn.querySelector('.count');
+            
+            // 1. 获取当前状态
+            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+            const isLikedAlready = likedPosts.includes(postId);
+            
+            // 2. 界面立即反馈
+            let currentCount = parseInt(countSpan.innerText, 10);
+            let newCount;
+            
+            if (isLikedAlready) {
+                newCount = Math.max(0, currentCount - 1);
+                btn.classList.remove('active');
+                likedPosts = likedPosts.filter(id => id !== postId);
+            } else {
+                newCount = currentCount + 1;
+                btn.classList.add('active');
+                likedPosts.push(postId);
+            }
+            
+            // 更新数字和本地存储
+            countSpan.innerText = newCount;
+            localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+            
+            // 更新内存缓存
+            const cachedPost = postsCache.find(p => p.id === postId);
+            if (cachedPost) cachedPost.likes = newCount;
+
+            // 3. 后台静默同步
+            try {
+                const { error } = await _supabase
+                    .from('posts')
+                    .update({ likes: newCount })
+                    .eq('id', postId);
+
+                if (error) throw error;
+            } catch (err) {
+                console.error("点赞失败，回滚:", err);
+                alert("网络开小差了，点赞没存上 😢");
+                
+                // 4. 失败回滚
+                if (isLikedAlready) {
+                    btn.classList.add('active'); 
+                    countSpan.innerText = currentCount;
+                } else {
+                    btn.classList.remove('active');
+                    countSpan.innerText = currentCount;
+                }
+                
+                let rollBackLikes = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+                if (isLikedAlready) rollBackLikes.push(postId);
+                else rollBackLikes = rollBackLikes.filter(id => id !== postId);
+                localStorage.setItem('likedPosts', JSON.stringify(rollBackLikes));
+            }
+        }
+
+        // 辅助函数：生成卡片 HTML
+        function createCardHTML(p, userMap, likedPosts) {
+            const author = userMap[p.nickname];
+            const lv = getLevelInfo(author ? author.points : 0);
+            const isActive = likedPosts.includes(p.id) && p.likes > 0;
+
+            return `
+            <div class="card" onclick="location.href='content.html?id=${p.id}'">
+                <div style="flex: 1; padding-right: 10px;">
+                    <b>${escapeHTML(p.title)}</b>
+                    <p style="font-size:0.9em; color:gray; margin:8px 0;">${escapeHTML(p.content.substring(0, 30))}...</p>
+                    <small>👤 ${escapeHTML(p.nickname)} <span class="lv-badge ${lv.class}">${lv.name}</span></small>
+                </div>
+                <button class="like-btn ${isActive ? 'active' : ''}" data-postid="${p.id}" onclick="handleLike(event, ${p.id})">
+                    👍 <span class="count">${p.likes}</span>
+                </button>
+            </div>`;
+        }
+
+        async function render() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            const lang = localStorage.getItem('lang') || 'zh';
+            
+            const listAllEl = document.getElementById('list-all');
+            const listHotEl = document.getElementById('list-hot');
+
+            try {
+                // 并行请求：左侧全部，右侧 Top 5
+                const [allPostsRes, hotPostsRes, usersRes] = await Promise.all([
+                    _supabase.from('posts').select('*').order('created_at', { ascending: false }),
+                    _supabase.from('posts').select('*').order('likes', { ascending: false }).limit(5),
+                    _supabase.from('users').select('username, points')
+                ]);
+
+                if (allPostsRes.error) throw allPostsRes.error;
+                if (hotPostsRes.error) throw hotPostsRes.error;
+                
+                const allPosts = allPostsRes.data;
+                const hotPosts = hotPostsRes.data;
+                
+                // 更新缓存
+                const tempMap = new Map();
+                [...allPosts, ...hotPosts].forEach(p => tempMap.set(p.id, p));
+                postsCache = Array.from(tempMap.values());
+                
+                const users = usersRes.data || [];
+                const userMap = users.reduce((acc, user) => {
+                    acc[user.username] = user;
+                    return acc;
+                }, {});
+                
+                const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+
+                // 渲染左侧
+                listAllEl.innerHTML = allPosts.length === 0 
+                    ? '<p style="color:gray;text-align:center;">暂无帖子</p>' 
+                    : allPosts.map(p => createCardHTML(p, userMap, likedPosts)).join('');
+
+                // 渲染右侧
+                listHotEl.innerHTML = hotPosts.length === 0 
+                    ? '<p style="color:gray;text-align:center;">暂无热门</p>' 
+                    : hotPosts.map(p => createCardHTML(p, userMap, likedPosts)).join('');
+
+                // 语言处理
+                document.querySelectorAll('[data-zh]').forEach(el => {
+                    el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+                });
+
+            } catch (err) {
+                console.error(err);
+                const errMsg = `<p style="text-align:center;color:red">加载失败: ${err.message}</p>`;
+                listAllEl.innerHTML = errMsg;
+                listHotEl.innerHTML = errMsg;
+            }
+        }
+        
+        render();
+    </script>
+</body>
+</html>

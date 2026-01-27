@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>积分商城 Store - omg-by-Clark</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+
+    <style>
+        :root {
+            --bg: #fffdf5; --text: #333; --card-bg: #fff;
+            --brand: #ff4757; --line: #eee; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        body.dark {
+            --bg: #121212; --text: #f1f2f6; --card-bg: #1e1e1e;
+            --line: #333; --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg); color: var(--text);
+            margin: 0; padding: 15px; transition: 0.3s;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        nav { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 20px; width: 100%; }
+        h1 { font-size: 1.5em; margin: 0; }
+        .user-points { font-weight: bold; background: rgba(255, 71, 87, 0.1); padding: 6px 14px; border-radius: 50px; color: var(--brand); }
+        .content { flex: 1; width: 100%; max-width: 800px; margin: 0 auto; }
+        .grid-layout { display: flex; flex-direction: column; gap: 12px; }
+        .card {
+            background: var(--card-bg); border-radius: 12px; padding: 12px 16px;
+            box-shadow: var(--shadow); border: 1px solid var(--line);
+            display: flex; align-items: center; transition: 0.2s;
+        }
+        .card:hover { border-color: var(--brand); transform: translateX(4px); }
+        .icon { font-size: 2.2em; margin-right: 15px; width: 45px; text-align: center; flex-shrink: 0; }
+        .card-info { flex: 1; margin-right: 10px; }
+        h3 { margin: 0 0 2px 0; font-size: 1.1em; }
+        .desc {
+            font-size: 0.85em; opacity: 0.7; margin: 0; line-height: 1.3;
+            display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card-action { display: flex; align-items: center; gap: 15px; }
+        .price-tag { font-size: 1em; font-weight: bold; color: var(--brand); white-space: nowrap; }
+        button {
+            padding: 6px 16px; border-radius: 8px; border: none;
+            background: var(--brand); color: #fff; font-weight: bold;
+            font-size: 0.9em; cursor: pointer; white-space: nowrap;
+        }
+        footer { text-align: center; padding: 30px 0; }
+        .back-link { color: var(--brand); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <h1 data-zh="🛒 积分商城" data-en="🛒 Store">🛒 积分商城</h1>
+        <div class="user-points">
+            <span data-zh="💎 余额: " data-en="💎 Bal: ">💎 余额: </span>
+            <span id="my-points">...</span>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div id="store-container" class="grid-layout">
+            <div class="loading" data-zh="正在搬运货物..." data-en="Loading items...">正在搬运货物...</div>
+        </div>
+    </div>
+
+    <footer>
+        <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    </footer>
+
+    <script>
+        const currentLang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark');
+        }
+
+        function updateUI() {
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = el.getAttribute(`data-${currentLang}`);
+            });
+        }
+        updateUI();
+
+        // 获取用户积分
+        async function fetchUserPoints() {
+            const pointsEl = document.getElementById('my-points');
+            const currentUser = localStorage.getItem('username');
+            if (!currentUser) return pointsEl.innerText = '未登录';
+            try {
+                const { data, error } = await _supabase.from('users').select('points').eq('username', currentUser).single();
+                if (error) throw error;
+                pointsEl.innerText = data ? data.points : 0;
+            } catch (err) { pointsEl.innerText = 'Err'; }
+        }
+
+        // 加载 YAML 商品
+        async function loadStore() {
+            try {
+                const response = await fetch('items.yaml');
+                const text = await response.text();
+                const data = jsyaml.load(text);
+                const container = document.getElementById('store-container');
+                container.innerHTML = '';
+
+                data.items.forEach(item => {
+                    const name = currentLang === 'zh' ? item.name : (item.name_en || item.name);
+                    const desc = currentLang === 'zh' ? item.desc : (item.desc_en || item.desc);
+                    const btnText = currentLang === 'zh' ? '兑换' : 'Redeem';
+                    
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="card">
+                            <div class="icon">${item.icon || '📦'}</div>
+                            <div class="card-info">
+                                <h3>${name}</h3>
+                                <p class="desc">${desc}</p>
+                            </div>
+                            <div class="card-action">
+                                <div class="price-tag">💎 ${item.price}</div>
+                                <button onclick="buyItem(${item.id}, ${item.price}, '${name}')">${btnText}</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // 核心购买逻辑：处理 24h 有效期
+        async function buyItem(id, price, itemName) {
+            const currentUser = localStorage.getItem('username');
+            if (!currentUser) return alert("请先登录！");
+
+            // 1. 获取最新积分和背包状态
+            const { data: user, error: fetchErr } = await _supabase
+                .from('users')
+                .select('points, inventory')
+                .eq('username', currentUser)
+                .single();
+
+            if (fetchErr) return alert("获取用户信息失败");
+            if (user.points < price) return alert("积分不足！");
+
+            if (confirm(`确认花费 ${price} 积分兑换 [${itemName}] 吗？有效期 24 小时。`)) {
+                let inventory = user.inventory || {}; // 注意：现在 inventory 是对象格式
+                const now = new Date();
+                const idStr = id.toString();
+
+                // 2. 计算过期时间
+                let expireAt;
+                // 如果是 1xx 系列（租用），且当前已存在且未过期，则在旧时间基础上累加
+                if (idStr.startsWith('1')) {
+                    const oldExpire = inventory[idStr] ? new Date(inventory[idStr]) : null;
+                    const baseTime = (oldExpire && oldExpire > now) ? oldExpire : now;
+                    expireAt = new Date(baseTime.getTime() + 24 * 60 * 60 * 1000);
+                    inventory[idStr] = expireAt.toISOString(); // 存储 ISO 格式时间戳
+                } else {
+                    // 非 1xx 系列（比如补签卡）可以走旧逻辑，或者存数量
+                    inventory[idStr] = (inventory[idStr] || 0) + 1;
+                }
+
+                // 3. 更新数据库
+                const { error: updateErr } = await _supabase
+                    .from('users')
+                    .update({ 
+                        points: user.points - price,
+                        inventory: inventory 
+                    })
+                    .eq('username', currentUser);
+
+                if (updateErr) {
+                    alert("兑换失败：" + updateErr.message);
+                } else {
+                    document.getElementById('my-points').innerText = user.points - price;
+                    alert("🎉 兑换成功！特效有效期至：" + expireAt.toLocaleString());
+                }
+            }
+        }
+
+        loadStore();
+        fetchUserPoints();
+    </script>
+</body>
+</html>

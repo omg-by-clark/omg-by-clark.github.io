@@ -1,0 +1,32 @@
+# items.yaml
+# id: 1开头表示彩色昵称
+items:
+  - id: 100
+    name: "彩虹色昵称"
+    name_en: "Rainbow Nickname"
+    desc: "让你的昵称变成彩虹色，让别人一看就觉得你是个彩虹侠！"
+    desc_en: "Make your nickname rainbow, so others can see you're a rainbow hero at first glance!"
+    price: 20 # 每天
+    icon: "🌈"
+  - id: 101
+    name: "极客蓝昵称"
+    name_en: "Blue Nickname"
+    desc: "让你的昵称变成蓝色，让别人一看就觉得你是个极客！"
+    desc_en: "Make your nickname blue, so others can see you're a geek at first glance!"
+    price: 10 # 每天
+    icon: "💙"
+  - id: 102
+    name: "土豪金昵称"
+    name_en: "Gold Nickname"
+    desc: "让你的昵称变成金色，看着的土豪一样闪闪发光！"
+    desc_en: "Make your nickname gold to show your love for programming!"
+    price: 10 # 每天
+    icon: "💛"
+  # 2开头表示补签类道具
+  - id: 200
+    name: "补签神贴"
+    name_en: "Streak Rescue"
+    icon: "🩹"
+    price: 9 # 一次性/每个
+    desc: "断签了？没关系，用它救回你的连续签到天数！"
+    desc_en: "Restore your check-in streak with this item."

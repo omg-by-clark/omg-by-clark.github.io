@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新日志 Version Log - omg-by-Clark</title>
+    <link rel="stylesheet" href="version.css">
+    <style>
+        /* 这里的内联样式只保留深色模式的基础适配，其余全交给 CSS 文件 */
+        body.dark {
+            background-color: #121212;
+            color: #f1f2f6;
+        }
+
+        /* 修复返回链接的样式 */
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #ff4757;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</h1>
+
+    <div class="v-card v-card-highlight">
+        <span class="v-tag">v1.9</span>
+        <small style="opacity:0.9; margin-left:10px;">2026-01-25</small>
+        <span class="v-theme" data-zh="📅 每日签到与数据库升级" data-en="📅 Daily Check-in & DB Upgrade">📅 每日签到与数据库升级</span>
+        <ul style="line-height: 1.8;">
+            <li data-zh="🎁 新增：个人中心每日签到功能，随机获取 1~10 积分"
+                data-en="🎁 New: Daily Check-in system with random 1-10 points reward">
+                🎁 新增：个人中心每日签到功能，随机获取 1~10 积分
+            </li>
+            <li data-zh="🔢 新增：签到天数统计与最后签到时间记录" data-en="🔢 New: Check-in streak count & last check-in timestamp">
+                🔢 新增：签到天数统计与最后签到时间记录
+            </li>
+            <li data-zh="🗄️ 架构：迁移至 ISO 8601 标准时间存储 (UTC)"
+                data-en="🗄️ Core: Migrated to ISO 8601 standard time storage (UTC)">
+                🗄️ 架构：迁移至 ISO 8601 标准时间存储 (UTC)
+            </li>
+        </ul>
+    </div>
+
+    <div class="v-card">
+        <span class="v-tag" style="background:#888;">v1.8</span>
+        <small style="opacity:0.6; margin-left:10px;">2026-01-24</small>
+        <span class="v-theme" data-zh="🖥️ 桌面端布局重构：双栏与 Top 5" data-en="🖥️ Desktop Layout: Split View & Top 5">🖥️
+            桌面端布局重构：双栏与 Top 5</span>
+        <ul style="line-height: 1.8;">
+            <li data-zh="↔️ 修改：吐槽广场重构为 1:1 左右分栏（全部帖子 / 热门榜单）"
+                data-en="↔️ Mod: Plaza refactored to 1:1 Split View (All Posts / Hot List)">
+                ↔️ 修改：吐槽广场重构为 1:1 左右分栏（全部帖子 / 热门榜单）
+            </li>
+            <li data-zh="🔥 修改：热搜 Top 3 升级为 Top 5，新增高亮边框"
+                data-en="🔥 Mod: Hot Search upgraded to Top 5 with highlight border">
+                🔥 修改：热搜 Top 3 升级为 Top 5，新增高亮边框
+            </li>
+            <li data-zh="⚡️ 优化：多请求并行加载" data-en="⚡️ Opt: Parallel loading for multiple requests">
+                ⚡️ 优化：多请求并行加载
+            </li>
+        </ul>
+    </div>
+
+    <div class="v-card">
+        <span class="v-tag" style="background:#888;">v1.7</span>
+        <small style="opacity:0.6; margin-left:10px;">2026-01-20</small>
+        <span class="v-theme" data-zh="🌐 全站双语与主题架构重构" data-en="🌐 Global Bilingual & Theme Overhaul">🌐
+            全站双语与主题架构重构</span>
+        <ul style="line-height: 1.8;">
+            <li data-zh="✨ 新增：支持中英双语切换" data-en="✨ New: Support for Chinese-English bilingual toggle">
+                ✨ 新增：支持中英双语切换
+            </li>
+            <li data-zh="🌓 优化：更丝滑的深浅色模式转换" data-en="🌓 Opt: Smoother Dark/Light theme toggle">
+                🌓 优化：更丝滑的深浅色模式转换
+            </li>
+            <li data-zh="🔐 新增：集成个人信息页面的密码修改功能" data-en="🔐 New: Integrated password change feature in profile page">
+                🔐 新增：集成个人信息页面的密码修改功能
+            </li>
+        </ul>
+    </div>
+
+    <div class="v-card">
+        <span class="v-tag" style="background:#888;">v1.6</span>
+        <small style="opacity:0.6; margin-left:10px;">2026-01-17</small>
+        <span class="v-theme" data-zh="👑 账号等级系统全线开启" data-en="👑 Account & Level System">👑 账号等级系统全线开启</span>
+        <ul style="line-height: 1.8;">
+            <li data-zh="🔐 新增：用户名+密码登录体系（SHA-256 哈希加密）" data-en="🔐 New: Username & SHA-256 Auth system">
+                🔐 新增：用户名+密码登录体系（SHA-256 哈希加密）
+            </li>
+            <li data-zh="🏆 新增：积分与等级标识，发帖评论自动加分" data-en="🏆 New: Points & Level badges system">
+                🏆 新增：积分与等级标识，发帖评论自动加分
+            </li>
+        </ul>
+    </div>
+
+    <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+
+    <script>
+        // 初始化语言与主题渲染
+        const lang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+    </script>
+</body>
+
+</html>
