@@ -21,7 +21,6 @@
             --card: #2d2d2d;
             --brand: #ff6b81;
             --unliked: hsl(227deg, 12%, 60%);
-            /* h=色相  s=饱和  l=亮度 */
             --hot-border: #ff6b81;
         }
 
@@ -35,7 +34,6 @@
             transition: 0.3s;
         }
 
-        /* === 核心布局容器：左右分栏 === */
         .layout-container {
             display: flex;
             gap: 20px;
@@ -61,7 +59,6 @@
             .layout-container {
                 flex-direction: column-reverse;
             }
-
             .col-hot {
                 width: 100%;
                 box-sizing: border-box;
@@ -90,9 +87,7 @@
             transition: transform 0.1s;
         }
 
-        .card:active {
-            transform: scale(0.99);
-        }
+        .card:active { transform: scale(0.99); }
 
         .like-btn {
             background: var(--unliked);
@@ -116,20 +111,11 @@
         }
 
         @keyframes pop {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        /* === 等级徽章系统 === */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -141,72 +127,45 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        .lv-log {
-            background: #a1662f;
-        }
+        .lv-log { background: #a1662f; }
+        .lv-iron { background: #555555; }
+        .lv-bronze { background: #cd7f32; }
+        .lv-silver { background: #e0e0e0; color: #000; text-shadow: none; }
+        .lv-gold { background: #ffd700; color: black; text-shadow: none; }
+        .lv-diamond { background: #add8e6; color: #0000ff; text-shadow: none; }
+        .lv-king { background: #ffd700; color: #ff8c00; text-shadow: none; }
+        .lv-epic { background: linear-gradient(135deg, #ff00cc, #333399); box-shadow: 0 0 5px rgba(255, 0, 204, 0.5); }
 
-        .lv-iron {
-            background: #555555;
+        /* 底部加载条样式 */
+        .loading-sentinel {
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 60px; 
+            margin-top: 20px;
+            opacity: 0; /* 默认隐藏，加载时显示 */
+            transition: opacity 0.3s;
         }
-
-        .lv-bronze {
-            background: #cd7f32;
+        .loading-sentinel.visible {
+            opacity: 1;
         }
-
-        .lv-silver {
-            background: #e0e0e0;
-            color: #000;
-            text-shadow: none;
-        }
-
-        .lv-gold {
-            background: #ffd700;
-            color: black;
-            text-shadow: none;
-        }
-
-        .lv-diamond {
-            background: #add8e6;
-            color: #0000ff;
-            text-shadow: none;
-        }
-
-        .lv-king {
-            background: #ffd700;
-            color: #ff8c00;
-            text-shadow: none;
-        }
-
-        .lv-epic {
-            background: linear-gradient(135deg, #ff00cc, #333399);
-            box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 120px;
-        }
-
-        .loading span {
+        .loading-sentinel span {
             display: inline-block;
-            width: 12px;
-            height: 12px;
-            margin: 0 6px;
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
             background: var(--brand);
             border-radius: 50%;
             animation: bounce 0.6s infinite alternate;
         }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
 
-        @keyframes bounce {
-            from {
-                transform: translateY(0);
-            }
-
-            to {
-                transform: translateY(-15px);
-            }
+        .end-message {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            padding: 20px;
+            display: none; /* 默认隐藏 */
         }
 
         .back-link {
@@ -217,6 +176,19 @@
             font-weight: bold;
             font-size: 1.1em;
         }
+
+        #status-bar {
+            position: fixed;
+            bottom: 5px;
+            right: 10px;
+            font-size: 10px;
+            opacity: 0.6;
+            color: var(--text);
+            font-family: monospace;
+            background: var(--bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -226,33 +198,42 @@
     </div>
 
     <div class="layout-container">
-
         <div class="col-all">
             <h2 class="section-title" data-zh="📃 全部帖子" data-en="📃 All Posts">📃 全部帖子</h2>
+            
             <div id="list-all">
-                <div class="loading"><span></span><span></span><span></span></div>
+                </div>
+            
+            <div id="scroll-sentinel" class="loading-sentinel">
+                <span></span><span></span><span></span>
             </div>
+            
+            <div id="end-message" class="end-message" data-zh="🚫 没有更多帖子了！" data-en="🚫 No more posts">🚫 没有更多帖子了！</div>
         </div>
 
         <div class="col-hot">
-            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜
-                Top 5</h2>
+            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜 Top 5</h2>
             <div id="list-hot">
-                <div class="loading"><span></span><span></span><span></span></div>
+                <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span></div>
             </div>
         </div>
-
     </div>
 
     <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    <div id="status-bar">Observer Ready</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
 
     <script>
-        // 内存缓存
-        let postsCache = [];
-
+        // === 全局变量 ===
+        let currentPage = 0;
+        const PAGE_SIZE = 15; 
+        let globalUserMap = {}; 
+        let isFetching = false; 
+        let hasMore = true; // 还有没有更多数据
+        let observer; // 保存观察器实例
+        
         function escapeHTML(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -260,32 +241,15 @@
             return div.innerHTML;
         }
 
-        /**
-         * 🎨 根据背包获取昵称样式 (同步 store.js 逻辑)
-         */
         function getNicknameStyle(inventory) {
             if (!inventory) return '';
             const now = new Date();
-
-            // 检查 100: 彩虹色
-            if (inventory['100'] && new Date(inventory['100']) > now) {
-                return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
-            }
-            // 检查 101: 极客蓝
-            if (inventory['101'] && new Date(inventory['101']) > now) {
-                return 'color: #0059ff; font-weight: bold;';
-            }
-            // 检查 102: 土豪金
-            if (inventory['102'] && new Date(inventory['102']) > now) {
-                return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
-            }
-
+            if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+            if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #0059ff; font-weight: bold;';
+            if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
             return '';
         }
 
-        /**
-         * 🏆 获取等级信息
-         */
         function getLevelInfo(pts) {
             if (pts >= 10000) return { name: '王者', class: 'lv-king' };
             if (pts >= 5000) return { name: '钻石', class: 'lv-diamond' };
@@ -296,158 +260,171 @@
             return { name: '原木', class: 'lv-log' };
         }
 
+        function updateLanguage() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+            });
+        }
+
         async function handleLike(event, postId) {
             event.stopPropagation();
             const btn = event.currentTarget;
             const countSpan = btn.querySelector('.count');
-
             let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
             const isLikedAlready = likedPosts.includes(postId);
-
             let currentCount = parseInt(countSpan.innerText, 10);
-            let newCount;
+            let newCount = isLikedAlready ? Math.max(0, currentCount - 1) : currentCount + 1;
 
+            countSpan.innerText = newCount;
             if (isLikedAlready) {
-                newCount = Math.max(0, currentCount - 1);
                 btn.classList.remove('active');
                 likedPosts = likedPosts.filter(id => id !== postId);
             } else {
-                newCount = currentCount + 1;
                 btn.classList.add('active');
                 likedPosts.push(postId);
             }
-
-            countSpan.innerText = newCount;
             localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
 
-            const cachedPost = postsCache.find(p => p.id === postId);
-            if (cachedPost) cachedPost.likes = newCount;
-
             try {
-                const { error } = await _supabase
-                    .from('posts')
-                    .update({ likes: newCount })
-                    .eq('id', postId);
-
+                const { error } = await _supabase.from('posts').update({ likes: newCount }).eq('id', postId);
                 if (error) throw error;
             } catch (err) {
-                console.error("点赞失败，回滚:", err);
-                alert("网络开小差了，点赞没存上 😢");
-
-                if (isLikedAlready) {
-                    btn.classList.add('active');
-                    countSpan.innerText = currentCount;
-                } else {
-                    btn.classList.remove('active');
-                    countSpan.innerText = currentCount;
-                }
-
-                let rollBackLikes = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-                if (isLikedAlready) rollBackLikes.push(postId);
-                else rollBackLikes = rollBackLikes.filter(id => id !== postId);
-                localStorage.setItem('likedPosts', JSON.stringify(rollBackLikes));
+                console.error("Like failed", err);
             }
         }
 
-        // 辅助函数：生成卡片 HTML (应用特效)
-        function createCardHTML(p, userMap, likedPosts) {
-            const author = userMap[p.nickname];
+        function createCardHTML(p, userMap) {
+            const author = userMap ? userMap[p.nickname] : null;
             const points = author ? author.points : 0;
-            const inventory = author ? author.inventory : null; // 获取背包
-
+            const inventory = author ? author.inventory : null;
             const lv = getLevelInfo(points);
-            const nickStyle = getNicknameStyle(inventory); // 计算样式
-            const isActive = likedPosts.includes(p.id) && p.likes > 0;
+            const nickStyle = getNicknameStyle(inventory);
+            const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+            const isActive = likedPosts.includes(p.id);
 
             return `
             <div class="card" onclick="location.href='content.html?id=${p.id}'">
                 <div style="flex: 1; padding-right: 10px;">
                     <b>${escapeHTML(p.title)}</b>
                     <p style="font-size:0.9em; color:gray; margin:8px 0;">${escapeHTML(p.content.substring(0, 30))}...</p>
-                    <small>
-                        👤 <span style="${nickStyle}">${escapeHTML(p.nickname)}</span> 
-                        <span class="lv-badge ${lv.class}">${lv.name}</span>
-                    </small>
+                    <small>👤 <span style="${nickStyle}">${escapeHTML(p.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span></small>
                 </div>
-                <button class="like-btn ${isActive ? 'active' : ''}" data-postid="${p.id}" onclick="handleLike(event, ${p.id})">
-                    👍 <span class="count">${p.likes}</span>
-                </button>
+                <button class="like-btn ${isActive ? 'active' : ''}" onclick="handleLike(event, ${p.id})">👍 <span class="count">${p.likes}</span></button>
             </div>`;
         }
 
-        async function render() {
-            // 🚀 计时开始
+        // === 核心逻辑：无限滚动加载 ===
+        async function loadNextPage() {
+            if (isFetching || !hasMore) return;
+            isFetching = true;
+
+            // 让底部的哨兵转圈圈显示出来
+            const sentinelEl = document.getElementById('scroll-sentinel');
+            sentinelEl.classList.add('visible');
+            
             const startTime = performance.now();
-            console.log("%c[加载] 开始请求数据...", "color: #1e66f5; font-weight: bold;");
+            console.log(`%c[Infinite Scroll] Loading Page ${currentPage + 1}...`, "color: blue");
 
+            try {
+                const from = currentPage * PAGE_SIZE;
+                const to = (currentPage + 1) * PAGE_SIZE - 1;
+
+                const { data, error } = await _supabase
+                    .from('posts')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(from, to);
+
+                if (error) throw error;
+
+                const listAllEl = document.getElementById('list-all');
+                
+                if (data.length > 0) {
+                    const html = data.map(p => createCardHTML(p, globalUserMap)).join('');
+                    listAllEl.insertAdjacentHTML('beforeend', html);
+                    currentPage++;
+                    
+                    const time = (performance.now() - startTime).toFixed(2);
+                    console.log(`%c[Success] +${data.length} posts (${time}ms)`, "color: green");
+                    document.getElementById('status-bar').innerText = `Page ${currentPage} (+${data.length} items)`;
+                }
+
+                // 判断是否还有下一页
+                if (data.length < PAGE_SIZE) {
+                    hasMore = false;
+                    console.log("%c[System] No more posts.", "color: gray");
+                    // 隐藏哨兵，显示到底提示
+                    sentinelEl.style.display = 'none';
+                    document.getElementById('end-message').style.display = 'block';
+                    // 停止观察
+                    if (observer) observer.disconnect();
+                } else {
+                    // 还有数据，隐藏哨兵动画，等待下次滚动
+                    sentinelEl.classList.remove('visible');
+                }
+                
+                updateLanguage();
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status-bar').innerText = "Load Error";
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        // === 启动“地雷”探测器 (IntersectionObserver) ===
+        function setupIntersectionObserver() {
+            const sentinelEl = document.getElementById('scroll-sentinel');
+            
+            const options = {
+                root: null, // 以视口为基准
+                rootMargin: '100px', // 提前 100px 触发，让用户感觉不到加载
+                threshold: 0.1 // 只要看到 10% 的地雷就触发
+            };
+
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && hasMore && !isFetching) {
+                        console.log("[加载]划到页面底部，加载下一页...");
+                        loadNextPage();
+                    }
+                });
+            }, options);
+
+            observer.observe(sentinelEl);
+        }
+
+        async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            const lang = localStorage.getItem('lang') || 'zh';
-
-            const listAllEl = document.getElementById('list-all');
+            
             const listHotEl = document.getElementById('list-hot');
 
             try {
-                // 1. 新增：多拉取一个 inventory 字段
-                const [allPostsRes, hotPostsRes, usersRes] = await Promise.all([
-                    _supabase.from('posts').select('*').order('created_at', { ascending: false }),
+                const [hotRes, usersRes] = await Promise.all([
                     _supabase.from('posts').select('*').order('likes', { ascending: false }).limit(5),
                     _supabase.from('users').select('username, points, inventory')
                 ]);
 
-                if (allPostsRes.error) throw allPostsRes.error;
-                if (hotPostsRes.error) throw hotPostsRes.error;
-
-                const allPosts = allPostsRes.data;
-                const hotPosts = hotPostsRes.data;
-
-                const tempMap = new Map();
-                [...allPosts, ...hotPosts].forEach(p => tempMap.set(p.id, p));
-                postsCache = Array.from(tempMap.values());
-
-                const users = usersRes.data || [];
-                const userMap = users.reduce((acc, user) => {
-                    acc[user.username] = user;
-                    return acc;
-                }, {});
-
-                const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-
-                listAllEl.innerHTML = allPosts.length === 0
-                    ? '<p style="color:gray;text-align:center;">暂无帖子</p>'
-                    : allPosts.map(p => createCardHTML(p, userMap, likedPosts)).join('');
-
-                listHotEl.innerHTML = hotPosts.length === 0
-                    ? '<p style="color:gray;text-align:center;">暂无热门</p>'
-                    : hotPosts.map(p => createCardHTML(p, userMap, likedPosts)).join('');
-
-                document.querySelectorAll('[data-zh]').forEach(el => {
-                    el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
-                });
-
-                // 🏁 计时结束并打印
-                const endTime = performance.now();
-                const totalTime = (endTime - startTime).toFixed(2);
-                console.log(
-                    `%c[成功] 渲染完成！\n%c加载耗时: %c${totalTime}ms`,
-                    "color: #40a02b; font-weight: bold; font-size: 14px;",
-                    "color: #333;",
-                    "color: #ff4757; font-weight: bold; font-size: 16px; text-decoration: underline;"
-                );
-
-                if (totalTime > 800) {
-                    console.warn(`[警告] 加载超过 ${totalTime}ms，建议检查网络。`);
+                if (usersRes.data) {
+                    globalUserMap = usersRes.data.reduce((acc, user) => { acc[user.username] = user; return acc; }, {});
                 }
 
+                listHotEl.innerHTML = hotRes.data.map(p => createCardHTML(p, globalUserMap)).join('');
+
+                // 启动观察器 (会自动触发第一次加载)
+                setupIntersectionObserver();
+
             } catch (err) {
-                console.error(err);
-                const errMsg = `<p style="text-align:center;color:red">加载失败: ${err.message}</p>`;
-                listAllEl.innerHTML = errMsg;
-                listHotEl.innerHTML = errMsg;
+                console.error("[错误]加载帖子数据时出错!", err);
+                listHotEl.innerHTML = "<p>Error loading data</p>";
             }
+            
+            updateLanguage();
         }
 
-        render();
+        init();
     </script>
 </body>
-
 </html>
