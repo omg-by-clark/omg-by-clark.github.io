@@ -59,6 +59,7 @@
             .layout-container {
                 flex-direction: column-reverse;
             }
+
             .col-hot {
                 width: 100%;
                 box-sizing: border-box;
@@ -87,7 +88,9 @@
             transition: transform 0.1s;
         }
 
-        .card:active { transform: scale(0.99); }
+        .card:active {
+            transform: scale(0.99);
+        }
 
         .like-btn {
             background: var(--unliked);
@@ -111,9 +114,17 @@
         }
 
         @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .lv-badge {
@@ -127,28 +138,63 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        .lv-log { background: #a1662f; }
-        .lv-iron { background: #555555; }
-        .lv-bronze { background: #cd7f32; }
-        .lv-silver { background: #e0e0e0; color: #000; text-shadow: none; }
-        .lv-gold { background: #ffd700; color: black; text-shadow: none; }
-        .lv-diamond { background: #add8e6; color: #0000ff; text-shadow: none; }
-        .lv-king { background: #ffd700; color: #ff8c00; text-shadow: none; }
-        .lv-epic { background: linear-gradient(135deg, #ff00cc, #333399); box-shadow: 0 0 5px rgba(255, 0, 204, 0.5); }
+        /* 等级样式引用 db.js 中的类名 */
+        .lv-log {
+            background: #a1662f;
+        }
 
-        /* === 底部加载条样式 (已修复动画) === */
+        .lv-iron {
+            background: #555555;
+        }
+
+        .lv-bronze {
+            background: #cd7f32;
+        }
+
+        .lv-silver {
+            background: #e0e0e0;
+            color: #000;
+            text-shadow: none;
+        }
+
+        .lv-gold {
+            background: #ffd700;
+            color: black;
+            text-shadow: none;
+        }
+
+        .lv-diamond {
+            background: #add8e6;
+            color: #0000ff;
+            text-shadow: none;
+        }
+
+        .lv-king {
+            background: #ffd700;
+            color: #ff8c00;
+            text-shadow: none;
+        }
+
+        .lv-epic {
+            background: linear-gradient(135deg, #ff00cc, #333399);
+            box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
+        }
+
+        /* 加载条样式 */
         .loading-sentinel {
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 60px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
             margin-top: 20px;
-            opacity: 0; /* 默认隐藏，加载时显示 */
+            opacity: 0;
             transition: opacity 0.3s;
         }
+
         .loading-sentinel.visible {
             opacity: 1;
         }
+
         .loading-sentinel span {
             display: inline-block;
             width: 10px;
@@ -159,17 +205,22 @@
             animation: bounce 0.6s infinite alternate;
         }
 
-        /* 让第2个和第3个点晚一点跳，形成波浪效果 */
         .loading-sentinel span:nth-child(2) {
             animation-delay: 0.2s;
         }
+
         .loading-sentinel span:nth-child(3) {
             animation-delay: 0.4s;
         }
 
-        @keyframes bounce { 
-            from { transform: translateY(0); } 
-            to { transform: translateY(-10px); } 
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-10px);
+            }
         }
 
         .end-message {
@@ -177,7 +228,7 @@
             color: #999;
             font-size: 0.9em;
             padding: 20px;
-            display: none; /* 默认隐藏 */
+            display: none;
         }
 
         .back-link {
@@ -187,19 +238,6 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 1.1em;
-        }
-
-        #status-bar {
-            position: fixed;
-            bottom: 5px;
-            right: 10px;
-            font-size: 10px;
-            opacity: 0.6;
-            color: var(--text);
-            font-family: monospace;
-            background: var(--bg);
-            padding: 2px 5px;
-            border-radius: 4px;
         }
     </style>
 </head>
@@ -212,27 +250,24 @@
     <div class="layout-container">
         <div class="col-all">
             <h2 class="section-title" data-zh="📃 全部帖子" data-en="📃 All Posts">📃 全部帖子</h2>
-            
-            <div id="list-all">
-                </div>
-            
+            <div id="list-all"></div>
             <div id="scroll-sentinel" class="loading-sentinel">
                 <span></span><span></span><span></span>
             </div>
-            
             <div id="end-message" class="end-message" data-zh="🚫 没有更多帖子了！" data-en="🚫 No more posts">🚫 没有更多帖子了！</div>
         </div>
 
         <div class="col-hot">
-            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜 Top 5</h2>
+            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜
+                Top 5</h2>
             <div id="list-hot">
-                <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span></div>
+                <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span>
+                </div>
             </div>
         </div>
     </div>
 
     <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
-    <div id="status-bar">Observer Ready</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
@@ -240,12 +275,12 @@
     <script>
         // === 全局变量 ===
         let currentPage = 0;
-        const PAGE_SIZE = 15; 
-        let globalUserMap = {}; 
-        let isFetching = false; 
-        let hasMore = true; // 还有没有更多数据
-        let observer; // 保存观察器实例
-        
+        const PAGE_SIZE = 15;
+        let globalUserMap = {};
+        let isFetching = false;
+        let hasMore = true;
+        let observer;
+
         function escapeHTML(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -260,16 +295,6 @@
             if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #0059ff; font-weight: bold;';
             if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
             return '';
-        }
-
-        function getLevelInfo(pts) {
-            if (pts >= 10000) return { name: '王者', class: 'lv-king' };
-            if (pts >= 5000) return { name: '钻石', class: 'lv-diamond' };
-            if (pts >= 2000) return { name: '黄金', class: 'lv-gold' };
-            if (pts >= 1000) return { name: '白银', class: 'lv-silver' };
-            if (pts >= 500) return { name: '青铜', class: 'lv-bronze' };
-            if (pts >= 200) return { name: '黑铁', class: 'lv-iron' };
-            return { name: '原木', class: 'lv-log' };
         }
 
         function updateLanguage() {
@@ -302,7 +327,7 @@
                 const { error } = await _supabase.from('posts').update({ likes: newCount }).eq('id', postId);
                 if (error) throw error;
             } catch (err) {
-                console.error("Like failed", err);
+                console.error("[错误] 点赞同步失败:", err);
             }
         }
 
@@ -310,6 +335,8 @@
             const author = userMap ? userMap[p.nickname] : null;
             const points = author ? author.points : 0;
             const inventory = author ? author.inventory : null;
+
+            // 这里直接调用 db.js 里的 getLevelInfo
             const lv = getLevelInfo(points);
             const nickStyle = getNicknameStyle(inventory);
             const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
@@ -326,80 +353,78 @@
             </div>`;
         }
 
-        // === 核心逻辑：无限滚动加载 ===
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
             isFetching = true;
 
-            // 让底部的哨兵转圈圈显示出来
             const sentinelEl = document.getElementById('scroll-sentinel');
             sentinelEl.classList.add('visible');
-            
+
             const startTime = performance.now();
-            console.log(`%c[加载] 正在加载页面 ${currentPage + 1}...`, "color: blue");
+            console.log(`%c[加载] 正在请求第 ${currentPage + 1} 页数据...`, "color: blue");
+
+            const TIMEOUT_MS = 4000;
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("TIMEOUT")), TIMEOUT_MS)
+            );
 
             try {
                 const from = currentPage * PAGE_SIZE;
                 const to = (currentPage + 1) * PAGE_SIZE - 1;
 
-                const { data, error } = await _supabase
+                const requestPromise = _supabase
                     .from('posts')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .range(from, to);
 
+                const { data, error } = await Promise.race([requestPromise, timeoutPromise]);
+
                 if (error) throw error;
 
                 const listAllEl = document.getElementById('list-all');
-                
+
                 if (data.length > 0) {
                     const html = data.map(p => createCardHTML(p, globalUserMap)).join('');
                     listAllEl.insertAdjacentHTML('beforeend', html);
                     currentPage++;
-                    
+
                     const time = (performance.now() - startTime).toFixed(2);
-                    console.log(`%c[成功] 本次加载了 ${data.length} 个帖子，用时 (${time}ms)`, "color: green");
-                    document.getElementById('status-bar').innerText = `Page ${currentPage} (+${data.length} items)`;
+                    console.log(`%c[成功] 本次加载了 ${data.length} 条数据，耗时 ${time}ms`, "color: green");
                 }
 
-                // 判断是否还有下一页
                 if (data.length < PAGE_SIZE) {
                     hasMore = false;
-                    console.log("%c[提示] 全部帖子加载完毕", "color: gray");
-                    // 隐藏哨兵，显示到底提示
+                    console.log("%c[提示] 到底了，没有更多数据。", "color: gray");
                     sentinelEl.style.display = 'none';
                     document.getElementById('end-message').style.display = 'block';
-                    // 停止观察
                     if (observer) observer.disconnect();
                 } else {
-                    // 还有数据，隐藏哨兵动画，等待下次滚动
                     sentinelEl.classList.remove('visible');
                 }
-                
+
                 updateLanguage();
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('status-bar').innerText = "Load Error";
+                if (err.message === "TIMEOUT") {
+                    console.error(`[错误] 加载超时 (超过4秒)，本次加载 0 条。请检查网络。`);
+                    sentinelEl.classList.remove('visible');
+                } else {
+                    console.error("[错误] 业务异常:", err);
+                }
             } finally {
                 isFetching = false;
             }
         }
 
-        // === 启动“地雷”探测器 (IntersectionObserver) ===
         function setupIntersectionObserver() {
             const sentinelEl = document.getElementById('scroll-sentinel');
-            
-            const options = {
-                root: null, // 以视口为基准
-                rootMargin: '100px', // 提前 100px 触发，让用户感觉不到加载
-                threshold: 0.1 // 只要看到 10% 的地雷就触发
-            };
+            const options = { root: null, rootMargin: '100px', threshold: 0.1 };
 
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && hasMore && !isFetching) {
-                        console.log("[加载]划到页面底部，加载下一页...");
+                        console.log("[观察器] 触底，触发翻页...");
                         loadNextPage();
                     }
                 });
@@ -410,7 +435,6 @@
 
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            
             const listHotEl = document.getElementById('list-hot');
 
             try {
@@ -424,19 +448,17 @@
                 }
 
                 listHotEl.innerHTML = hotRes.data.map(p => createCardHTML(p, globalUserMap)).join('');
-
-                // 启动观察器 (会自动触发第一次加载)
                 setupIntersectionObserver();
 
             } catch (err) {
-                console.error("[错误]加载帖子数据时出错!", err);
-                listHotEl.innerHTML = "<p>Error loading data</p>";
+                console.error("[错误] 吐槽广场初始化失败:", err);
+                listHotEl.innerHTML = "<p>数据加载失败</p>";
             }
-            
             updateLanguage();
         }
 
         init();
     </script>
 </body>
+
 </html>
