@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>鸣谢名单 Credits - omg-by-Clark</title>
+    <style>
+        :root {
+            /* 严格遵循你的 #fffdf5 背景色，并结合 Catppuccin 调色 */
+            --bg: #fffdf5;
+            --text: #4c4f69;
+            /* Catppuccin Latte Text */
+            --brand: #d20f39;
+            /* Catppuccin Red */
+            --card: #ffffff;
+            --subtext: #6c6f85;
+        }
+
+        body.dark {
+            --bg: #1e1e2e;
+            /* Catppuccin Mocha Base */
+            --text: #cdd6f4;
+            --brand: #f38ba8;
+            --card: #181825;
+            --subtext: #a6adc8;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            transition: background-color 0.4s, color 0.4s;
+            /* 改为 Flex 布局，保证在任何设备上都完美居中 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .credits-card {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: var(--brand);
+        }
+
+        .desc {
+            color: var(--subtext);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        li {
+            padding: 15px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        body.dark li {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        li:hover {
+            transform: translateX(5px);
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+
+        .role {
+            font-size: 0.85em;
+            color: var(--subtext);
+        }
+
+        .back-link {
+            margin-top: 30px;
+            display: inline-block;
+            text-decoration: none;
+            color: var(--subtext);
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--brand);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="credits-card">
+        <h1 data-zh="🙏 鸣谢名单" data-en="🙏 Credits">🙏 鸣谢名单</h1>
+        <p class="desc" data-zh="特别感谢以下朋友对本项目的支持与帮助："
+            data-en="Special thanks to the following friends for their support and help with this project:">
+            特别感谢以下朋友对本项目的支持与帮助：
+        </p>
+
+        <ul id="credits-list">
+            <li>
+                <span class="name">小鱼儿 (Clark)</span>
+                <span class="role" data-zh="核心开发、架构设计与最初思路"
+                    data-en="Core Developer & Original Idea">核心开发、架构设计与最初思路</span>
+            </li>
+            <li>
+                <span class="name">Peter</span>
+                <span class="role" data-zh="技术顾问、更新思路与代码建议"
+                    data-en="Technical Advisor & Code Suggestions">技术顾问、更新思路与代码建议</span>
+            </li>
+            <li>
+                <span class="name">Catppuccin</span>
+                <span class="role" data-zh="全站配色规范与极客主题灵感"
+                    data-en="Color Palette & Design Inspiration">全站配色规范与极客主题灵感</span>
+            </li>
+        </ul>
+
+        <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back to Home">🏠 返回首页</a>
+    </div>
+
+    <script>
+        // 全量同步你的语言切换逻辑
+        function init() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            const isDark = localStorage.getItem('theme') === 'dark';
+
+            if (isDark) document.body.classList.add('dark');
+
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+            });
+        }
+        init();
+    </script>
+</body>
+
+</html>

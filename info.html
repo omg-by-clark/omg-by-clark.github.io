@@ -12,10 +12,9 @@
             --brand: #ff4757;
             --card: #fff;
             --disabled: #bdc3c7;
-            /* 新定义的橙色渐变起始色 */
-            --checkin-start: #fe640b;
-            /* 新定义的橙色渐变结束色 */
-            --checkin-end: #df8e1d;
+            /* 采用 Catppuccin 调色后的优雅橙色渐变，避开死灰区 */
+            --checkin-start: #fab387;
+            --checkin-end: #f9e2af;
         }
 
         body.dark {
@@ -48,7 +47,7 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        /* 等级徽章全量定义 */
+        /* 等级徽章 */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -60,16 +59,65 @@
             position: relative;
         }
 
-        .lv-log { background: #a1662f; color: white; }
-        .lv-bronze { background: #cd7f32; color: white; }
-        .lv-iron { background: #555555; color: white; }
-        .lv-silver { background: #e0e0e0; color: #000; }
-        .lv-gold { background: #ffd700; color: black; }
-        .lv-diamond { background: #add8e6; color: #0000ff; }
-        .lv-king { background: #ffd700; color: #ff8c00; padding-right: 18px; }
-        .lv-king::after { content: "V"; position: absolute; right: 4px; color: #ff8c00; font-weight: 900; font-style: italic; }
-        .lv-epic { background: #a333c8; color: white; padding-right: 18px; }
-        .lv-epic::after { content: "V"; position: absolute; right: 4px; color: #e0b0ff; font-weight: 900; font-style: italic; }
+        .lv-log {
+            background: #a1662f;
+            color: white;
+        }
+
+        .lv-bronze {
+            background: #cd7f32;
+            color: white;
+        }
+
+        .lv-iron {
+            background: #555555;
+            color: white;
+        }
+
+        .lv-silver {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        .lv-gold {
+            background: #ffd700;
+            color: black;
+        }
+
+        .lv-diamond {
+            background: #add8e6;
+            color: #0000ff;
+        }
+
+        .lv-king {
+            background: #ffd700;
+            color: #ff8c00;
+            padding-right: 18px;
+        }
+
+        .lv-king::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            color: #ff8c00;
+            font-weight: 900;
+            font-style: italic;
+        }
+
+        .lv-epic {
+            background: #a333c8;
+            color: white;
+            padding-right: 18px;
+        }
+
+        .lv-epic::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            color: #e0b0ff;
+            font-weight: 900;
+            font-style: italic;
+        }
 
         ul {
             list-style: none;
@@ -77,28 +125,23 @@
             line-height: 2.5;
             text-align: left;
             width: 100%;
-            margin-bottom: 20px; /* 稍微减小下边距，给按钮腾点地方 */
+            margin-bottom: 20px;
         }
 
-        /* 🌟 修改后的签到按钮样式：小巧、鲜艳 */
+        /* 签到按钮 */
         .btn-checkin {
-            /* 使用你指定的鲜艳橙色渐变 */
             background: linear-gradient(135deg, var(--checkin-start), var(--checkin-end));
-            color: white;
+            color: #1e1e2e;
             border: none;
-            /* 缩小内边距，使其更精致 */
-            padding: 8px 16px;
+            padding: 10px 24px;
             border-radius: 50px;
             cursor: pointer;
-            /* 不再是全宽，而是自适应内容宽度 */
             width: auto;
             display: inline-block;
-            /* 调整字体大小，比等级标签略大 */
             font-size: 0.95em;
             font-weight: bold;
             margin: 10px 0 20px 0;
-            /* 调整阴影颜色以匹配新的橙色主题 */
-            box-shadow: 0 4px 12px rgba(254, 100, 11, 0.3);
+            box-shadow: 0 4px 12px rgba(250, 179, 135, 0.3);
             transition: transform 0.2s, filter 0.2s;
         }
 
@@ -106,12 +149,12 @@
             transform: scale(0.95);
         }
 
-        /* 已签到状态 */
         .btn-checkin.disabled {
             background: var(--disabled);
             box-shadow: none;
             cursor: not-allowed;
             transform: none;
+            color: white;
         }
 
         .pwd-section {
@@ -147,7 +190,7 @@
         }
 
         .btn-update:active {
-            transform: scale(1.05);
+            transform: scale(0.98);
         }
 
         .back-link {
@@ -201,8 +244,36 @@
     <script src="db.js"></script>
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
-        let currentPoints = 0; // 暂存当前积分
-        let currentCheckInCount = 0; // 🌟 新增：暂存当前签到次数
+        let currentPoints = 0;
+        let currentCheckInCount = 0;
+
+        /**
+         * 🔒 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
+         */
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * 🎨 昵称特效引擎：避开浅青柠死灰区
+         */
+        function getNickStyle(inventory) {
+            if (!inventory) return '';
+            const now = new Date();
+            if (inventory['100'] && new Date(inventory['100']) > now) {
+                return 'background: linear-gradient(to right, #f38ba8, #fab387, #f9e2af, #c4d695, #a6e3a1, #89dceb, #89b4fa, #cba6f7); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+            }
+            if (inventory['101'] && new Date(inventory['101']) > now) {
+                return 'color: #89b4fa; font-weight: bold;';
+            }
+            if (inventory['102'] && new Date(inventory['102']) > now) {
+                return 'color: #f9e2af; font-weight: bold; text-shadow: 0 0 5px rgba(250, 179, 135, 0.5);';
+            }
+            return '';
+        }
 
         function togglePwdForm() {
             const f = document.getElementById('pwd-form');
@@ -210,14 +281,14 @@
         }
 
         /**
-         * 初始化：从 Supabase 读取积分、签到时间 和 签到次数
+         * 初始化：从 Supabase 读取积分、签到时间、次数及背包
          */
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const user = localStorage.getItem('username');
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // 翻译
+            // 1. 翻译逻辑
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
             });
@@ -225,78 +296,70 @@
                 el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
             });
 
-            // 获取云端数据
+            // 2. 获取云端数据
             const { data } = await _supabase.from('users').select('*').eq('username', user).single();
             if (data) {
                 currentPoints = data.points || 0;
-                // 🌟 获取签到次数，如果没有则默认为 0
-                currentCheckInCount = data.check_in_count || 0; 
-                
+                currentCheckInCount = data.check_in_count || 0;
+
                 const lv = getLevelInfo(currentPoints);
-                document.getElementById('u-name').innerText = (lang === 'zh' ? "👤 用户名: " : "👤 Username: ") + data.username;
+                const nStyle = getNickStyle(data.inventory);
+                const safeName = escapeHTML(data.username); // 安全转义
+
+                // 🌟 渲染用户名 (带特效预览)
+                document.getElementById('u-name').innerHTML = (lang === 'zh' ? "👤 用户名: " : "👤 Username: ") +
+                    `<span style="${nStyle}">${safeName}</span>`;
+
                 document.getElementById('u-points').innerText = (lang === 'zh' ? "💰 积分: " : "💰 Points: ") + currentPoints;
-                document.getElementById('u-level').innerHTML = (lang === 'zh' ? "🥇 等级: " : "🥇 Level: ") + `<span class="lv-badge ${lv.class}">${lv.name}</span>`;
-                
-                // 🌟 渲染新增的签到信息栏
+                document.getElementById('u-level').innerHTML = (lang === 'zh' ? "🥇 等级: " : "🥇 Level: ") +
+                    `<span class="lv-badge ${lv.class}">${lv.name}</span>`;
+
                 document.getElementById('u-check-count').innerText = (lang === 'zh' ? "🔢 签到次数: " : "🔢 Total Check-ins: ") + currentCheckInCount;
 
-                // 🚀 核心逻辑 (Timezone Aware)
+                // 3. 签到状态 (Timezone Aware)
                 if (data.last_check_in) {
                     const lastDateObj = new Date(data.last_check_in);
-                    
-                    // 🌟 将 ISO 时间转换为本地可读的日期字符串显示
                     const readableDate = lastDateObj.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
                     document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: " : "📅 Last Check-in: ") + readableDate;
 
-                    const todayDateObj = new Date();
-                    if (lastDateObj.toDateString() === todayDateObj.toDateString()) {
+                    if (lastDateObj.toDateString() === new Date().toDateString()) {
                         const btn = document.getElementById('btn-checkin');
                         btn.classList.add('disabled');
-                        // 简化了已签到的文字提示
                         btn.innerText = lang === 'zh' ? "✅ 今天已签到" : "✅ Checked In";
                         btn.disabled = true;
                     }
                 } else {
-                     // 如果从未签到过，显示占位符
-                     document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: 暂无" : "📅 Last Check-in: None");
+                    document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: 暂无" : "📅 Last Check-in: None");
                 }
             }
         }
 
-        /*
-         📅 每日签到逻辑 (存入标准 ISO 时间，并更新次数)
+        /**
+         * 每日签到逻辑
          */
         async function dailyCheckIn() {
             const user = localStorage.getItem('username');
             const btn = document.getElementById('btn-checkin');
-            
-            if (btn.disabled) return; 
+            if (btn.disabled) return;
 
             const reward = Math.floor(Math.random() * 10) + 1;
             const newPoints = currentPoints + reward;
-            // 🌟 签到次数 + 1
             const newCheckInCount = currentCheckInCount + 1;
-            const nowISO = new Date().toISOString(); 
+            const nowISO = new Date().toISOString();
 
-            // UI 反馈
             btn.innerText = "⏳ ...";
 
-            // 更新数据库：同时更新积分、时间和次数
-            const { error } = await _supabase.from('users').update({ 
+            const { error } = await _supabase.from('users').update({
                 points: newPoints,
                 last_check_in: nowISO,
-                // 🌟 需要在数据库 users 表先添加 check_in_count (int) 字段
                 check_in_count: newCheckInCount
             }).eq('username', user);
 
             if (!error) {
-                alert(lang === 'zh' 
-                    ? `🎉 签到成功！获得了 ${reward} 积分！` 
-                    : `🎉 Success! You got ${reward} points!`);
-                location.reload(); 
+                alert(lang === 'zh' ? `🎉 签到成功！获得了 ${reward} 积分！` : `🎉 Success! You got ${reward} points!`);
+                location.reload();
             } else {
                 alert("Error: " + error.message);
-                // 恢复按钮原始文字
                 btn.innerHTML = '📅 <span data-zh="每日签到" data-en="Check-in Now">' + (lang === 'zh' ? "每日签到" : "Check-in Now") + '</span>';
             }
         }
@@ -321,16 +384,9 @@
             const { error } = await _supabase.from('users').update({ password: newHash }).eq('username', username);
 
             if (!error) {
-                const msg = lang === 'zh' ? "修改成功！请重新登录。" : "Success! Please login again.";
-                if (confirm(msg)) {
-                    localStorage.removeItem('username');
-                    localStorage.removeItem('isAdmin');
-                    localStorage.removeItem('userPoints');
-                    window.location.href = 'index.html';
-                } else {
-                    localStorage.removeItem('username');
-                    window.location.href = 'index.html';
-                }
+                alert(lang === 'zh' ? "修改成功！请重新登录。" : "Success! Please login again.");
+                localStorage.clear();
+                window.location.href = 'index.html';
             } else {
                 alert("Error: " + error.message);
             }
