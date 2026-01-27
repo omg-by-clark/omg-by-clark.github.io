@@ -12,7 +12,8 @@
         const adminUsers = ['小鱼儿', '小鱼儿小号'];
         const currentUser = localStorage.getItem('username');
         if (!adminUsers.includes(currentUser)) {
-            alert("非法访问：检测到非作者身份 / Unauthorized Access!");
+            const warning = localStorage.getItem('lang') === 'en' ? "Unauthorized Access!" : "非法访问：检测到非作者身份！";
+            alert(warning);
             window.location.href = 'index.html';
         }
     </script>
@@ -89,8 +90,8 @@
         }
 
         .btn-reset {
-            background: #f1c40f;
-            color: #333;
+            background: #f39c12;
+            color: white;
         }
 
         .btn-cmt {
@@ -113,7 +114,7 @@
     <h2 data-zh="👑 管理员后台" data-en="👑 Admin Dashboard">👑 管理员后台</h2>
 
     <div class="section-box">
-        <h3 data-zh="👥 用户积分管理" data-en="👥 User Points">👥 用户积分管理</h3>
+        <h3 data-zh="👥 用户管理" data-en="👥 User Management">👥 用户管理</h3>
         <div id="user-admin-list">Loading Users...</div>
     </div>
 
@@ -133,9 +134,6 @@
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
-        /**
-         * 🛡️ 安全转义：防止 XSS
-         */
         function esc(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -143,51 +141,119 @@
             return div.innerHTML;
         }
 
+        /**
+         * 🌟 用户列表：标签和数值全双语
+         */
         async function loadUsers() {
             const listEl = document.getElementById('user-admin-list');
             const { data: users } = await _supabase.from('users').select('*').order('points', { ascending: false });
 
             listEl.innerHTML = users.map(u => `
                 <div class="item-row">
-                    <span>👤 <b>${esc(u.username)}</b> | 💰 Points: <b>${u.points}</b></span>
-                    <button class="btn-edit" onclick="changePoints('${u.username}', ${u.points})">⚙️ Edit</button>
+                    <span>
+                        👤 <b>${esc(u.username)}</b> | 
+                        💰 ${lang === 'zh' ? "积分" : "Points"}: <b>${u.points}</b> | 
+                        ❤️ ${lang === 'zh' ? "作者获赞" : "Author Likes"}: <b>${u.author_likes || 0}</b>
+                    </span>
+                    <div class="btn-group">
+                        <button class="btn-edit" onclick="changePoints('${u.username}', ${u.points})">⚙️ ${lang === 'zh' ? "修改积分" : "Points"}</button>
+                        <button class="btn-reset" onclick="resetAuthorLikes('${u.username}')">🧹 ${lang === 'zh' ? "获赞清零" : "Reset Likes"}</button>
+                    </div>
                 </div>`).join('');
+        }
+
+        async function resetAuthorLikes(name) {
+            const msg = lang === 'zh' ? `确定要清零 ${name} 的所有获赞吗？` : `Reset all likes for ${name}?`;
+            if (!confirm(msg)) return;
+
+            const { error } = await _supabase.from('users').update({ author_likes: 0 }).eq('username', name);
+            if (!error) {
+                alert(lang === 'zh' ? "清零成功！" : "Done!");
+                loadUsers();
+            }
         }
 
         async function changePoints(name, cur) {
             const promptMsg = lang === 'zh' ? `修改 ${name} 的积分：` : `Change points for ${name}:`;
             const val = prompt(promptMsg, cur);
             if (!val) return;
+
             const { error } = await _supabase.from('users').update({ points: parseInt(val) }).eq('username', name);
-            if (!error) { alert("Updated!"); loadUsers(); }
+            if (!error) {
+                alert(lang === 'zh' ? "积分修改成功！" : "Updated!");
+                loadUsers();
+            }
         }
 
+        /**
+         * 📝 帖子列表：UI 交互全双语
+         */
         async function draw() {
             const listEl = document.getElementById('admin-list');
             const { data: posts } = await _supabase.from('posts').select('*').order('created_at', { ascending: false });
 
             listEl.innerHTML = posts.map(p => `
                 <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small>
+                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small> | ❤️ ${p.likes || 0}
                     <div class="btn-group">
-                        <button class="btn-cmt" onclick="loadComments(${p.id}, '${p.title}')">💬 管理评论</button>
-                        <button class="btn-del" onclick="delPost(${p.id})">🗑️ 删除此帖</button>
+                        <button class="btn-cmt" onclick="loadComments(${p.id}, '${p.title}')">💬 ${lang === 'zh' ? "管理评论" : "Comments"}</button>
+                        <button class="btn-reset" onclick="resetPostLikes(${p.id})">📍 ${lang === 'zh' ? "帖子赞清零" : "Reset Likes"}</button>
+                        <button class="btn-del" onclick="delPost(${p.id})">🗑️ ${lang === 'zh' ? "删除" : "Delete"}</button>
                     </div>
                 </div>`).join('');
         }
 
+        async function resetPostLikes(id) {
+            const msg = lang === 'zh' ? "重置此帖点赞数？" : "Reset post likes?";
+            if (confirm(msg)) {
+                await _supabase.from('posts').update({ likes: 0 }).eq('id', id);
+                draw();
+            }
+        }
+
         async function delPost(id) {
-            const msg = lang === 'zh' ? "确定要删除吗？" : "Sure to delete?";
+            const msg = lang === 'zh' ? "确定要彻底删除此帖吗？" : "Sure to delete this post?";
             if (confirm(msg)) {
                 await _supabase.from('posts').delete().eq('id', id);
                 draw();
             }
         }
 
+        /**
+         * 💬 评论管理
+         */
+        async function loadComments(postId, postTitle) {
+            const section = document.getElementById('cmt-admin-section');
+            const listEl = document.getElementById('comment-list');
+            section.style.display = 'block';
+            listEl.innerHTML = lang === 'zh' ? "正在加载..." : "Loading...";
+
+            const { data: cmts } = await _supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: false });
+
+            if (!cmts || cmts.length === 0) {
+                listEl.innerHTML = `<p>${lang === 'zh' ? `《${esc(postTitle)}》暂无评论` : `No comments for "${esc(postTitle)}"`}</p>`;
+                return;
+            }
+
+            listEl.innerHTML = `<h4>${lang === 'zh' ? "当前管理：" : "Managing:"} ${esc(postTitle)}</h4>` + cmts.map(c => `
+                <div class="item-row">
+                    <span><b>${esc(c.nickname)}</b>: ${esc(c.content)}</span>
+                    <button class="btn-del" onclick="delComment(${c.id}, ${postId}, '${postTitle}')">🗑️ ${lang === 'zh' ? "删除" : "Delete"}</button>
+                </div>`).join('');
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function delComment(id, postId, title) {
+            const msg = lang === 'zh' ? "确定删除此评论？" : "Delete this comment?";
+            if (confirm(msg)) {
+                await _supabase.from('comments').delete().eq('id', id);
+                loadComments(postId, title);
+            }
+        }
+
         loadUsers();
         draw();
 
-        // 动态同步静态文本翻译
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
         });
