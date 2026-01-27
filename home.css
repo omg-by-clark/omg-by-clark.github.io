@@ -71,6 +71,9 @@ h1 {
     background: linear-gradient(135deg, #40a02b, #3bcc2e);
 }
 
+.btn-store {
+    background: linear-gradient(135deg, #8839ef, #ac76ea);
+}
 .footer {
     margin-top: 50px;
     display: flex;
