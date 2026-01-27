@@ -20,7 +20,8 @@
             --text: #f0f0f0;
             --card: #2d2d2d;
             --brand: #ff6b81;
-            --unliked: hsl(227deg, 12%, 60%); /* h=色相  s=饱和  l=亮度 */
+            --unliked: hsl(227deg, 12%, 60%);
+            /* h=色相  s=饱和  l=亮度 */
             --hot-border: #ff6b81;
         }
 
@@ -282,6 +283,19 @@
             return '';
         }
 
+        /**
+         * 🏆 获取等级信息
+         */
+        function getLevelInfo(pts) {
+            if (pts >= 10000) return { name: '王者', class: 'lv-king' };
+            if (pts >= 5000) return { name: '钻石', class: 'lv-diamond' };
+            if (pts >= 2000) return { name: '黄金', class: 'lv-gold' };
+            if (pts >= 1000) return { name: '白银', class: 'lv-silver' };
+            if (pts >= 500) return { name: '青铜', class: 'lv-bronze' };
+            if (pts >= 200) return { name: '黑铁', class: 'lv-iron' };
+            return { name: '原木', class: 'lv-log' };
+        }
+
         async function handleLike(event, postId) {
             event.stopPropagation();
             const btn = event.currentTarget;
@@ -362,6 +376,10 @@
         }
 
         async function render() {
+            // 🚀 计时开始
+            const startTime = performance.now();
+            console.log("%c[System] 开始请求 Supabase 数据...", "color: #1e66f5; font-weight: bold;");
+
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const lang = localStorage.getItem('lang') || 'zh';
 
@@ -405,6 +423,20 @@
                 document.querySelectorAll('[data-zh]').forEach(el => {
                     el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
                 });
+
+                // 🏁 计时结束并打印
+                const endTime = performance.now();
+                const totalTime = (endTime - startTime).toFixed(2);
+                console.log(
+                    `%c[Success] 渲染完成！\n%c加载耗时: %c${totalTime}ms`,
+                    "color: #40a02b; font-weight: bold; font-size: 14px;",
+                    "color: #333;",
+                    "color: #ff4757; font-weight: bold; font-size: 16px; text-decoration: underline;"
+                );
+
+                if (totalTime > 800) {
+                    console.warn(`[Warning] 加载超过 ${totalTime}ms，建议检查网络延迟或优化数据库索引。`);
+                }
 
             } catch (err) {
                 console.error(err);
