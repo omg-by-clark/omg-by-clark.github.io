@@ -152,25 +152,13 @@
                 <div class="item-row">
                     <span>
                         👤 <b>${esc(u.username)}</b> | 
-                        💰 ${lang === 'zh' ? "积分" : "Points"}: <b>${u.points}</b> | 
-                        ❤️ ${lang === 'zh' ? "作者获赞" : "Author Likes"}: <b>${u.author_likes || 0}</b>
+                        💰 ${lang === 'zh' ? "积分" : "Points"}: <b>${u.points}</b>
                     </span>
                     <div class="btn-group">
                         <button class="btn-edit" onclick="changePoints('${u.username}', ${u.points})">⚙️ ${lang === 'zh' ? "修改积分" : "Points"}</button>
-                        <button class="btn-reset" onclick="resetAuthorLikes('${u.username}')">🧹 ${lang === 'zh' ? "获赞清零" : "Reset Likes"}</button>
+
                     </div>
                 </div>`).join('');
-        }
-
-        async function resetAuthorLikes(name) {
-            const msg = lang === 'zh' ? `确定要清零 ${name} 的所有获赞吗？` : `Reset all likes for ${name}?`;
-            if (!confirm(msg)) return;
-
-            const { error } = await _supabase.from('users').update({ author_likes: 0 }).eq('username', name);
-            if (!error) {
-                alert(lang === 'zh' ? "清零成功！" : "Done!");
-                loadUsers();
-            }
         }
 
         async function changePoints(name, cur) {
