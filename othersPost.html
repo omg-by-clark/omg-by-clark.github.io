@@ -324,7 +324,7 @@
             sentinelEl.classList.add('visible');
             
             const startTime = performance.now();
-            console.log(`%c[Infinite Scroll] Loading Page ${currentPage + 1}...`, "color: blue");
+            console.log(`%c[加载] 正在加载页面 ${currentPage + 1}...`, "color: blue");
 
             try {
                 const from = currentPage * PAGE_SIZE;
@@ -346,14 +346,14 @@
                     currentPage++;
                     
                     const time = (performance.now() - startTime).toFixed(2);
-                    console.log(`%c[Success] +${data.length} posts (${time}ms)`, "color: green");
+                    console.log(`%c[成功] 本次加载了 ${data.length} 个帖子，用时 (${time}ms)`, "color: green");
                     document.getElementById('status-bar').innerText = `Page ${currentPage} (+${data.length} items)`;
                 }
 
                 // 判断是否还有下一页
                 if (data.length < PAGE_SIZE) {
                     hasMore = false;
-                    console.log("%c[System] No more posts.", "color: gray");
+                    console.log("%c[提示] 全部帖子加载完毕", "color: gray");
                     // 隐藏哨兵，显示到底提示
                     sentinelEl.style.display = 'none';
                     document.getElementById('end-message').style.display = 'block';
