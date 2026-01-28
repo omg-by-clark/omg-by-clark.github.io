@@ -11,6 +11,8 @@
             --text: #333;
             --brand: #ff4757;
             --card: #fff;
+            --unliked: #bbb;
+            /* 新增：未点赞颜色 */
         }
 
         body.dark {
@@ -18,6 +20,7 @@
             --text: #f0f0f0;
             --brand: #ff6b81;
             --card: #2d2d2d;
+            --unliked: hsl(227deg, 12%, 60%);
         }
 
         body {
@@ -48,9 +51,55 @@
             margin-bottom: 30px;
         }
 
+        .action-area {
+            display: flex;
+            justify-content: center; /* 居中显示 */
+            margin-bottom: 40px;
+        }
+
+        .like-btn {
+            background: var(--card);
+            border: 2px solid var(--unliked);
+            color: var(--unliked);
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .like-btn.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: white;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* ================================= */
+
         /* 评论区样式 */
         .cmt-box {
-            margin-top: 50px;
+            margin-top: 20px;
             border-top: 2px solid var(--brand);
             padding-top: 25px;
         }
@@ -106,40 +155,32 @@
             color: white;
         }
 
-        /* 原木 */
         .lv-iron {
             background: #4a4a4a;
             color: white;
         }
 
-        /* 黑铁 */
         .lv-bronze {
             background: #cd7f32;
             color: white;
         }
 
-        /* 青铜 */
         .lv-silver {
             background: #e0e0e0;
             color: #333;
         }
 
-        /* 白银 */
         .lv-gold {
             background: #ffd700;
             color: #856404;
         }
 
-        /* 黄金 */
         .lv-diamond {
             background: #b9f2ff;
             color: #007bff;
         }
 
-        /* 钻石 */
-
         .lv-king {
-            /* 王者 */
             background: linear-gradient(45deg, #ffd700, #ffaa00);
             color: #fff;
             padding-right: 18px;
@@ -154,7 +195,6 @@
         }
 
         .lv-epic {
-            /* 史诗 */
             background: linear-gradient(45deg, #a333c8, #6d28d9);
             color: white;
             padding-right: 18px;
@@ -191,6 +231,12 @@
 
     <div id="c">Loading...</div>
 
+    <div class="action-area">
+        <button id="btn-like" class="like-btn" onclick="toggleDetailLike()">
+            👍 <span id="like-count">0</span>
+        </button>
+    </div>
+
     <div class="cmt-box">
         <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
         <div id="cmt-list"></div>
@@ -209,7 +255,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
     <script>
-        // 初始化语言与主题渲染 [cite: 2026-01-25]
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 

@@ -247,9 +247,7 @@
         let currentPoints = 0;
         let currentCheckInCount = 0;
 
-        /**
-         * 🔒 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
-         */
+        // 🔒 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
         function escapeHTML(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -261,7 +259,7 @@
             if (!inventory) return '';
             const now = new Date();
             if (inventory['100'] && new Date(inventory['100']) > now) {
-                return 'background: linear-gradient(to right, #d20f39, #0f0907, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+                return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;'; return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
             }
             if (inventory['101'] && new Date(inventory['101']) > now) {
                 return 'color: #89b4fa; font-weight: bold;';
