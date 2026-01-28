@@ -22,11 +22,3 @@ items:
     desc_en: "Make your nickname gold to show your love for programming!"
     price: 10 # 每天
     icon: "💛"
-  # 2开头表示补签类道具
-  - id: 200
-    name: "补签神贴"
-    name_en: "Streak Rescue"
-    icon: "🩹"
-    price: 9 # 一次性/每个
-    desc: "断签了？没关系，用它救回你的连续签到天数！"
-    desc_en: "Restore your check-in streak with this item."
