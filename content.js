@@ -20,7 +20,7 @@ function getNickStyle(inventory) {
     // 彩虹色昵称
     if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
     // 极客蓝昵称
-    if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #89b4fa; font-weight: bold;';
+    if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
     // 土豪金昵称
     if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #f9e2af; text-shadow: 0 0 5px rgba(250, 179, 135, 0.5); font-weight: bold;';
     return '';

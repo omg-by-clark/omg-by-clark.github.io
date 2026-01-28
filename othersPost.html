@@ -13,6 +13,8 @@
             --brand: #ff4757;
             --unliked: #ccc;
             --hot-border: #ff6b81;
+            /* 随机按钮专用渐变 */
+            --random-grad: linear-gradient(45deg, #e64553, #fe640b);
         }
 
         body.dark {
@@ -32,6 +34,38 @@
             background: var(--bg);
             color: var(--text);
             transition: 0.3s;
+        }
+
+        /* 标题居中且包含随机按钮 */
+        .header-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-random {
+            background: var(--random-grad);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(230, 69, 83, 0.3);
+            white-space: nowrap;
+        }
+
+        .btn-random:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(230, 69, 83, 0.4);
+        }
+
+        .btn-random:active {
+            transform: scale(0.95);
         }
 
         .layout-container {
@@ -138,7 +172,6 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        /* 等级样式引用 db.js 中的类名 */
         .lv-log {
             background: #a1662f;
         }
@@ -180,7 +213,6 @@
             box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
         }
 
-        /* 加载条样式 */
         .loading-sentinel {
             display: flex;
             justify-content: center;
@@ -243,8 +275,9 @@
 </head>
 
 <body>
-    <div style="margin-bottom: 20px;">
-        <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza" style="text-align: center;">👀 吐槽广场 Plaza</h1>
+    <div class="header-container">
+        <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza" style="margin: 0;">👀 吐槽广场 Plaza</h1>
+        <button onclick="goRandom()" class="btn-random" data-zh="🤔 随机" data-en="🤔 Random">🤔 随机</button>
     </div>
 
     <div class="layout-container">
@@ -258,7 +291,7 @@
         </div>
 
         <div class="col-hot">
-            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热门 Top 5" data-en="🔥 Hot Top 5">🔥 热搜
+            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热搜 Top 5" data-en="🔥 Hot Top 5">🔥 热搜
                 Top 5</h2>
             <div id="list-hot">
                 <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span>
@@ -273,7 +306,6 @@
     <script src="db.js"></script>
 
     <script>
-        // === 全局变量 ===
         let currentPage = 0;
         const PAGE_SIZE = 15;
         let globalUserMap = {};
@@ -292,7 +324,7 @@
             if (!inventory) return '';
             const now = new Date();
             if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
-            if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #0059ff; font-weight: bold;';
+            if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
             if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
             return '';
         }
@@ -302,6 +334,43 @@
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
             });
+        }
+
+        // === 新增：递归随机加载逻辑 [cite: 2026-01-27, 2026-01-28] ===
+        async function goRandom() {
+            // 禁止连点
+            if (isFetching) return;
+            isFetching = true;
+
+            try {
+                // 1. 获取总数
+                const { count, error: countErr } = await _supabase
+                    .from('posts').select('*', { count: 'exact', head: true });
+                if (countErr) throw countErr;
+
+                if (count === 0) return alert("广场还是空荡荡的...");
+
+                // 2. 定义内部递归函数
+                const fetchUntilFound = async () => {
+                    const randomIndex = Math.floor(Math.random() * count);
+                    const { data, error } = await _supabase
+                        .from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+
+                    if (!data || error) {
+                        console.warn(`[系统] 索引 ${randomIndex} 失效，重新抽取...`);
+                        return await fetchUntilFound(); // 递归重试
+                    }
+                    return data.id;
+                };
+
+                const validId = await fetchUntilFound();
+                location.href = `content.html?id=${validId}`;
+
+            } catch (err) {
+                console.error("[随机失败]", err);
+            } finally {
+                isFetching = false;
+            }
         }
 
         async function handleLike(event, postId) {
@@ -335,8 +404,6 @@
             const author = userMap ? userMap[p.nickname] : null;
             const points = author ? author.points : 0;
             const inventory = author ? author.inventory : null;
-
-            // 这里直接调用 db.js 里的 getLevelInfo
             const lv = getLevelInfo(points);
             const nickStyle = getNicknameStyle(inventory);
             const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
@@ -356,62 +423,31 @@
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
             isFetching = true;
-
             const sentinelEl = document.getElementById('scroll-sentinel');
             sentinelEl.classList.add('visible');
-
-            const startTime = performance.now();
-            console.log(`%c[加载] 正在请求第 ${currentPage + 1} 页数据...`, "color: blue");
-
-            const TIMEOUT_MS = 4000;
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("TIMEOUT")), TIMEOUT_MS)
-            );
 
             try {
                 const from = currentPage * PAGE_SIZE;
                 const to = (currentPage + 1) * PAGE_SIZE - 1;
-
-                const requestPromise = _supabase
-                    .from('posts')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .range(from, to);
-
-                const { data, error } = await Promise.race([requestPromise, timeoutPromise]);
-
+                const { data, error } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).range(from, to);
                 if (error) throw error;
 
                 const listAllEl = document.getElementById('list-all');
-
                 if (data.length > 0) {
-                    const html = data.map(p => createCardHTML(p, globalUserMap)).join('');
-                    listAllEl.insertAdjacentHTML('beforeend', html);
+                    listAllEl.insertAdjacentHTML('beforeend', data.map(p => createCardHTML(p, globalUserMap)).join(''));
                     currentPage++;
-
-                    const time = (performance.now() - startTime).toFixed(2);
-                    console.log(`%c[成功] 本次加载了 ${data.length} 条数据，耗时 ${time}ms`, "color: green");
                 }
-
                 if (data.length < PAGE_SIZE) {
                     hasMore = false;
-                    console.log("%c[提示] 到底了，没有更多数据。", "color: gray");
                     sentinelEl.style.display = 'none';
                     document.getElementById('end-message').style.display = 'block';
                     if (observer) observer.disconnect();
                 } else {
                     sentinelEl.classList.remove('visible');
                 }
-
                 updateLanguage();
-
             } catch (err) {
-                if (err.message === "TIMEOUT") {
-                    console.error(`[错误] 加载超时 (超过4秒)，本次加载 0 条。请检查网络。`);
-                    sentinelEl.classList.remove('visible');
-                } else {
-                    console.error("[错误] 业务异常:", err);
-                }
+                console.error("[加载错误]", err);
             } finally {
                 isFetching = false;
             }
@@ -419,44 +455,30 @@
 
         function setupIntersectionObserver() {
             const sentinelEl = document.getElementById('scroll-sentinel');
-            const options = { root: null, rootMargin: '100px', threshold: 0.1 };
-
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && hasMore && !isFetching) {
-                        console.log("[观察器] 触底，触发翻页...");
-                        loadNextPage();
-                    }
+                    if (entry.isIntersecting && hasMore && !isFetching) loadNextPage();
                 });
-            }, options);
-
+            }, { root: null, rootMargin: '100px', threshold: 0.1 });
             observer.observe(sentinelEl);
         }
 
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const listHotEl = document.getElementById('list-hot');
-
             try {
                 const [hotRes, usersRes] = await Promise.all([
                     _supabase.from('posts').select('*').order('likes', { ascending: false }).limit(5),
                     _supabase.from('users').select('username, points, inventory')
                 ]);
-
-                if (usersRes.data) {
-                    globalUserMap = usersRes.data.reduce((acc, user) => { acc[user.username] = user; return acc; }, {});
-                }
-
+                if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => { acc[user.username] = user; return acc; }, {});
                 listHotEl.innerHTML = hotRes.data.map(p => createCardHTML(p, globalUserMap)).join('');
                 setupIntersectionObserver();
-
             } catch (err) {
-                console.error("[错误] 吐槽广场初始化失败:", err);
                 listHotEl.innerHTML = "<p>数据加载失败</p>";
             }
             updateLanguage();
         }
-
         init();
     </script>
 </body>
