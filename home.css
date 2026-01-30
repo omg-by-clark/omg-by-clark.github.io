@@ -1,7 +1,6 @@
 /* home.css */
 :root {
-    --bg: #fffdf5;
-    /* 修改背景颜色为 #fffdf5 */
+    --bg: #fffdf5; /* 修改背景颜色为 #fffdf5 */
     --text: #333;
     --brand: #ff4757;
 }
