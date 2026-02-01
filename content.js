@@ -1,3 +1,4 @@
+/**** content.js ****/
 // === 0. 国际化字典配置 (i18n) ===
 const currentLang = localStorage.getItem('lang') || 'zh';
 

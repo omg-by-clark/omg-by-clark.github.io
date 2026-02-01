@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- credits.html -->
 <html lang="zh-CN">
 
 <head>
@@ -7,23 +8,21 @@
     <title>鸣谢名单 Credits - omg-by-Clark</title>
     <style>
         :root {
-            /* 严格遵循你的 #fffdf5 背景色，并结合 Catppuccin 调色 */
             --bg: #fffdf5;
             --text: #4c4f69;
-            /* Catppuccin Latte Text */
             --brand: #d20f39;
-            /* Catppuccin Red */
             --card: #ffffff;
             --subtext: #6c6f85;
+            --license-bg: rgba(210, 15, 57, 0.05);
         }
 
         body.dark {
-            --bg: #1e1e2e;
-            /* Catppuccin Mocha Base */
+            --bg: #121212;
             --text: #cdd6f4;
             --brand: #f38ba8;
-            --card: #181825;
+            --card: #1e1e1e;
             --subtext: #a6adc8;
+            --license-bg: rgba(243, 139, 168, 0.08);
         }
 
         body {
@@ -33,7 +32,6 @@
             background: var(--bg);
             color: var(--text);
             transition: background-color 0.4s, color 0.4s;
-            /* 改为 Flex 布局，保证在任何设备上都完美居中 */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -46,10 +44,14 @@
             padding: 40px;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             text-align: center;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .credits-card {
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         h1 {
@@ -102,6 +104,29 @@
             color: var(--subtext);
         }
 
+        .license-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--license-bg);
+            border-radius: 16px;
+            border: 1px dashed var(--brand);
+            text-align: left;
+        }
+
+        .license-title {
+            font-weight: bold;
+            color: var(--brand);
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.9em;
+        }
+
+        .license-text {
+            font-size: 0.8em;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
         .back-link {
             margin-top: 30px;
             display: inline-block;
@@ -144,11 +169,18 @@
             </li>
         </ul>
 
+        <div class="license-box">
+            <span class="license-title" data-zh="⚖️ 开源许可声明" data-en="⚖️ License Notice">⚖️ 开源许可声明</span>
+            <p class="license-text" data-zh="我允许你使用我的代码并用于商业用途，但是请将你使用或修改的代码全部开源，并且不要拿着你用的代码找我麻烦（免责），否则我将撤销你对代码的使用许可。"
+                data-en="Commercial use is permitted, provided that all used or modified code remains open source. You agree not to hold the author liable for any issues arising from the use of this code; otherwise, your license will be revoked.">
+                我允许你使用我的代码并用于商业用途，但是请将你使用或修改的代码全部开源，并且不要拿着你用的代码找我麻烦（免责），否则我将撤销你对代码的使用许可。
+            </p>
+        </div>
+
         <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back to Home">🏠 返回首页</a>
     </div>
 
     <script>
-        // 全量同步你的语言切换逻辑
         function init() {
             const lang = localStorage.getItem('lang') || 'zh';
             const isDark = localStorage.getItem('theme') === 'dark';

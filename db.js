@@ -1,5 +1,5 @@
 /**
- * db.js - omg-by-Clark 核心数据库与业务逻辑配置
+ * db.js
  */
 
 const { createClient } = supabase;
