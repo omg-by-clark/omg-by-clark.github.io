@@ -2,13 +2,13 @@
 :root {
     --bg: #fffdf5; /* 修改背景颜色为 #fffdf5 */
     --text: #333;
-    --brand: #ff4757;
+    --brand: #fe640b; /* 原为 #ff4757; TODO: 春节后改颜色 */
 }
 
 body.dark {
     --bg: #121212;
     --text: #f1f2f6;
-    --brand: #ff6b81;
+    --brand: #ef9f76; /* 原为 #ff6b81; TODO: 春节后改颜色 */
 }
 
 body {
