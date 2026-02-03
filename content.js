@@ -60,6 +60,15 @@ async function loadPostDetails() {
             | 📅 ${new Date(post.created_at).toLocaleString()}
         `;
 
+        // === 修改点：处理关键词显示（没有则彻底隐藏） ===
+        const kwRow = document.getElementById('kw-row');
+        if (post.keywords && Array.isArray(post.keywords) && post.keywords.length > 0) {
+            kwRow.innerText = '关键词：' + post.keywords.join(' ');
+            kwRow.style.display = 'block'; // 确保显示
+        } else {
+            kwRow.style.display = 'none'; // 彻底隐藏
+        }
+
         // 初始化点赞按钮状态
         const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
         const isLiked = likedPosts.includes(Number(postId)) || likedPosts.includes(String(postId));

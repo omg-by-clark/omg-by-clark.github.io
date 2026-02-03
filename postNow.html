@@ -15,6 +15,11 @@
             /* ^红色 */
             --green: #6fcf2f;
             /* ^使用 Catppuccin Frappe 绿色的改版 */
+
+            /* 关键词按钮颜色配置 */
+            --kw-default: #ccc;
+            --kw-dark-default: hsl(227deg, 12%, 60%);
+            --kw-active: hsl(35deg, 77%, 49%);
         }
 
         body.dark {
@@ -75,6 +80,47 @@
             color: #fff;
         }
 
+        /* 关键词区域样式 */
+        .kw-container {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .kw-label {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            display: block;
+            opacity: 0.9;
+        }
+
+        .kw-btn {
+            border: none;
+            border-radius: 20px;
+            /* 圆角按钮 */
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: 0.2s;
+            background: var(--kw-default);
+            color: #333;
+            font-weight: 500;
+        }
+
+        body.dark .kw-btn {
+            background: var(--kw-dark-default);
+            color: #fff;
+        }
+
+        /* 选中状态：深浅色模式一致 */
+        .kw-btn.active {
+            background: var(--kw-active) !important;
+            color: white !important;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
         /* 立即发布按钮：采用你截图里的绿色 */
         .btn-post {
             width: 100%;
@@ -122,6 +168,11 @@
             <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
                 required></textarea>
 
+            <div class="kw-container">
+                <span class="kw-label" data-zh="添加标签（可选）：" data-en="Add Tags (Optional):">添加标签（可选）：</span>
+                <div id="kw-area"></div>
+            </div>
+
             <button type="submit" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
         </form>
 
@@ -134,6 +185,9 @@
         // 初始化：检查登录 & 深色模式
         const user = localStorage.getItem('username');
         const lang = localStorage.getItem('lang') || 'zh';
+
+        // 关键词列表配置
+        const KEYWORDS_LIST = ['#学校', '#老师', '#作业', '#家人', '#避雷', '#奸商', '#编程', '#上课', '#旅游', '#奇葩'];
 
         function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
@@ -152,6 +206,17 @@
             document.querySelectorAll('[data-zh-ph]').forEach(el => {
                 el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
             });
+
+            // 生成关键词按钮
+            const kwArea = document.getElementById('kw-area');
+            KEYWORDS_LIST.forEach(kw => {
+                const btn = document.createElement('button');
+                btn.type = 'button'; // 防止点击提交表单
+                btn.className = 'kw-btn';
+                btn.innerText = kw;
+                btn.onclick = () => btn.classList.toggle('active');
+                kwArea.appendChild(btn);
+            });
         }
         init();
 
@@ -161,12 +226,17 @@
             const title = document.getElementById('t').value.trim();
             const content = document.getElementById('c').value.trim();
 
-            // 1. 发帖
+            // 收集选中的关键词
+            const selectedKws = Array.from(document.querySelectorAll('.kw-btn.active'))
+                .map(btn => btn.innerText);
+
+            // 1. 发帖 (包含 keywords 字段)
             const { error: postErr } = await _supabase.from('posts').insert([{
                 nickname: user,
                 title: title,
                 content: content,
-                likes: 0
+                likes: 0,
+                keywords: selectedKws // 存入数组
             }]);
 
             if (postErr) {

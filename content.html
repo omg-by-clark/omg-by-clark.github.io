@@ -14,7 +14,7 @@
             --brand: #ff4757;
             --card: #fff;
             --unliked: #bbb;
-            /* 新增：未点赞颜色 */
+            --kw-text: hsl(22deg, 99%, 52%);
         }
 
         body.dark {
@@ -42,6 +42,15 @@
             margin-bottom: 20px;
         }
 
+        /* 关键词行样式 */
+        .kw-row {
+            color: var(--kw-text);
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
         #c {
             white-space: pre-wrap;
             font-size: 1.1em;
@@ -55,7 +64,8 @@
 
         .action-area {
             display: flex;
-            justify-content: center; /* 居中显示 */
+            justify-content: center;
+            /* 居中显示 */
             margin-bottom: 40px;
         }
 
@@ -96,8 +106,6 @@
                 transform: scale(1);
             }
         }
-
-        /* ================================= */
 
         /* 评论区样式 */
         .cmt-box {
@@ -228,8 +236,10 @@
 <body>
     <h1 id="t">...</h1>
     <div id="info"
-        style="color:#888; font-size:0.9em; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
+        style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
     </div>
+
+    <div id="kw-row" class="kw-row"></div>
 
     <div id="c">Loading...</div>
 
