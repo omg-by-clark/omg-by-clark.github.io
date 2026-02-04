@@ -120,7 +120,7 @@
             transform: scale(1.05);
         }
 
-        /* 立即发布按钮：采用你截图里的绿色 */
+        /* 立即发布按钮：采用绿色 */
         .btn-post {
             width: 100%;
             padding: 15px;
@@ -141,7 +141,7 @@
             transform: none !important;
         }
 
-        /* 返回首页按钮：采用你其他页面的红色样式 */
+        /* 返回首页按钮：红色样式 */
         .back-link {
             display: inline-block;
             margin-top: 25px;
@@ -187,9 +187,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
     <script>
-        // 初始化：检查登录 & 深色模式
+        // 初始化变量
         const user = localStorage.getItem('username');
         const lang = localStorage.getItem('lang') || 'zh';
+        
+        // 【关键】全局状态锁，防止重复提交
+        let isSubmitting = false;
 
         // 关键词列表配置
         const KEYWORDS_LIST = ['#学校', '#老师', '#作业', '#家人', '#避雷', '#奸商', '#编程', '#上课', '#旅游', '#奇葩'];
@@ -216,7 +219,7 @@
             const kwArea = document.getElementById('kw-area');
             KEYWORDS_LIST.forEach(kw => {
                 const btn = document.createElement('button');
-                btn.type = 'button'; // 防止点击提交表单
+                btn.type = 'button';
                 btn.className = 'kw-btn';
                 btn.innerText = kw;
                 btn.onclick = () => btn.classList.toggle('active');
@@ -229,17 +232,21 @@
         document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const submitBtn = document.getElementById('submit-btn');
+            // 如果已经在提交中，直接静默退出
+            if (isSubmitting) return;
 
-            // 防抖处理：禁用按钮并改变文字
-            submitBtn.disabled = true;
+            // 立即上锁
+            isSubmitting = true;
+
+            const submitBtn = document.getElementById('submit-btn');
             const originalText = submitBtn.innerText;
+
+            // 禁用按钮并改变文字
+            submitBtn.disabled = true;
             submitBtn.innerText = lang === 'zh' ? "发布中..." : "Posting...";
 
             const title = document.getElementById('t').value.trim();
             const content = document.getElementById('c').value.trim();
-
-            // 收集选中的关键词
             const selectedKws = Array.from(document.querySelectorAll('.kw-btn.active'))
                 .map(btn => btn.innerText);
 
@@ -250,12 +257,10 @@
                     title: title,
                     content: content,
                     likes: 0,
-                    keywords: selectedKws // 存入数组
+                    keywords: selectedKws
                 }]);
 
-                if (postErr) {
-                    throw postErr;
-                }
+                if (postErr) throw postErr;
 
                 // 自动加 10 分
                 const { data: userData } = await _supabase.from('users').select('points').eq('username', user).single();
@@ -270,7 +275,9 @@
             } catch (err) {
                 alert("Error: " + err.message);
                 console.error("[错误]" + err);
-                // 如果出错，恢复按钮状态
+                
+                // 如果出错，释放锁并恢复按钮
+                isSubmitting = false;
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
             }
