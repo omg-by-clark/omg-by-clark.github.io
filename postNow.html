@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- postNow.html -->
 <html lang="zh-CN">
 
 <head>
@@ -135,6 +134,13 @@
             transition: 0.1s;
         }
 
+        /* 按钮被禁用时的样式 */
+        .btn-post:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         /* 返回首页按钮：采用你其他页面的红色样式 */
         .back-link {
             display: inline-block;
@@ -147,7 +153,7 @@
         }
 
         /* 统一 1.1 倍缩放 */
-        .btn-post:active,
+        .btn-post:active:not(:disabled),
         .back-link:active {
             transform: scale(1.1);
         }
@@ -173,11 +179,8 @@
                 <div id="kw-area"></div>
             </div>
 
-            <button type="submit" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
+            <button type="submit" id="submit-btn" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
         </form>
-        <div data-zh="注：发布时有点卡顿，敬请谅解。发帖后请等待收到通知，尽量不要乱点，谢谢🙏" 
-            data-en="Note: It might be a bit laggy during posting. Thanks for your patience. Please wait for the notification after submitting and try not to click around. Thank you! 🙏">
-            注：发布时有点卡顿，敬请谅解。发帖后请等待收到通知，尽量不要乱点，谢谢🙏</div>
         <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
     </div>
 
@@ -225,6 +228,14 @@
         // 提交逻辑
         document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+
+            // 防抖处理：禁用按钮并改变文字
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = lang === 'zh' ? "发布中..." : "Posting...";
+
             const title = document.getElementById('t').value.trim();
             const content = document.getElementById('c').value.trim();
 
@@ -232,19 +243,21 @@
             const selectedKws = Array.from(document.querySelectorAll('.kw-btn.active'))
                 .map(btn => btn.innerText);
 
-            // 1. 发帖 (包含 keywords 字段)
-            const { error: postErr } = await _supabase.from('posts').insert([{
-                nickname: user,
-                title: title,
-                content: content,
-                likes: 0,
-                keywords: selectedKws // 存入数组
-            }]);
+            try {
+                // 发帖
+                const { error: postErr } = await _supabase.from('posts').insert([{
+                    nickname: user,
+                    title: title,
+                    content: content,
+                    likes: 0,
+                    keywords: selectedKws // 存入数组
+                }]);
 
-            if (postErr) {
-                alert("Error: " + postErr.message);
-            } else {
-                // 2. 自动加 10 分
+                if (postErr) {
+                    throw postErr;
+                }
+
+                // 自动加 10 分
                 const { data: userData } = await _supabase.from('users').select('points').eq('username', user).single();
                 const newPts = (userData ? userData.points : 0) + 10;
 
@@ -253,6 +266,13 @@
 
                 alert(lang === 'zh' ? "发布成功！积分+10" : "Success! Points +10");
                 window.location.href = 'othersPost.html';
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error("[错误]" + err);
+                // 如果出错，恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
             }
         });
     </script>
