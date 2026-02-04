@@ -31,6 +31,7 @@ h1 {
     display: inline-block;
     border-radius: 12px;
     box-shadow: 6px 6px 0px var(--brand);
+    user-select: none;
 }
 
 .main-nav {
