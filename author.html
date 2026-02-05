@@ -91,7 +91,12 @@
             color: white;
         }
 
-        .btn-reset {
+        .btn-reset-likes {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-reset-dislikes {
             background: #f39c12;
             color: white;
         }
@@ -143,9 +148,7 @@
             return div.innerHTML;
         }
 
-        /**
-         * 🌟 用户列表：标签和数值全双语
-         */
+        // 用户列表
         async function loadUsers() {
             const listEl = document.getElementById('user-admin-list');
             const { data: users } = await _supabase.from('users').select('*').order('points', { ascending: false });
@@ -175,19 +178,18 @@
             }
         }
 
-        /**
-         * 📝 帖子列表：UI 交互全双语
-         */
+        // 帖子列表
         async function draw() {
             const listEl = document.getElementById('admin-list');
             const { data: posts } = await _supabase.from('posts').select('*').order('created_at', { ascending: false });
 
             listEl.innerHTML = posts.map(p => `
                 <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small> | 👍 ${p.likes || 0}
+                    <b>${esc(p.title)}</b> <small>(👤 ${esc(p.nickname)})</small> | 👍 ${p.likes || 0} | 👎 ${p.dislike || 0}
                     <div class="btn-group">
                         <button class="btn-cmt" onclick="loadComments(${p.id}, '${p.title}')">💬 ${lang === 'zh' ? "管理评论" : "Comments"}</button>
-                        <button class="btn-reset" onclick="resetPostLikes(${p.id})">📍 ${lang === 'zh' ? "帖子赞清零" : "Reset Likes"}</button>
+                        <button class="btn-reset-likes" onclick="resetPostLikes(${p.id})">👍 ${lang === 'zh' ? "点赞清零" : "Reset Likes"}</button>
+                        <button class="btn-reset-dislikes" onclick="resetPostDislikes(${p.id})">👎 ${lang === 'zh' ? "点踩清零" : "Reset Dislikes"}</button>
                         <button class="btn-del" onclick="delPost(${p.id})">🗑️ ${lang === 'zh' ? "删除" : "Delete"}</button>
                     </div>
                 </div>`).join('');
@@ -197,6 +199,14 @@
             const msg = lang === 'zh' ? "重置此帖点赞数？" : "Reset post likes?";
             if (confirm(msg)) {
                 await _supabase.from('posts').update({ likes: 0 }).eq('id', id);
+                draw();
+            }
+        }
+
+        async function resetPostDislikes(id) {
+            const msg = lang === 'zh' ? "重置此帖点踩数？" : "Reset post dislikes?";
+            if (confirm(msg)) {
+                await _supabase.from('posts').update({ dislike: 0 }).eq('id', id);
                 draw();
             }
         }

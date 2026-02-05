@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- content.html -->
 <html lang="zh-CN">
 
 <head>
@@ -14,6 +13,7 @@
             --brand: #ff4757;
             --card: #fff;
             --unliked: #bbb;
+            --disliked: #57606f;
             --kw-text: hsl(22deg, 99%, 52%);
         }
 
@@ -23,6 +23,7 @@
             --brand: #ff6b81;
             --card: #2d2d2d;
             --unliked: hsl(227deg, 12%, 60%);
+            --disliked: #a4b0be;
         }
 
         body {
@@ -42,7 +43,6 @@
             margin-bottom: 20px;
         }
 
-        /* 关键词行样式 */
         .kw-row {
             color: var(--kw-text);
             font-weight: bold;
@@ -65,11 +65,12 @@
         .action-area {
             display: flex;
             justify-content: center;
-            /* 居中显示 */
+            gap: 20px;
             margin-bottom: 40px;
         }
 
-        .like-btn {
+        .like-btn,
+        .dislike-btn {
             background: var(--card);
             border: 2px solid var(--unliked);
             color: var(--unliked);
@@ -93,6 +94,13 @@
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
 
+        .dislike-btn.active {
+            background: var(--disliked);
+            border-color: var(--disliked);
+            color: white;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         @keyframes pop {
             0% {
                 transform: scale(1);
@@ -107,7 +115,6 @@
             }
         }
 
-        /* 评论区样式 */
         .cmt-box {
             margin-top: 20px;
             border-top: 2px solid var(--brand);
@@ -145,18 +152,12 @@
             transition: transform 0.1s;
         }
 
-        .btn-send:active {
-            transform: scale(1.1);
-        }
-
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
             font-size: 0.75em;
             font-weight: bold;
             margin-left: 5px;
-            vertical-align: middle;
-            position: relative;
             display: inline-block;
         }
 
@@ -238,21 +239,21 @@
     <div id="info"
         style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
     </div>
-
     <div id="kw-row" class="kw-row"></div>
-
     <div id="c">Loading...</div>
 
     <div class="action-area">
-        <button id="btn-like" class="like-btn" onclick="toggleDetailLike()">
+        <button id="btn-like" class="like-btn" onclick="toggleDetailVote('like')">
             👍 <span id="like-count">0</span>
+        </button>
+        <button id="btn-dislike" class="dislike-btn" onclick="toggleDetailVote('dislike')">
+            👎 <span id="dislike-count">0</span>
         </button>
     </div>
 
     <div class="cmt-box">
         <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
         <div id="cmt-list"></div>
-
         <div style="margin-top:25px; display:flex; gap:12px;">
             <input type="text" id="cC" data-zh-ph="神评由此诞生..." data-en-ph="Write a cool comment..." style="flex:1">
             <button onclick="addCmt()" class="btn-send" data-zh="发送" data-en="Send">发送</button>
@@ -269,7 +270,6 @@
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-
         document.querySelectorAll('[data-zh]').forEach(el => {
             el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
         });

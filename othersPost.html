@@ -14,10 +14,10 @@
             --card: #fff;
             --brand: #ff4757;
             --unliked: #ccc;
+            --disliked: #57606f;
+            /* 踩按钮激活后的颜色 */
             --hot-border: #ff6b81;
-            /* 随机按钮专用渐变 */
             --random-grad: linear-gradient(45deg, #e64553, #fe640b);
-            /* 关键词专用文字色 */
             --kw-text: hsl(22deg, 99%, 52%);
         }
 
@@ -27,6 +27,7 @@
             --card: #2d2d2d;
             --brand: #ff6b81;
             --unliked: hsl(227deg, 12%, 60%);
+            --disliked: #a4b0be;
             --hot-border: #ff6b81;
         }
 
@@ -40,7 +41,6 @@
             transition: 0.3s;
         }
 
-        /* 标题居中且包含随机按钮 */
         .header-container {
             display: flex;
             justify-content: center;
@@ -130,24 +130,37 @@
             transform: scale(0.99);
         }
 
-        .like-btn {
+        .vote-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 80px;
+        }
+
+        .like-btn,
+        .dislike-btn {
             background: var(--unliked);
             color: white;
             border: none;
-            padding: 8px 18px;
+            padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
             transition: 0.2s;
-            min-width: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
+            font-size: 0.85em;
         }
 
         .like-btn.active {
             background: var(--brand);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .dislike-btn.active {
+            background: var(--disliked);
             animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
@@ -175,9 +188,7 @@
             color: white;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             position: relative;
-            /* 必须加这个，方便后缀 V 的定位 */
             display: inline-block;
-            /* 保持和 content.html 一致的块属性 */
         }
 
         .lv-log {
@@ -214,7 +225,6 @@
             background: linear-gradient(45deg, #ffd700, #ffaa00);
             color: #fff;
             padding-right: 18px;
-            /* 为 V 留出空间 */
             text-shadow: none;
         }
 
@@ -230,7 +240,6 @@
             background: linear-gradient(45deg, #a333c8, #6d28d9);
             color: white;
             padding-right: 18px;
-            /* 为 V 留出空间 */
             box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
         }
 
@@ -242,7 +251,6 @@
             font-weight: 900;
         }
 
-        /* 关键词显示样式 */
         .kw-display {
             display: block;
             margin-top: 5px;
@@ -330,7 +338,7 @@
         </div>
 
         <div class="col-hot">
-            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热搜 Top 5" data-en="🔥 Hot Top 5">🔥 热搜
+            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热榜 Top 5" data-en="🔥 Hot Top 5">🔥 热榜
                 Top 5</h2>
             <div id="list-hot">
                 <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span>
@@ -376,34 +384,20 @@
         }
 
         async function goRandom() {
-            // 禁止连点
             if (isFetching) return;
             isFetching = true;
-
             try {
-                // 1. 获取总数
-                const { count, error: countErr } = await _supabase
-                    .from('posts').select('*', { count: 'exact', head: true });
+                const { count, error: countErr } = await _supabase.from('posts').select('*', { count: 'exact', head: true });
                 if (countErr) throw countErr;
-
                 if (count === 0) return alert("广场还是空荡荡的...");
-
-                // 2. 定义内部递归函数
                 const fetchUntilFound = async () => {
                     const randomIndex = Math.floor(Math.random() * count);
-                    const { data, error } = await _supabase
-                        .from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
-
-                    if (!data || error) {
-                        console.warn(`[系统] 索引 ${randomIndex} 失效，重新抽取...`);
-                        return await fetchUntilFound(); // 递归重试
-                    }
+                    const { data, error } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+                    if (!data || error) return await fetchUntilFound();
                     return data.id;
                 };
-
                 const validId = await fetchUntilFound();
                 location.href = `content.html?id=${validId}`;
-
             } catch (err) {
                 console.error("[随机失败]", err);
             } finally {
@@ -411,48 +405,73 @@
             }
         }
 
-        async function handleLike(event, postId) {
+        async function handleVote(event, postId, type) {
             event.stopPropagation();
-            const btn = event.currentTarget;
-            const countSpan = btn.querySelector('.count');
-            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-            const isLikedAlready = likedPosts.includes(postId);
-            let currentCount = parseInt(countSpan.innerText, 10);
-            let newCount = isLikedAlready ? Math.max(0, currentCount - 1) : currentCount + 1;
+            const card = event.currentTarget.closest('.card');
+            const likeBtn = card.querySelector('.like-btn');
+            const dislikeBtn = card.querySelector('.dislike-btn');
+            const likeSpan = likeBtn.querySelector('.count');
+            const dislikeSpan = dislikeBtn.querySelector('.count');
 
-            countSpan.innerText = newCount;
-            if (isLikedAlready) {
-                btn.classList.remove('active');
-                likedPosts = likedPosts.filter(id => id !== postId);
+            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+            let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+
+            let likes = parseInt(likeSpan.innerText);
+            let dislike = parseInt(dislikeSpan.innerText);
+
+            if (type === 'like') {
+                if (likedPosts.includes(postId)) {
+                    likes--;
+                    likedPosts = likedPosts.filter(id => id !== postId);
+                    likeBtn.classList.remove('active');
+                } else {
+                    likes++;
+                    likedPosts.push(postId);
+                    likeBtn.classList.add('active');
+                    if (dislikedPosts.includes(postId)) {
+                        dislike--;
+                        dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                        dislikeBtn.classList.remove('active');
+                        dislikeSpan.innerText = dislike;
+                    }
+                }
+                likeSpan.innerText = likes;
             } else {
-                btn.classList.add('active');
-                likedPosts.push(postId);
+                if (dislikedPosts.includes(postId)) {
+                    dislike--;
+                    dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                    dislikeBtn.classList.remove('active');
+                } else {
+                    dislike++;
+                    dislikedPosts.push(postId);
+                    dislikeBtn.classList.add('active');
+                    if (likedPosts.includes(postId)) {
+                        likes--;
+                        likedPosts = likedPosts.filter(id => id !== postId);
+                        likeBtn.classList.remove('active');
+                        likeSpan.innerText = likes;
+                    }
+                }
+                dislikeSpan.innerText = dislike;
             }
+
             localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+            localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
 
             try {
-                const { error } = await _supabase.from('posts').update({ likes: newCount }).eq('id', postId);
-                if (error) throw error;
-            } catch (err) {
-                console.error("[错误] 点赞同步失败:", err);
-            }
+                // 数据库同步，列名对齐为 dislike
+                await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
+            } catch (err) { console.error("同步失败", err); }
         }
 
         function createCardHTML(p, userMap) {
             const author = userMap ? userMap[p.nickname] : null;
-            const points = author ? author.points : 0;
-            const inventory = author ? author.inventory : null;
-            const lv = getLevelInfo(points);
-            const nickStyle = getNicknameStyle(inventory);
+            const lv = getLevelInfo(author ? author.points : 0);
+            const nickStyle = getNicknameStyle(author ? author.inventory : null);
             const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-            const isActive = likedPosts.includes(p.id);
+            const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
 
-            // === 修改点：处理关键词显示（没有则不显示） ===
-            let kwHtml = '';
-            if (p.keywords && Array.isArray(p.keywords) && p.keywords.length > 0) {
-                // 如果有关键词，生成对应的 HTML 字符串
-                kwHtml = `<span class="kw-display">关键词：${p.keywords.join(' ')}</span>`;
-            }
+            let kwHtml = p.keywords && p.keywords.length > 0 ? `<span class="kw-display">关键词：${p.keywords.join(' ')}</span>` : '';
 
             return `
             <div class="card" onclick="location.href='content.html?id=${p.id}'">
@@ -462,67 +481,59 @@
                     <p style="font-size:0.9em; color:gray; margin:8px 0;">${escapeHTML(p.content.substring(0, 30))}...</p>
                     <small>👤 <span style="${nickStyle}">${escapeHTML(p.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span></small>
                 </div>
-                <button class="like-btn ${isActive ? 'active' : ''}" onclick="handleLike(event, ${p.id})">👍 <span class="count">${p.likes}</span></button>
+                <div class="vote-box">
+                    <button class="like-btn ${likedPosts.includes(p.id) ? 'active' : ''}" onclick="handleVote(event, ${p.id}, 'like')">👍 <span class="count">${p.likes || 0}</span></button>
+                    <button class="dislike-btn ${dislikedPosts.includes(p.id) ? 'active' : ''}" onclick="handleVote(event, ${p.id}, 'dislike')">👎 <span class="count">${p.dislike || 0}</span></button>
+                </div>
             </div>`;
         }
 
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
             isFetching = true;
-            const sentinelEl = document.getElementById('scroll-sentinel');
-            sentinelEl.classList.add('visible');
-
+            document.getElementById('scroll-sentinel').classList.add('visible');
             try {
                 const from = currentPage * PAGE_SIZE;
                 const to = (currentPage + 1) * PAGE_SIZE - 1;
                 const { data, error } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).range(from, to);
-                if (error) throw error;
-
-                const listAllEl = document.getElementById('list-all');
                 if (data.length > 0) {
-                    listAllEl.insertAdjacentHTML('beforeend', data.map(p => createCardHTML(p, globalUserMap)).join(''));
+                    document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(p => createCardHTML(p, globalUserMap)).join(''));
                     currentPage++;
                 }
                 if (data.length < PAGE_SIZE) {
                     hasMore = false;
-                    sentinelEl.style.display = 'none';
+                    document.getElementById('scroll-sentinel').style.display = 'none';
                     document.getElementById('end-message').style.display = 'block';
-                    if (observer) observer.disconnect();
-                } else {
-                    sentinelEl.classList.remove('visible');
                 }
                 updateLanguage();
-            } catch (err) {
-                console.error("[加载错误]", err);
-            } finally {
-                isFetching = false;
-            }
+            } finally { isFetching = false; }
         }
 
         function setupIntersectionObserver() {
-            const sentinelEl = document.getElementById('scroll-sentinel');
             observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && hasMore && !isFetching) loadNextPage();
-                });
-            }, { root: null, rootMargin: '100px', threshold: 0.1 });
-            observer.observe(sentinelEl);
+                if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
+            }, { rootMargin: '100px' });
+            observer.observe(document.getElementById('scroll-sentinel'));
         }
 
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const listHotEl = document.getElementById('list-hot');
             try {
-                const [hotRes, usersRes] = await Promise.all([
-                    _supabase.from('posts').select('*').order('likes', { ascending: false }).limit(5),
+                const [postsRes, usersRes] = await Promise.all([
+                    _supabase.from('posts').select('*'),
                     _supabase.from('users').select('username, points, inventory')
                 ]);
                 if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => { acc[user.username] = user; return acc; }, {});
-                listHotEl.innerHTML = hotRes.data.map(p => createCardHTML(p, globalUserMap)).join('');
+
+                // 热搜逻辑：净分 (likes - dislike) 排序
+                const hotPosts = postsRes.data
+                    .sort((a, b) => ((b.likes || 0) - (b.dislike || 0)) - ((a.likes || 0) - (a.dislike || 0)))
+                    .slice(0, 5);
+
+                listHotEl.innerHTML = hotPosts.map(p => createCardHTML(p, globalUserMap)).join('');
                 setupIntersectionObserver();
-            } catch (err) {
-                listHotEl.innerHTML = "<p>数据加载失败</p>";
-            }
+            } catch (err) { listHotEl.innerHTML = "<p>数据加载失败</p>"; }
             updateLanguage();
         }
         init();
