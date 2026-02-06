@@ -26,7 +26,7 @@
             --text: #f0f0f0;
             --card: #2d2d2d;
             --brand: #ff6b81;
-            --unliked: hsl(227deg, 12%, 60%);
+            --unliked: hsl(233deg, 10%, 47%);
             --disliked: #a4b0be;
             --hot-border: #ff6b81;
         }
@@ -89,7 +89,7 @@
             border: 2px solid var(--hot-border);
             border-radius: 12px;
             padding: 20px;
-            background: rgba(255, 107, 129, 0.02);
+            background: rgba(255, 107, 129, 0.07);
             height: fit-content;
         }
 
@@ -398,8 +398,10 @@
                 };
                 const validId = await fetchUntilFound();
                 location.href = `content.html?id=${validId}`;
-            } catch (err) {
-                console.error("[随机失败]", err);
+            } catch (error) {
+                let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
+                alert(errCode);
+                console.error("[随机失败]", error);
             } finally {
                 isFetching = false;
             }

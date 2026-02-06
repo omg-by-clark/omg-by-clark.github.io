@@ -175,7 +175,7 @@
                 required></textarea>
 
             <div class="kw-container">
-                <span class="kw-label" data-zh="添加标签（可选）：" data-en="Add Tags (Optional):">添加标签（可选）：</span>
+                <span class="kw-label" data-zh="添加关键词（可选）：" data-en="Add Keywords (Optional):">添加关键词（可选）：</span>
                 <div id="kw-area"></div>
             </div>
 
@@ -191,11 +191,11 @@
         const user = localStorage.getItem('username');
         const lang = localStorage.getItem('lang') || 'zh';
         
-        // 【关键】全局状态锁，防止重复提交
+        // 全局状态锁，防止重复提交
         let isSubmitting = false;
 
         // 关键词列表配置
-        const KEYWORDS_LIST = ['#学校', '#老师', '#作业', '#家人', '#避雷', '#奸商', '#编程', '#上课', '#旅游', '#奇葩'];
+        const KEYWORDS_LIST = ['#学校 School', '#老师 Teachers', '#作业 Homework', '#家人 Family', '#避雷 Avoid', '#奸商 Scammer', '#编程 Coding', '#上课 Class', '#旅游 Travel', '#奇葩 Weird', '#美食 Food', '#生活 Life', '#宠物 Pets', '#科技 Tech', '#娱乐 Fun', '#其他 Others'];
 
         function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
