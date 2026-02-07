@@ -15,10 +15,14 @@
             --brand: #ff4757;
             --unliked: #ccc;
             --disliked: #57606f;
-            /* 踩按钮激活后的颜色 */
             --hot-border: #ff6b81;
             --random-grad: linear-gradient(45deg, #e64553, #fe640b);
             --kw-text: hsl(22deg, 99%, 52%);
+
+            /* 投票胶囊颜色变量 - 浅色模式 */
+            --vote-bg-neutral: hsl(233deg, 10%, 47%);
+            --vote-bg-liked: #ff4757;
+            --vote-bg-disliked: #7287fd;
         }
 
         body.dark {
@@ -29,6 +33,12 @@
             --unliked: hsl(233deg, 10%, 47%);
             --disliked: #a4b0be;
             --hot-border: #ff6b81;
+
+            /* 投票胶囊颜色变量 - 深色模式 */
+            --vote-bg-neutral: #333;
+            --vote-bg-liked: #ff6b81;
+            /* 踩的颜色保持一致，或者你可以微调 */
+            --vote-bg-disliked: #7287fd;
         }
 
         body {
@@ -130,52 +140,71 @@
             transform: scale(0.99);
         }
 
-        .vote-box {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 80px;
-        }
-
-        .like-btn,
-        .dislike-btn {
-            background: var(--unliked);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+        /* 投票胶囊样式容器
+           Logic Change: 容器本身背景色固定，不再随状态改变
+        */
+        .vote-pill {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 5px;
-            font-size: 0.85em;
+            background-color: var(--vote-bg-neutral); /* 永远保持中立背景 */
+            border-radius: 20px;
+            padding: 2px; /* 减小内边距，让按钮填充满一点 */
+            transition: background-color 0.3s ease;
+            height: fit-content;
+            gap: 2px; /* 按钮之间的缝隙 */
         }
 
-        .like-btn.active {
-            background: var(--brand);
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* 删除了旧的 .vote-pill.is-liked 规则
+           改为由子元素响应状态
+        */
+
+        /* 按钮基础样式 */
+        .like-btn,
+        .dislike-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9em;
+            border-radius: 18px; /* 按钮也是圆角，适应胶囊 */
+            transition: all 0.2s;
         }
 
-        .dislike-btn.active {
-            background: var(--disliked);
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* 简单的分割线 */
+        .vote-divider {
+            width: 1px;
+            height: 16px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 2px;
+            transition: opacity 0.2s;
         }
 
-        @keyframes pop {
-            0% {
-                transform: scale(1);
-            }
+        /* 按钮点击时的微动画 */
+        .like-btn:active, .dislike-btn:active {
+            transform: scale(0.9);
+        }
 
-            50% {
-                transform: scale(1.2);
-            }
+        /* === 新增逻辑：半边高亮 === */
 
-            100% {
-                transform: scale(1);
-            }
+        /* 当父容器有点赞状态时，点赞按钮变红 */
+        .vote-pill.is-liked .like-btn {
+            background-color: var(--vote-bg-liked);
+        }
+
+        /* 当父容器有点踩状态时，点踩按钮变蓝紫 */
+        .vote-pill.is-disliked .dislike-btn {
+            background-color: var(--vote-bg-disliked);
+        }
+
+        /* 激活任意一边时，淡化中间的分割线 */
+        .vote-pill.is-liked .vote-divider,
+        .vote-pill.is-disliked .vote-divider {
+            opacity: 0.2;
         }
 
         .lv-badge {
@@ -322,160 +351,181 @@
 </head>
 
 <body>
-    <div class="header-container">
-        <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza" style="margin: 0;">👀 吐槽广场 Plaza</h1>
-        <button onclick="goRandom()" class="btn-random" data-zh="🤔 随机" data-en="🤔 Random">🤔 随机</button>
-    </div>
+<div class="header-container">
+    <h1 data-zh="👀 吐槽广场 Plaza" data-en="👀 Rant Plaza" style="margin: 0;">👀 吐槽广场 Plaza</h1>
+    <button onclick="goRandom()" class="btn-random" data-zh="🤔 随机" data-en="🤔 Random">🤔 随机</button>
+</div>
 
-    <div class="layout-container">
-        <div class="col-all">
-            <h2 class="section-title" data-zh="📃 全部帖子" data-en="📃 All Posts">📃 全部帖子</h2>
-            <div id="list-all"></div>
-            <div id="scroll-sentinel" class="loading-sentinel">
-                <span></span><span></span><span></span>
-            </div>
-            <div id="end-message" class="end-message" data-zh="😀 我也是有底线的！" data-en="🚫 No more posts">😀 我也是有底线的！</div>
+<div class="layout-container">
+    <div class="col-all">
+        <h2 class="section-title" data-zh="📃 全部帖子" data-en="📃 All Posts">📃 全部帖子</h2>
+        <div id="list-all"></div>
+        <div id="scroll-sentinel" class="loading-sentinel">
+            <span></span><span></span><span></span>
         </div>
-
-        <div class="col-hot">
-            <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热榜 Top 5" data-en="🔥 Hot Top 5">🔥 热榜
-                Top 5</h2>
-            <div id="list-hot">
-                <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span>
-                </div>
-            </div>
+        <div id="end-message" class="end-message" data-zh="😀 我也是有底线的！" data-en="🚫 No more posts">😀
+            我也是有底线的！
         </div>
     </div>
 
-    <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    <div class="col-hot">
+        <h2 class="section-title" style="color: var(--brand);" data-zh="🔥 热榜 Top 5" data-en="🔥 Hot Top 5">🔥 热榜
+            Top 5</h2>
+        <div id="list-hot">
+            <div class="loading-sentinel visible" style="height:100px;"><span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
+<a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
 
-    <script>
-        let currentPage = 0;
-        const PAGE_SIZE = 15;
-        let globalUserMap = {};
-        let isFetching = false;
-        let hasMore = true;
-        let observer;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
 
-        function escapeHTML(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+<script>
+    let currentPage = 0;
+    const PAGE_SIZE = 15;
+    let globalUserMap = {};
+    let isFetching = false;
+    let hasMore = true;
+    let observer;
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function getNicknameStyle(inventory) {
+        if (!inventory) return '';
+        const now = new Date();
+        if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+        if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
+        if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
+        return '';
+    }
+
+    function updateLanguage() {
+        const lang = localStorage.getItem('lang') || 'zh';
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+        });
+    }
+
+    async function goRandom() {
+        if (isFetching) return;
+        isFetching = true;
+        try {
+            const {count, error: countErr} = await _supabase.from('posts').select('*', {count: 'exact', head: true});
+            if (countErr) throw countErr;
+            if (count === 0) return alert("广场还是空荡荡的...");
+            const fetchUntilFound = async () => {
+                const randomIndex = Math.floor(Math.random() * count);
+                const {
+                    data,
+                    error
+                } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+                if (!data || error) return await fetchUntilFound();
+                return data.id;
+            };
+            const validId = await fetchUntilFound();
+            location.href = `content.html?id=${validId}`;
+        } catch (error) {
+            let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
+            alert(errCode);
+            console.error("[随机失败]", error);
+        } finally {
+            isFetching = false;
         }
+    }
 
-        function getNicknameStyle(inventory) {
-            if (!inventory) return '';
-            const now = new Date();
-            if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
-            if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
-            if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
-            return '';
-        }
+    async function handleVote(event, postId, type) {
+        event.stopPropagation();
+        // 找到最外层的胶囊容器
+        const card = event.currentTarget.closest('.card');
+        const votePill = card.querySelector('.vote-pill');
+        const likeBtn = card.querySelector('.like-btn');
+        const dislikeBtn = card.querySelector('.dislike-btn');
+        const likeSpan = likeBtn.querySelector('.count');
+        const dislikeSpan = dislikeBtn.querySelector('.count');
 
-        function updateLanguage() {
-            const lang = localStorage.getItem('lang') || 'zh';
-            document.querySelectorAll('[data-zh]').forEach(el => {
-                el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
-            });
-        }
+        let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+        let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
 
-        async function goRandom() {
-            if (isFetching) return;
-            isFetching = true;
-            try {
-                const { count, error: countErr } = await _supabase.from('posts').select('*', { count: 'exact', head: true });
-                if (countErr) throw countErr;
-                if (count === 0) return alert("广场还是空荡荡的...");
-                const fetchUntilFound = async () => {
-                    const randomIndex = Math.floor(Math.random() * count);
-                    const { data, error } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
-                    if (!data || error) return await fetchUntilFound();
-                    return data.id;
-                };
-                const validId = await fetchUntilFound();
-                location.href = `content.html?id=${validId}`;
-            } catch (error) {
-                let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
-                alert(errCode);
-                console.error("[随机失败]", error);
-            } finally {
-                isFetching = false;
-            }
-        }
+        let likes = parseInt(likeSpan.innerText);
+        let dislike = parseInt(dislikeSpan.innerText);
 
-        async function handleVote(event, postId, type) {
-            event.stopPropagation();
-            const card = event.currentTarget.closest('.card');
-            const likeBtn = card.querySelector('.like-btn');
-            const dislikeBtn = card.querySelector('.dislike-btn');
-            const likeSpan = likeBtn.querySelector('.count');
-            const dislikeSpan = dislikeBtn.querySelector('.count');
-
-            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-            let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
-
-            let likes = parseInt(likeSpan.innerText);
-            let dislike = parseInt(dislikeSpan.innerText);
-
-            if (type === 'like') {
-                if (likedPosts.includes(postId)) {
-                    likes--;
-                    likedPosts = likedPosts.filter(id => id !== postId);
-                    likeBtn.classList.remove('active');
-                } else {
-                    likes++;
-                    likedPosts.push(postId);
-                    likeBtn.classList.add('active');
-                    if (dislikedPosts.includes(postId)) {
-                        dislike--;
-                        dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                        dislikeBtn.classList.remove('active');
-                        dislikeSpan.innerText = dislike;
-                    }
-                }
-                likeSpan.innerText = likes;
+        if (type === 'like') {
+            if (likedPosts.includes(postId)) {
+                // 取消点赞
+                likes--;
+                likedPosts = likedPosts.filter(id => id !== postId);
+                votePill.classList.remove('is-liked'); // 移除胶囊的颜色标记
             } else {
+                // 点赞
+                likes++;
+                likedPosts.push(postId);
+                votePill.classList.add('is-liked'); // 添加标记，CSS 处理子元素变红
+                // 如果之前点过踩，取消踩
                 if (dislikedPosts.includes(postId)) {
                     dislike--;
                     dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                    dislikeBtn.classList.remove('active');
-                } else {
-                    dislike++;
-                    dislikedPosts.push(postId);
-                    dislikeBtn.classList.add('active');
-                    if (likedPosts.includes(postId)) {
-                        likes--;
-                        likedPosts = likedPosts.filter(id => id !== postId);
-                        likeBtn.classList.remove('active');
-                        likeSpan.innerText = likes;
-                    }
+                    votePill.classList.remove('is-disliked'); // 移除踩标记
+                    dislikeSpan.innerText = dislike;
                 }
-                dislikeSpan.innerText = dislike;
             }
-
-            localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-            localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
-
-            try {
-                // 数据库同步，列名对齐为 dislike
-                await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
-            } catch (err) { console.error("同步失败", err); }
+            likeSpan.innerText = likes;
+        } else {
+            if (dislikedPosts.includes(postId)) {
+                // 取消点踩
+                dislike--;
+                dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                votePill.classList.remove('is-disliked'); // 移除标记
+            } else {
+                // 点踩
+                dislike++;
+                dislikedPosts.push(postId);
+                votePill.classList.add('is-disliked'); // 添加标记，CSS 处理子元素变蓝
+                // 如果之前点过赞，取消赞
+                if (likedPosts.includes(postId)) {
+                    likes--;
+                    likedPosts = likedPosts.filter(id => id !== postId);
+                    votePill.classList.remove('is-liked'); // 移除赞标记
+                    likeSpan.innerText = likes;
+                }
+            }
+            dislikeSpan.innerText = dislike;
         }
 
-        function createCardHTML(p, userMap) {
-            const author = userMap ? userMap[p.nickname] : null;
-            const lv = getLevelInfo(author ? author.points : 0);
-            const nickStyle = getNicknameStyle(author ? author.inventory : null);
-            const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-            const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+        localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+        localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
 
-            let kwHtml = p.keywords && p.keywords.length > 0 ? `<span class="kw-display">关键词：${p.keywords.join(' ')}</span>` : '';
+        try {
+            // 数据库同步，列名对齐为 dislike
+            await _supabase.from('posts').update({likes, dislike}).eq('id', postId);
+        } catch (err) {
+            console.error("同步失败", err);
+        }
+    }
 
-            return `
+    function createCardHTML(p, userMap) {
+        const author = userMap ? userMap[p.nickname] : null;
+        const lv = getLevelInfo(author ? author.points : 0);
+        const nickStyle = getNicknameStyle(author ? author.inventory : null);
+        const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+        const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+
+        let kwHtml = p.keywords && p.keywords.length > 0 ? `<span class="kw-display">关键词：${p.keywords.join(' ')}</span>` : '';
+
+        // 判断初始状态，赋予胶囊颜色
+        let pillClass = 'vote-pill';
+        if (likedPosts.includes(p.id)) pillClass += ' is-liked';
+        if (dislikedPosts.includes(p.id)) pillClass += ' is-disliked';
+
+        // HTML结构
+        return `
             <div class="card" onclick="location.href='content.html?id=${p.id}'">
                 <div style="flex: 1; padding-right: 10px;">
                     <b>${escapeHTML(p.title)}</b>
@@ -483,63 +533,79 @@
                     <p style="font-size:0.9em; color:gray; margin:8px 0;">${escapeHTML(p.content.substring(0, 30))}...</p>
                     <small>👤 <span style="${nickStyle}">${escapeHTML(p.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span></small>
                 </div>
-                <div class="vote-box">
-                    <button class="like-btn ${likedPosts.includes(p.id) ? 'active' : ''}" onclick="handleVote(event, ${p.id}, 'like')">👍 <span class="count">${p.likes || 0}</span></button>
-                    <button class="dislike-btn ${dislikedPosts.includes(p.id) ? 'active' : ''}" onclick="handleVote(event, ${p.id}, 'dislike')">👎 <span class="count">${p.dislike || 0}</span></button>
+                <div class="${pillClass}">
+                    <button class="like-btn" onclick="handleVote(event, ${p.id}, 'like')">
+                        👍 <span class="count">${p.likes || 0}</span>
+                    </button>
+                    <div class="vote-divider"></div>
+                    <button class="dislike-btn" onclick="handleVote(event, ${p.id}, 'dislike')">
+                        👎 <span class="count">${p.dislike || 0}</span>
+                    </button>
                 </div>
             </div>`;
-        }
+    }
 
-        async function loadNextPage() {
-            if (isFetching || !hasMore) return;
-            isFetching = true;
-            document.getElementById('scroll-sentinel').classList.add('visible');
-            try {
-                const from = currentPage * PAGE_SIZE;
-                const to = (currentPage + 1) * PAGE_SIZE - 1;
-                const { data, error } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).range(from, to);
-                if (data.length > 0) {
-                    document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(p => createCardHTML(p, globalUserMap)).join(''));
-                    currentPage++;
-                }
-                if (data.length < PAGE_SIZE) {
-                    hasMore = false;
-                    document.getElementById('scroll-sentinel').style.display = 'none';
-                    document.getElementById('end-message').style.display = 'block';
-                }
-                updateLanguage();
-            } finally { isFetching = false; }
-        }
-
-        function setupIntersectionObserver() {
-            observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
-            }, { rootMargin: '100px' });
-            observer.observe(document.getElementById('scroll-sentinel'));
-        }
-
-        async function init() {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            const listHotEl = document.getElementById('list-hot');
-            try {
-                const [postsRes, usersRes] = await Promise.all([
-                    _supabase.from('posts').select('*'),
-                    _supabase.from('users').select('username, points, inventory')
-                ]);
-                if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => { acc[user.username] = user; return acc; }, {});
-
-                // 热搜逻辑：净分 (likes - dislike) 排序
-                const hotPosts = postsRes.data
-                    .sort((a, b) => ((b.likes || 0) - (b.dislike || 0)) - ((a.likes || 0) - (a.dislike || 0)))
-                    .slice(0, 5);
-
-                listHotEl.innerHTML = hotPosts.map(p => createCardHTML(p, globalUserMap)).join('');
-                setupIntersectionObserver();
-            } catch (err) { listHotEl.innerHTML = "<p>数据加载失败</p>"; }
+    async function loadNextPage() {
+        if (isFetching || !hasMore) return;
+        isFetching = true;
+        document.getElementById('scroll-sentinel').classList.add('visible');
+        try {
+            const from = currentPage * PAGE_SIZE;
+            const to = (currentPage + 1) * PAGE_SIZE - 1;
+            const {
+                data,
+                error
+            } = await _supabase.from('posts').select('*').order('created_at', {ascending: false}).range(from, to);
+            if (data.length > 0) {
+                document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(p => createCardHTML(p, globalUserMap)).join(''));
+                currentPage++;
+            }
+            if (data.length < PAGE_SIZE) {
+                hasMore = false;
+                document.getElementById('scroll-sentinel').style.display = 'none';
+                document.getElementById('end-message').style.display = 'block';
+            }
             updateLanguage();
+        } finally {
+            isFetching = false;
         }
-        init();
-    </script>
+    }
+
+    function setupIntersectionObserver() {
+        observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
+        }, {rootMargin: '100px'});
+        observer.observe(document.getElementById('scroll-sentinel'));
+    }
+
+    async function init() {
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        const listHotEl = document.getElementById('list-hot');
+        try {
+            const [postsRes, usersRes] = await Promise.all([
+                _supabase.from('posts').select('*'),
+                _supabase.from('users').select('username, points, inventory')
+            ]);
+            if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
+                acc[user.username] = user;
+                return acc;
+            }, {});
+
+            // 热搜逻辑：净分 (likes - dislike) 排序
+            const hotPosts = postsRes.data
+                .sort((a, b) => ((b.likes || 0) - (b.dislike || 0)) - ((a.likes || 0) - (a.dislike || 0)))
+                .slice(0, 5);
+
+            listHotEl.innerHTML = hotPosts.map(p => createCardHTML(p, globalUserMap)).join('');
+            setupIntersectionObserver();
+        } catch (err) {
+            listHotEl.innerHTML = "<p>数据加载失败</p>";
+        }
+        updateLanguage();
+    }
+
+    init();
+</script>
 </body>
 
 </html>

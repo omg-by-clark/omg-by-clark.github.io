@@ -1,12 +1,15 @@
 /**** content.js ****/
 const currentLang = localStorage.getItem('lang') || 'zh';
 const TRANS = {
-    noId: { zh: "未找到帖子 ID", en: "Post ID not found" },
-    alienError: { zh: "加载失败，可能帖子被外星人抓走了 🛸", en: "Load failed. The post might have been abducted by aliens 🛸" },
-    noComments: { zh: "暂无评论，快来抢沙发！", en: "No comments yet. Be the first!" },
-    loginReq: { zh: "请先登录！", en: "Please login first!" },
-    emptyContent: { zh: "内容不能为空", en: "Content cannot be empty" },
-    sendFail: { zh: "发送失败 😢", en: "Send failed 😢" }
+    noId: {zh: "未找到帖子 ID", en: "Post ID not found"},
+    alienError: {
+        zh: "加载失败，可能帖子被外星人抓走了 🛸",
+        en: "Load failed. The post might have been abducted by aliens 🛸"
+    },
+    noComments: {zh: "暂无评论，快来抢沙发！", en: "No comments yet. Be the first!"},
+    loginReq: {zh: "请先登录！", en: "Please login first!"},
+    emptyContent: {zh: "内容不能为空", en: "Content cannot be empty"},
+    sendFail: {zh: "发送失败 😢", en: "Send failed 😢"}
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -31,10 +34,10 @@ function escapeHTML(str) {
 async function loadPostDetails() {
     if (!postId) return alert(TRANS.noId[currentLang]);
     try {
-        const { data: post, error } = await _supabase.from('posts').select('*').eq('id', postId).single();
+        const {data: post, error} = await _supabase.from('posts').select('*').eq('id', postId).single();
         if (error) throw error;
 
-        const { data: author } = await _supabase.from('users').select('points, inventory').eq('username', post.nickname).maybeSingle();
+        const {data: author} = await _supabase.from('users').select('points, inventory').eq('username', post.nickname).maybeSingle();
         const lv = getLevelInfo(author ? author.points : 0);
         const nStyle = getNickStyle(author ? author.inventory : null);
 
@@ -46,7 +49,9 @@ async function loadPostDetails() {
         if (post.keywords && post.keywords.length > 0) {
             kwRow.innerText = '关键词：' + post.keywords.join(' ');
             kwRow.style.display = 'block';
-        } else { kwRow.style.display = 'none'; }
+        } else {
+            kwRow.style.display = 'none';
+        }
 
         // 处理投票状态显影，列名为 dislike
         const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
@@ -55,18 +60,25 @@ async function loadPostDetails() {
         document.getElementById('like-count').innerText = post.likes || 0;
         document.getElementById('dislike-count').innerText = post.dislike || 0;
 
-        if (likedPosts.includes(Number(postId)) || likedPosts.includes(String(postId))) document.getElementById('btn-like').classList.add('active');
-        if (dislikedPosts.includes(Number(postId)) || dislikedPosts.includes(String(postId))) document.getElementById('btn-dislike').classList.add('active');
+        // 更新逻辑：检查状态并设置容器颜色
+        const voteContainer = document.getElementById('vote-container');
+        if (likedPosts.includes(Number(postId)) || likedPosts.includes(String(postId))) {
+            voteContainer.classList.add('is-liked');
+        }
+        if (dislikedPosts.includes(Number(postId)) || dislikedPosts.includes(String(postId))) {
+            voteContainer.classList.add('is-disliked');
+        }
 
         loadComments();
-    } catch (err) { document.getElementById('c').innerText = TRANS.alienError[currentLang]; }
+    } catch (err) {
+        document.getElementById('c').innerText = TRANS.alienError[currentLang];
+    }
 }
 
 async function toggleDetailVote(type) {
-    const likeBtn = document.getElementById('btn-like');
-    const dislikeBtn = document.getElementById('btn-dislike');
     const likeSpan = document.getElementById('like-count');
     const dislikeSpan = document.getElementById('dislike-count');
+    const voteContainer = document.getElementById('vote-container'); // 获取容器
 
     let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
     let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
@@ -77,34 +89,40 @@ async function toggleDetailVote(type) {
 
     if (type === 'like') {
         if (likedPosts.includes(pIdStr) || likedPosts.includes(Number(pIdStr))) {
+            // 取消赞
             likes--;
             likedPosts = likedPosts.filter(id => String(id) !== pIdStr);
-            likeBtn.classList.remove('active');
+            voteContainer.classList.remove('is-liked'); // 恢复颜色
         } else {
+            // 点赞
             likes++;
             likedPosts.push(Number(postId));
-            likeBtn.classList.add('active');
+            voteContainer.classList.add('is-liked'); // 变红
+            // 互斥：取消踩
             if (dislikedPosts.includes(pIdStr) || dislikedPosts.includes(Number(pIdStr))) {
                 dislike--;
                 dislikedPosts = dislikedPosts.filter(id => String(id) !== pIdStr);
-                dislikeBtn.classList.remove('active');
+                voteContainer.classList.remove('is-disliked');
                 dislikeSpan.innerText = dislike;
             }
         }
         likeSpan.innerText = likes;
     } else {
         if (dislikedPosts.includes(pIdStr) || dislikedPosts.includes(Number(pIdStr))) {
+            // 取消踩
             dislike--;
             dislikedPosts = dislikedPosts.filter(id => String(id) !== pIdStr);
-            dislikeBtn.classList.remove('active');
+            voteContainer.classList.remove('is-disliked'); // 恢复颜色
         } else {
+            // 点踩
             dislike++;
             dislikedPosts.push(Number(postId));
-            dislikeBtn.classList.add('active');
+            voteContainer.classList.add('is-disliked'); // 变蓝紫
+            // 互斥：取消赞
             if (likedPosts.includes(pIdStr) || likedPosts.includes(Number(pIdStr))) {
                 likes--;
                 likedPosts = likedPosts.filter(id => String(id) !== pIdStr);
-                likeBtn.classList.remove('active');
+                voteContainer.classList.remove('is-liked');
                 likeSpan.innerText = likes;
             }
         }
@@ -115,15 +133,20 @@ async function toggleDetailVote(type) {
     localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
 
     try {
-        await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
-    } catch (err) { console.error("同步失败", err); }
+        await _supabase.from('posts').update({likes, dislike}).eq('id', postId);
+    } catch (err) {
+        console.error("同步失败", err);
+    }
 }
 
 async function loadComments() {
     try {
-        const { data: cmts } = await _supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-        const { data: users } = await _supabase.from('users').select('username, points, inventory');
-        const userMap = (users || []).reduce((acc, u) => { acc[u.username] = u; return acc; }, {});
+        const {data: cmts} = await _supabase.from('comments').select('*').eq('post_id', postId).order('created_at', {ascending: true});
+        const {data: users} = await _supabase.from('users').select('username, points, inventory');
+        const userMap = (users || []).reduce((acc, u) => {
+            acc[u.username] = u;
+            return acc;
+        }, {});
         const cmtList = document.getElementById('cmt-list');
         cmtList.innerHTML = cmts.map(c => {
             const u = userMap[c.nickname];
@@ -131,22 +154,31 @@ async function loadComments() {
             const cnStyle = getNickStyle(u ? u.inventory : null);
             return `<div class="cmt-item"><div class="cmt-content"><b><span style="${cnStyle}">${escapeHTML(c.nickname)}</span> <span class="lv-badge ${clv.class}">${clv.name}</span>:</b> ${escapeHTML(c.content)}</div></div>`;
         }).join('') || `<p style="color:#888">${TRANS.noComments[currentLang]}</p>`;
-    } catch (err) { console.error("加载失败", err); }
+    } catch (err) {
+        console.error("加载失败", err);
+    }
 }
 
 async function addCmt() {
     const nick = localStorage.getItem('username');
-    if (!nick) { alert(TRANS.loginReq[currentLang]); window.location.href = 'index.html'; return; }
+    if (!nick) {
+        alert(TRANS.loginReq[currentLang]);
+        window.location.href = 'index.html';
+        return;
+    }
     const content = document.getElementById('cC').value.trim();
     if (!content) return alert(TRANS.emptyContent[currentLang]);
-    const { error } = await _supabase.from('comments').insert([{ post_id: postId, nickname: nick, content: content }]);
-    if (error) { alert(TRANS.sendFail[currentLang]); } else {
-        const { data: user } = await _supabase.from('users').select('points').eq('username', nick).maybeSingle();
+    const {error} = await _supabase.from('comments').insert([{post_id: postId, nickname: nick, content: content}]);
+    if (error) {
+        alert(TRANS.sendFail[currentLang]);
+    } else {
+        const {data: user} = await _supabase.from('users').select('points').eq('username', nick).maybeSingle();
         const newPoints = (user ? user.points : 0) + 5;
-        await _supabase.from('users').update({ points: newPoints }).eq('username', nick);
+        await _supabase.from('users').update({points: newPoints}).eq('username', nick);
         localStorage.setItem('userPoints', newPoints);
         document.getElementById('cC').value = "";
         loadComments();
     }
 }
+
 loadPostDetails();

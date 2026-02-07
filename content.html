@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- content.html -->
 <html lang="zh-CN">
 
 <head>
@@ -15,6 +16,11 @@
             --unliked: #bbb;
             --disliked: #57606f;
             --kw-text: hsl(22deg, 99%, 52%);
+
+            /* 投票胶囊颜色变量 - 浅色模式 */
+            --vote-bg-neutral: hsl(233deg, 10%, 47%);
+            --vote-bg-liked: #ff4757;
+            --vote-bg-disliked: #7287fd;
         }
 
         body.dark {
@@ -24,6 +30,11 @@
             --card: #2d2d2d;
             --unliked: hsl(227deg, 12%, 60%);
             --disliked: #a4b0be;
+
+            /* 投票胶囊颜色变量 - 深色模式 */
+            --vote-bg-neutral: #333;
+            --vote-bg-liked: #ff6b81;
+            --vote-bg-disliked: #7287fd;
         }
 
         body {
@@ -69,13 +80,38 @@
             margin-bottom: 40px;
         }
 
+        /* 详情页的胶囊样式
+           Logic Change: 背景常驻中立色
+        */
+        .vote-pill {
+            display: flex;
+            align-items: center;
+            background-color: var(--vote-bg-neutral);
+            border-radius: 30px; /* 更圆润 */
+            padding: 2px; /* 减小内边距 */
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 删除了 .vote-pill.is-liked 背景变化
+           新增子元素变化逻辑
+        */
+
+        .vote-pill.is-liked .like-btn {
+            background-color: var(--vote-bg-liked);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); /* 给激活的按钮一点光晕 */
+        }
+
+        .vote-pill.is-disliked .dislike-btn {
+            background-color: var(--vote-bg-disliked);
+        }
+
         .like-btn,
         .dislike-btn {
-            background: var(--card);
-            border: 2px solid var(--unliked);
-            color: var(--unliked);
-            padding: 10px 25px;
-            border-radius: 30px;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px 20px;
             cursor: pointer;
             font-weight: bold;
             font-size: 1.1em;
@@ -83,36 +119,26 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-radius: 28px; /* 适应父容器 */
         }
 
-        .like-btn.active {
-            background: var(--brand);
-            border-color: var(--brand);
-            color: white;
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        .vote-divider {
+            width: 1px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 5px;
+            transition: opacity 0.2s;
         }
 
-        .dislike-btn.active {
-            background: var(--disliked);
-            border-color: var(--disliked);
-            color: white;
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* 激活时隐藏分割线 */
+        .vote-pill.is-liked .vote-divider,
+        .vote-pill.is-disliked .vote-divider {
+            opacity: 0.2;
         }
 
-        @keyframes pop {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+        /* 简单的点击动画 */
+        .like-btn:active, .dislike-btn:active {
+            transform: scale(0.9);
         }
 
         .cmt-box {
@@ -235,49 +261,53 @@
 </head>
 
 <body>
-    <h1 id="t">...</h1>
-    <div id="info"
-        style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-    </div>
-    <div id="kw-row" class="kw-row"></div>
-    <div id="c">Loading...</div>
+<h1 id="t">...</h1>
+<div id="info"
+     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+</div>
+<div id="kw-row" class="kw-row"></div>
+<div id="c">Loading...</div>
 
-    <div class="action-area">
+<div class="action-area">
+    <div id="vote-container" class="vote-pill">
         <button id="btn-like" class="like-btn" onclick="toggleDetailVote('like')">
             👍 <span id="like-count">0</span>
         </button>
+        <div class="vote-divider"></div>
         <button id="btn-dislike" class="dislike-btn" onclick="toggleDetailVote('dislike')">
             👎 <span id="dislike-count">0</span>
         </button>
     </div>
+</div>
 
-    <div class="cmt-box">
-        <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
-        <div id="cmt-list"></div>
-        <div style="margin-top:25px; display:flex; gap:12px;">
-            <input type="text" id="cC" data-zh-ph="神评由此诞生..." data-en-ph="Write a cool comment..." style="flex:1">
-            <button onclick="addCmt()" class="btn-send" data-zh="发送" data-en="Send">发送</button>
-        </div>
+<div class="cmt-box">
+    <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
+    <div id="cmt-list"></div>
+    <div style="margin-top:25px; display:flex; gap:12px;">
+        <input type="text" id="cC" data-zh-ph="神评由此诞生..." data-en-ph="Write a cool comment..." style="flex:1">
+        <button onclick="addCmt()" class="btn-send" data-zh="发送" data-en="Send">发送</button>
     </div>
+</div>
 
-    <div class="nav-links">
-        <a href="othersPost.html" style="color:var(--brand);" data-zh="⬅️ 返回广场" data-en="⬅️ Back to Plaza">⬅️ 返回广场</a>
-        <a href="home.html" style="color:#888;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
-    </div>
+<div class="nav-links">
+    <a href="othersPost.html" style="color:var(--brand);" data-zh="⬅️ 返回广场" data-en="⬅️ Back to Plaza">⬅️
+        返回广场</a>
+    <a href="home.html" style="color:#888;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
-    <script>
-        const lang = localStorage.getItem('lang') || 'zh';
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-        });
-        document.querySelectorAll('[data-zh-ph]').forEach(el => {
-            el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
-        });
-    </script>
-    <script src="content.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+<script>
+    const lang = localStorage.getItem('lang') || 'zh';
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+    document.querySelectorAll('[data-zh]').forEach(el => {
+        el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+    });
+    document.querySelectorAll('[data-zh-ph]').forEach(el => {
+        el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
+    });
+</script>
+<script src="content.js"></script>
 </body>
 
 </html>
