@@ -10,40 +10,29 @@
             --bg: #fffdf5;
             /* 修改背景颜色为 #fffdf5 */
             --brand: #ff6b81;
-            /* */
         }
 
         body {
             background-color: var(--bg);
-            /* */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            /* 修正字体栈：英文 Consolas，中文回退黑体 */
-            font-family: Consolas, Monaco, "Microsoft YaHei", "PingFang SC", monospace;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
             text-align: center;
         }
 
         .main-title {
             font-family: Consolas, Monaco, monospace;
-            /* */
             color: var(--brand);
-            /* */
             padding: 15px 30px;
-            /* */
             border: 4px solid var(--brand);
-            /* */
             display: inline-block;
-            /* */
             border-radius: 15px;
-            /* */
             box-shadow: 6px 6px 0px var(--brand);
-            /* */
             background-color: white;
-            /* */
             margin-bottom: 30px;
             font-size: 2.2rem;
         }

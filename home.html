@@ -22,22 +22,19 @@
     </nav>
 
     <footer class="footer">
-        <a href="settings.html" class="footer-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
+        <a href="settings.html" class="f ooter-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
         <a href="author.html" id="admin-link" class="footer-link" data-zh="👑 作者" data-en="👑 Admin">👑 作者</a>
         <a href="credits.html" class="footer-link" data-zh="🙏 鸣谢名单" data-en="🙏 Credits">🙏 鸣谢名单</a>
         <a href="javascript:void(0)" onclick="logout()" class="footer-link" style="color:#ff4757;" data-zh="🚪 退出登录"
             data-en="🚪 Logout">🚪 退出登录</a>
     </footer>
     <script>
-        /**
-         * 核心：应用全局主题、语言及权限控制
-         */
         function apply() {
-            // 1. 同步深色模式
+            // 同步深色模式，原理：从 localStorge 中的 'theme' 获取颜色
             const theme = localStorage.getItem('theme') || 'light';
             document.body.className = (theme === 'dark') ? 'dark' : '';
 
-            // 2. 同步语言翻译
+            // 同步语言翻译
             const lang = localStorage.getItem('lang') || 'zh';
             document.querySelectorAll('[data-zh]').forEach(el => {
                 const zh = el.getAttribute('data-zh');
@@ -55,7 +52,7 @@
                     // 如果匹配作者身份，显式展示
                     adminLink.style.display = 'inline-block';
                 } else {
-                    // 🚨 非作者身份，直接移除 DOM 节点，不留痕迹
+                    // 非作者身份，直接移除 DOM 节点，不留痕迹
                     adminLink.remove();
                 }
             }
@@ -76,7 +73,7 @@
                 localStorage.removeItem('username');
                 localStorage.removeItem('isAdmin');
                 localStorage.removeItem('userPoints');
-
+                 
                 // 强制返回登录首页
                 window.location.href = 'index.html';
             }
