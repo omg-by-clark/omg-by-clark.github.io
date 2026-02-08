@@ -1,6 +1,5 @@
-/* * authSystem.js
+/* * login.js
  * 系统身份验证与环境校验模块
- * TODO(Clark): 增加更高级的 token 验证机制
  */
 
 function go() {
