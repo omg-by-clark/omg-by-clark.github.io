@@ -14,19 +14,66 @@
     <h1 id="main-title">omg-by-Clark.github.io</h1>
     <p data-zh="🔥 新年快乐，欢迎来到吐槽能量站 v1.12.3！" data-en="🔥 Happy Lunar New Year! Welcome to the Rant Hub v1.12!">🔥 新年快乐，欢迎来到吐槽能量站 v1.12！</p>
     <nav class="main-nav">
-        <a href="postNow.html" class="btn-main btn-post" data-zh="🤬 我要发帖" data-en="🤬 Post Now">🤬 我要发帖</a>
-        <a href="othersPost.html" class="btn-main btn-view" data-zh="👀 随便看看" data-en="👀 Plaza">👀 随便看看</a>
-        <a href="version.html" class="btn-main btn-version" data-zh="🧾 更新日志" data-en="🧾 Update Log">🧾 更新日志</a>
-        <a href="info.html" class="btn-main btn-info" data-zh="👤 个人信息" data-en="👤 Info">👤 个人信息</a>
-        <a href="store.html" class="btn-main btn-store" data-zh="🛒 积分商城" data-en="🛒 Store">🛒 积分商城</a>
+        <a href="postNow.html"
+           class="btn-main btn-post"
+           data-zh="🤬 我要发帖"
+           data-en="🤬 Post Now">
+            🤬 我要发帖
+        </a>
+        <a href="othersPost.html"
+           class="btn-main btn-view"
+           data-zh="👀 随便看看"
+           data-en="👀 Plaza">
+            👀 随便看看
+        </a>
+        <a href="version.html"
+           class="btn-main btn-version"
+           data-zh="🧾 更新日志"
+           data-en="🧾 Update Log">
+            🧾 更新日志
+        </a>
+        <a href="info.html"
+           class="btn-main btn-info"
+           data-zh="👤 个人信息"
+           data-en="👤 Info">
+            👤 个人信息
+        </a>
+        <a href="store.html"
+           class="btn-main btn-store"
+           data-zh="🛒 积分商城"
+           data-en="🛒 Store">
+            🛒 积分商城
+        </a>
     </nav>
 
     <footer class="footer">
-        <a href="settings.html" class="footer-link" data-zh="⚙️ 设置" data-en="⚙️ Settings">⚙️ 设置</a>
-        <a href="author.html" id="admin-link" class="footer-link" data-zh="👑 作者" data-en="👑 Admin">👑 作者</a>
-        <a href="credits.html" class="footer-link" data-zh="🙏 鸣谢名单" data-en="🙏 Credits">🙏 鸣谢名单</a>
-        <a href="javascript:void(0)" onclick="logout()" class="footer-link" style="color:#ff4757;" data-zh="🚪 退出登录"
-            data-en="🚪 Logout">🚪 退出登录</a>
+        <a href="settings.html"
+           class="footer-link"
+           data-zh="⚙️ 设置"
+           data-en="⚙️ Settings">
+            ⚙️ 设置
+        </a>
+        <a href="author.html"
+           id="admin-link"
+           class="footer-link"
+           data-zh="👑 作者"
+           data-en="👑 Admin">
+            👑 作者
+        </a>
+        <a href="credits.html"
+           class="footer-link"
+           data-zh="🙏 鸣谢名单"
+           data-en="🙏 Credits">
+            🙏 鸣谢名单
+        </a>
+        <a href="javascript:void(0)"
+           onclick="logout()"
+           class="footer-link"
+           style="color:#ff4757;"
+           data-zh="🚪 退出登录"
+           data-en="🚪 Logout">
+            🚪 退出登录
+        </a>
     </footer>
     <script>
         function apply() {
@@ -42,7 +89,7 @@
                 el.innerText = (lang === 'zh') ? zh : en;
             });
 
-            // 3. 核心权限：作者按钮的显隐控制
+            // 作者按钮的显隐控制
             const currentUser = localStorage.getItem('username');
             const adminLink = document.getElementById('admin-link');
             const adminUsers = ['小鱼儿', '小鱼儿小号'];
@@ -74,7 +121,7 @@
                 localStorage.removeItem('isAdmin');
                 localStorage.removeItem('userPoints');
                  
-                // 强制返回登录首页
+                // 返回登录首页
                 window.location.href = 'index.html';
             }
         }
