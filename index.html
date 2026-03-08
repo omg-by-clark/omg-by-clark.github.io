@@ -1,202 +1,781 @@
 <!DOCTYPE html>
-<!-- index.html -->
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>欢迎 Welcome - omg-by-Clark</title>
+    <meta content="width=device-width, initial-scale=1.0"
+          name="viewport">
+    <title>首页 Home - omg-by-Clark</title>
     <style>
         :root {
             --bg: #fffdf5;
             --text: #333;
-            --brand: #ff4757;
             --card: #fff;
+            --brand: #ff4757;
+            --unliked: #ccc;
+            --disliked: #57606f;
+            --hot-border: #ff6b81;
+            --button-grad: linear-gradient(45deg, #e64553, #fe640b);
+            --kw-text: #5c5f77;
+
+            /* 投票胶囊颜色变量 - 浅色模式 */
+            --vote-bg-neutral: hsl(233deg, 10%, 47%);
+            --vote-bg-liked: #ff4757;
+            --vote-bg-disliked: #7287fd;
+
+            /* 新增：浅色模式下查看全文的蓝字 */
+            --read-more: #1e66f5;
         }
 
-        /* 深色模式变量 */
         body.dark {
-            --bg: #121212;
-            --text: #f1f2f6;
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --card: #2d2d2d;
             --brand: #ff6b81;
-            --card: #1e1e1e;
+            --unliked: hsl(233deg, 10%, 47%);
+            --disliked: #a4b0be;
+            --hot-border: #ff6b81;
+
+            /* 投票胶囊颜色变量 - 深色模式 */
+            --vote-bg-neutral: #333;
+            --vote-bg-disliked: #7287fd;
+
+            /* 新增：深色模式下查看全文的蓝字 */
+            --read-more: #89dceb;
         }
 
         body {
             font-family: sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
             background: var(--bg);
             color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
             transition: 0.3s;
         }
 
-        .auth-card {
-            background: var(--card);
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-        }
-
-        h2 {
+        h1 {
+            font-family: Consolas, Monaco, monospace;
+            font-weight: bold;
             color: var(--brand);
+            margin: 0;
+            font-size: 1.6em;
+            user-select: none;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(150, 150, 150, 0.1);
         }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #444;
-            background: var(--bg);
-            color: var(--text);
-            border-radius: 10px;
-            box-sizing: border-box;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* 统一 1.1 倍点击放大特效 */
-        .btn-go {
-            width: 100%;
-            padding: 12px;
-            background: var(--brand);
+        .btn-common {
+            background: var(--button-grad);
             color: white;
             border: none;
-            border-radius: 10px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
             font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: 0.1s;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(230, 69, 83, 0.3);
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .btn-go:active {
-            transform: scale(1.1);
+        .btn-common:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(230, 69, 83, 0.4);
         }
 
-        .mode-toggle {
-            margin-top: 20px;
-            font-size: 0.85em;
-            color: #888;
-            text-decoration: underline;
-            cursor: pointer;
+        .btn-common:active {
+            transform: scale(0.95);
+        }
+
+        .layout-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .col-all {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .col-hot {
+            flex: 1;
+            min-width: 0;
+            border: 2px solid var(--hot-border);
+            border-radius: 12px;
+            padding: 20px;
+            background: hsla(351, 100%, 71%, 0.03);
+            height: fit-content;
+        }
+
+        @media (max-width: 768px) {
+            .layout-container {
+                flex-direction: column-reverse;
+            }
+
+            .col-hot {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .section-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card {
+            background: transparent;
+            margin: 0;
+            padding: 20px 5px;
+            border-radius: 0;
             display: block;
+            box-shadow: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1.5px solid var(--brand);
         }
 
-        .mode-toggle:active {
-            transform: scale(1.1);
+        /* 这是新增的原理实现代码，用于抹除最后一个帖子的下边框 */
+        .card:last-child {
+            border-bottom: none;
+        }
+
+        .card b {
+            color: #121212;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .card:active {
+            background-color: rgba(150, 150, 150, 0.05);
+        }
+
+        .read-more {
+            color: var(--read-more);
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .post-footer {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .post-meta {
+            font-size: 13px;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .vote-pill {
+            display: flex;
+            align-items: center;
+            background-color: var(--vote-bg-neutral);
+            border-radius: 20px;
+            padding: 2px;
+            transition: background-color 0.3s ease;
+            height: fit-content;
+            gap: 2px;
+        }
+
+        .like-btn,
+        .dislike-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14.5px;
+            border-radius: 18px;
+            transition: all 0.2s;
+        }
+
+        .vote-divider {
+            width: 1px;
+            height: 16px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 2px;
+            transition: opacity 0.2s;
+        }
+
+        .like-btn:active, .dislike-btn:active {
+            transform: scale(0.9);
+        }
+
+        .vote-pill.is-liked .like-btn {
+            background-color: var(--vote-bg-liked);
+        }
+
+        .vote-pill.is-disliked .dislike-btn {
+            background-color: var(--vote-bg-disliked);
+        }
+
+        .vote-pill.is-liked .vote-divider,
+        .vote-pill.is-disliked .vote-divider {
+            opacity: 0.2;
+        }
+
+        .lv-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 5px;
+            vertical-align: middle;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: inline-block;
+        }
+
+        .lv-log {
+            background: #a1662f;
+        }
+
+        .lv-iron {
+            background: #555555;
+        }
+
+        .lv-bronze {
+            background: #cd7f32;
+        }
+
+        .lv-silver {
+            background: #e0e0e0;
+            color: #000;
+            text-shadow: none;
+        }
+
+        .lv-gold {
+            background: #ffd700;
+            color: black;
+            text-shadow: none;
+        }
+
+        .lv-diamond {
+            background: #add8e6;
+            color: #0000ff;
+            text-shadow: none;
+        }
+
+        .lv-king {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #fff;
+            padding-right: 18px;
+            text-shadow: none;
+        }
+
+        .lv-king::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            font-style: italic;
+            font-weight: 900;
+        }
+
+        .lv-epic {
+            background: linear-gradient(45deg, #a333c8, #6d28d9);
+            color: white;
+            padding-right: 18px;
+            box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
+        }
+
+        .lv-epic::after {
+            content: "V";
+            position: absolute;
+            right: 4px;
+            font-style: italic;
+            font-weight: 900;
+        }
+
+        .kw-display {
+            display: block;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            color: var(--kw-text);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .loading-sentinel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .loading-sentinel.visible {
+            opacity: 1;
+        }
+
+        .loading-sentinel span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background: var(--brand);
+            border-radius: 50%;
+            animation: bounce 0.4s infinite alternate;
+        }
+
+        .loading-sentinel span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-sentinel span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+
+        .end-message {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            padding: 20px;
+            display: none;
         }
     </style>
 </head>
 
 <body>
-    <a class="auth-card">
-        <h2 id="title" data-zh="🧨 新年快乐！" data-en="🧨 Happy New Year!">🧨 新年快乐！</h2>
+<div class="header-container">
+    <h1>omg-by-Clark.github.io</h1>
 
-        <input type="text" id="u" data-zh-ph="用户名" data-en-ph="Username" placeholder="Username">
-        <input type="password" id="p" data-zh-ph="密码" data-en-ph="Password" placeholder="Password">
+    <div class="header-actions">
+        <button class="btn-common" data-en="🤔 Random"
+                data-zh="🤔 随机" onclick="goRandom()">
+            🤔 随机
+        </button>
+        <a class="btn-common" data-en="🤬 Post Now"
+           data-zh="🤬 发帖" href="post-now.html">
+            🤬 发帖
+        </a>
+        <a class="btn-common" data-en="🔑 Sign In"
+           data-zh="🔑 登录" href="sign-in.html">
+            🔑 登录
+        </a>
+        <a href="info.html" class="btn-common"
+           data-zh="👤 个人" data-en="👤 Info">
+            👤 个人
+        </a>
+        <a class="btn-common" data-en="⚙️ Settings"
+           data-zh="⚙️ 设置" href="settings.html">
+            ⚙️ 设置
+        </a>
 
-        <button class="btn-go" onclick="handleAuth()" id="btn" data-zh="立即登录" data-en="Login">立即登录</button>
+    </div>
+</div>
 
-        <div class="mode-toggle" onclick="toggle()" id="hint" data-zh="还没账号？点我注册" data-en="No account? Register">
-            还没账号？点我注册</div>
-        <div class="mode-toggle" onclick="window.location.href='home.html'" data-zh="不想登录？点我进入游客模式" data-en="Don't have an account? Click here to register">
-            不想登录？点我进入游客模式
+<div class="layout-container">
+    <div class="col-all">
+        <h2 class="section-title"
+            data-en="📃 All Posts"
+            data-zh="📃 全部帖子">
+            📃 全部帖子
+        </h2>
+        <div id="list-all"></div>
+        <div class="loading-sentinel" id="scroll-sentinel">
+            <span></span><span></span><span></span>
         </div>
-    </a>
+        <div class="end-message" data-en="🚫 No more posts"
+             data-zh="😀 我也是有底线的！"
+             id="end-message">😀 我也是有底线的！
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
-    <script>
-        // 初始化环境
-        function applySettings() {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            const lang = localStorage.getItem('lang') || 'zh';
-            document.querySelectorAll('[data-zh]').forEach(el => {
-                el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+    <div class="col-hot">
+        <h2 class="section-title"
+            data-en="🔥 Hot Top 5"
+            data-zh="🔥 热搜 Top 5"
+            style="color: var(--brand);">
+            🔥 热搜 Top 5</h2>
+        <div id="list-hot">
+            <div class="loading-sentinel visible"
+                 style="height:100px;">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+
+<script>
+    let currentPage = 0;
+    const PAGE_SIZE = 15;
+    let globalUserMap = {};
+    let isFetching = false;
+    let hasMore = true;
+    let observer;
+
+    /* escapeHTML
+    用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
+    原理：在内存中临时创建一个空白的 div 元素，利用浏览器的原生 textContent
+    属性来接收输入值。这会自动将敏感字符（如 <, >, &）进行转义。最后，
+    通过提取该 div 的 innerHTML 来获得完全安全、已被转义过的字符串，
+    这是一种防范 XSS（跨站脚本攻击）的经典手段。
+    */
+    function escapeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    /* getNicknameStyle
+    用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
+    原理：检查传入的 inventory 对象中是否包含特定的道具 ID（例如 '100', '101'）。
+    如果存在，利用 JavaScript 的 new Date() 对比当前时间和道具对应的过期时间，
+    以此判断道具是否在有效期内。如果生效，则返回一段包含渐变色、发光或特定颜色
+    等效果的内联 CSS 字符串，以便渲染出特殊外观。
+    */
+    function getNicknameStyle(inventory) {
+        if (!inventory) return '';
+        const now = new Date();
+        if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+        if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
+        if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
+        return '';
+    }
+
+    /* updateLanguage
+    用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
+    原理：首先读取 localStorage 中键名为 'lang' 的值，如果不存在则默认回退为 'zh'。
+    随后，使用 querySelectorAll 找出 DOM 中所有标记了 `data-zh` 属性的 HTML 元素。
+    遍历这些元素，根据当前的语言状态，将元素的 innerText 替换为自身 `data-zh`
+    或者 `data-en` 属性中所保存的对应语种文本。
+    */
+    function updateLanguage() {
+        const lang = localStorage.getItem('lang') || 'zh';
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+        });
+    }
+
+    /* goRandom
+    用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
+    原理：首先向 Supabase 后端发送一个只请求数量的查询（head: true），以获得 `posts`
+    表的总行数。然后使用 Math.random() 在 0 到总行数之间生成一个随机索引。
+    接着利用 range() 查询这个特定索引对应的单一帖子记录，获取其唯一 ID。
+    最终，通过修改浏览器的 location.href，携带该 ID 跳转至内容详情页。
+    */
+    async function goRandom() {
+        if (isFetching) return;
+        isFetching = true;
+        try {
+            const {
+                count,
+                error: countErr
+            } = await _supabase.from('posts').select('*', {
+                count: 'exact',
+                head: true
             });
-            document.querySelectorAll('[data-zh-ph]').forEach(el => {
-                el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
+            if (countErr) throw countErr;
+            if (count === 0) return alert("广场还是空荡荡的...");
+            const fetchUntilFound = async () => {
+                const randomIndex = Math.floor(Math.random() * count);
+                const {
+                    data,
+                    error
+                } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+                if (!data || error) return await fetchUntilFound();
+                return data.id;
+            };
+            const validId = await fetchUntilFound();
+            location.href = `content.html?id=${validId}`;
+        } catch (error) {
+            let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
+            alert(errCode);
+            console.error("[随机失败]", error);
+        } finally {
+            isFetching = false;
+        }
+    }
+
+    /* handleVote
+    用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
+    原理：首先调用 event.stopPropagation() 防止点击事件向上层卡片冒泡导致误跳入详情页。
+    随后根据传入的 type 参数区分是顶还是踩，修改 DOM 节点的 UI 高亮状态（添加或移除
+    is-liked/is-disliked 类），并实时增减显示的票数数字。
+    为了记忆用户的投票状态，会将其保存在 localStorage 的数组中，
+    最后发起一个异步请求，将最新的总赞/踩数同步覆写到 Supabase 远程数据库中。
+    */
+    async function handleVote(event, postId, type) {
+        event.stopPropagation();
+        const card = event.currentTarget.closest('.card');
+        const votePill = card.querySelector('.vote-pill');
+        const likeBtn = card.querySelector('.like-btn');
+        const dislikeBtn = card.querySelector('.dislike-btn');
+        const likeSpan = likeBtn.querySelector('.count');
+        const dislikeSpan = dislikeBtn.querySelector('.count');
+
+        let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+        let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+
+        let likes = parseInt(likeSpan.innerText);
+        let dislike = parseInt(dislikeSpan.innerText);
+
+        if (type === 'like') {
+            if (likedPosts.includes(postId)) {
+                likes--;
+                likedPosts = likedPosts.filter(id => id !== postId);
+                votePill.classList.remove('is-liked');
+            } else {
+                likes++;
+                likedPosts.push(postId);
+                votePill.classList.add('is-liked');
+                if (dislikedPosts.includes(postId)) {
+                    dislike--;
+                    dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                    votePill.classList.remove('is-disliked');
+                    dislikeSpan.innerText = dislike;
+                }
+            }
+            likeSpan.innerText = likes;
+        } else {
+            if (dislikedPosts.includes(postId)) {
+                dislike--;
+                dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                votePill.classList.remove('is-disliked');
+            } else {
+                dislike++;
+                dislikedPosts.push(postId);
+                votePill.classList.add('is-disliked');
+                if (likedPosts.includes(postId)) {
+                    likes--;
+                    likedPosts = likedPosts.filter(id => id !== postId);
+                    votePill.classList.remove('is-liked');
+                    likeSpan.innerText = likes;
+                }
+            }
+            dislikeSpan.innerText = dislike;
+        }
+
+        localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+        localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
+
+        try {
+            await _supabase.from('posts').update({
+                likes,
+                dislike
+            }).eq('id', postId);
+        } catch (err) {
+            console.error("同步失败", err);
+        }
+    }
+
+    /* createCardHTML
+    用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
+    原理：通过接收的帖子对象和传入的用户映射表(userMap)，匹配发帖人的专属外观。
+    如果发帖人的字数大于200字，会自动使用 substring 方法进行截断，并拼接上
+    一段带交互提示的“查看全文”字样，防止帖子过长撑爆屏幕。同时提取本地缓存的
+    历史点赞数据来判断并决定渲染时是否需高亮按钮，最终通过模板字面量组装出带 CSS 的 HTML。
+    */
+    function createCardHTML(postData, userMap) {
+        const author = userMap ? userMap[postData.nickname] : null;
+        const userLevel = getLevelInfo(author ? author.points : 0);
+        const nickStyle = getNicknameStyle(author ? author.inventory : null);
+        const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+        const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+
+        let kwHtml = postData.keywords && postData.keywords.length > 0 ? `<span class="kw-display">关键词：${postData.keywords.join('&nbsp;&nbsp;&nbsp;')}</span>` : '';
+
+        let pillClass = 'vote-pill';
+        if (likedPosts.includes(postData.id)) pillClass += ' is-liked';
+        if (dislikedPosts.includes(postData.id)) pillClass += ' is-disliked';
+
+        const safeContent = postData.content || '';
+        let displayContent = '';
+
+        if (safeContent.length > 200) {
+            displayContent = escapeHTML(safeContent.substring(0, 200)) +
+                `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
+        } else {
+            displayContent = escapeHTML(safeContent);
+        }
+
+        let dateStr = '';
+        if (postData.created_at) {
+            const d = new Date(postData.created_at);
+            const pad = n => n.toString().padStart(2, '0');
+            dateStr = d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+        }
+
+        return `
+            <div class="card" onclick="location.href='content.html?id=${postData.id}'">
+                <div style="width: 100%;">
+                    <b>${escapeHTML(postData.title)}</b>
+                    ${kwHtml}
+                    <p style="font-size:0.9em; color:#4c4f69; margin:8px 0;">${displayContent}</p>
+
+                    <div class="post-footer">
+                        <div class="${pillClass}">
+                            <button class="like-btn" onclick="handleVote(event, ${postData.id}, 'like')">
+                                👍 <span class="count">${postData.likes || 0}</span>
+                            </button>
+                            <div class="vote-divider"></div>
+                            <button class="dislike-btn" onclick="handleVote(event, ${postData.id}, 'dislike')">
+                                👎 <span class="count">${postData.dislike || 0}</span>
+                            </button>
+                        </div>
+                        <div class="post-meta">
+                            👤 <span style="${nickStyle}; margin-left: 4px;">${escapeHTML(postData.nickname)}</span> <span class="lv-badge ${userLevel.class}">${userLevel.name}</span> &nbsp;|&nbsp; 📅 ${dateStr}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    /* loadNextPage
+    用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑）。
+    原理：基于设定的当前页码(currentPage)与固定常量(PAGE_SIZE)，算出本次数据库请求
+    所需分页范围索引 (from 和 to)。利用 Supabase 的 range() 进行区间拉取。
+    若成功获取到数据集，则转化成 HTML 并通过 insertAdjacentHTML 拼接到长列表的尾部，
+    并递增当前页码；若返回的记录数少于预期容量，说明数据已枯竭，则隐藏动画并显示底线文字。
+    */
+    async function loadNextPage() {
+        if (isFetching || !hasMore) return;
+        isFetching = true;
+        document.getElementById('scroll-sentinel').classList.add('visible');
+        try {
+            const from = currentPage * PAGE_SIZE;
+            const to = (currentPage + 1) * PAGE_SIZE - 1;
+            const {
+                data,
+                error
+            } = await _supabase.from('posts').select('*').order('created_at', {ascending: false}).range(from, to);
+            if (data.length > 0) {
+                document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(postData => createCardHTML(postData, globalUserMap)).join(''));
+                currentPage++;
+            }
+            if (data.length < PAGE_SIZE) {
+                hasMore = false;
+                document.getElementById('scroll-sentinel').style.display = 'none';
+                document.getElementById('end-message').style.display = 'block';
+            }
+            updateLanguage();
+        } finally {
+            isFetching = false;
+        }
+    }
+
+    /* setupIntersectionObserver
+    用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
+    原理：实例化浏览器原生的 IntersectionObserver（交叉观察器） API，
+    专门监视挂载在列表底部的空白哨兵节点 `#scroll-sentinel`。
+    当检测到该哨兵节点进入浏览器视野内（isIntersecting 为 true），
+    且未处于加载状态、且仍有未取完的数据时，直接挂载执行 loadNextPage 函数。
+    */
+    function setupIntersectionObserver() {
+        observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
+        }, {rootMargin: '100px'});
+        observer.observe(document.getElementById('scroll-sentinel'));
+    }
+
+    /* init
+    用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
+    原理：首先处理全局的暗黑模式缓存判定。紧接着，为了追求极速加载体验，
+    采用 Promise.all 同时并行获取 `posts` 表与 `users` 表的数据集。
+    随后，进入算力分配：遍历帖子，套用一套包含“净赞数除以基于时间偏移的指数”
+    的热度算法公式算出每篇的 hotScore，并依据分数排序切片出 Top5 发往热榜列表。
+    最终，初始化底部的监听器以备后续翻页之需，并校验全局翻译标签。
+    */
+    async function init() {
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        const listHotEl = document.getElementById('list-hot');
+        try {
+            const [postsRes, usersRes] = await Promise.all([
+                _supabase.from('posts').select('*'),
+                _supabase.from('users').select('username, points, inventory')
+            ]);
+            if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
+                acc[user.username] = user;
+                return acc;
+            }, {});
+
+            const now = Date.now();
+
+            const weightedPosts = postsRes.data.map(post => {
+                const likes = post.likes || 0;
+                const dislikes = post.dislike || 0;
+                const netVotes = likes - dislikes;
+
+                const postTime = new Date(post.created_at).getTime();
+                const ageInHours = (now - postTime) / (1000 * 60 * 60);
+
+                let hotScore = 0;
+                if (netVotes > 0) {
+                    hotScore = netVotes / Math.pow((ageInHours + 225), 1.0001);
+                } else if (netVotes < 0) {
+                    hotScore = netVotes;
+                }
+
+                return {...post, hotScore};
             });
+
+            const hotPosts = weightedPosts
+                .sort((a, b) => b.hotScore - a.hotScore)
+                .slice(0, 5);
+
+            listHotEl.innerHTML = hotPosts.map(postData => createCardHTML(postData, globalUserMap)).join('');
+
+            setupIntersectionObserver();
+        } catch (err) {
+            listHotEl.innerHTML = "<p>数据加载失败</p>";
         }
-        applySettings();
+        updateLanguage();
+    }
 
-        let isReg = false;
-        function toggle() {
-            isReg = !isReg;
-            const lang = localStorage.getItem('lang') || 'zh';
-            const t = document.getElementById('title');
-            const b = document.getElementById('btn');
-            const h = document.getElementById('hint');
-
-            if (isReg) {
-                t.innerText = lang === 'zh' ? "📝 注册新账号" : "📝 New Account";
-                b.innerText = lang === 'zh' ? "立即创建" : "Sign Up";
-                h.innerText = lang === 'zh' ? "已有账号？去登录" : "Back to Login";
-            } else {
-                t.innerText = lang === 'zh' ? "👋 你好呀！" : "👋 Hello there!";
-                b.innerText = lang === 'zh' ? "立即登录" : "Login";
-                h.innerText = lang === 'zh' ? "还没账号？点我注册" : "No account? Sign up";
-            }
-        }
-
-        // SHA-256 加密逻辑
-        async function s256(str) {
-            const buf = new TextEncoder().encode(str);
-            const hash = await crypto.subtle.digest('SHA-256', buf);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function handleAuth() {
-            const user = document.getElementById('u').value.trim();
-            const pass = document.getElementById('p').value.trim();
-            const lang = localStorage.getItem('lang') || 'zh';
-            if (!user || !pass) return alert("填完整再点！");
-
-            const hp = await s256(pass);
-
-            if (isReg) {
-                // 注册逻辑：保持原样，不需要额外的日期字段了
-                const { error } = await _supabase.from('users').insert([{ username: user, password: hp, points: 0 }]);
-                if (error) {
-                    alert("失败：名字可能被占用了");
-                } else {
-                    alert("注册成功！去登录吧");
-                    toggle();
-                }
-            } else {
-                // 校验登录
-                const { data, error } = await _supabase.from('users').select('*').eq('username', user).eq('password', hp).single();
-
-                if (data) {
-                    // --- 每次登录都领奖逻辑 ---
-                    const reward = 5;
-                    const currentPoints = (data.points || 0) + reward;
-
-                    // 直接更新数据库，不需要判断日期
-                    await _supabase.from('users')
-                        .update({ points: currentPoints })
-                        .eq('username', user);
-
-                    alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
-
-                    // 存入最新的积分（包含刚才送的5分）
-                    localStorage.setItem('username', data.username);
-                    localStorage.setItem('userPoints', currentPoints);
-                    if (user === 'Clark') localStorage.setItem('isAdmin', 'true');
-
-                    window.location.href = 'home.html';
-                } else {
-                    alert("❌ 账号或密码不对哦");
-                }
-            }
-        }
-    </script>
+    init();
+</script>
 </body>
 
 </html>

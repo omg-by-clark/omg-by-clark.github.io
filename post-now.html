@@ -74,7 +74,7 @@
 
         body.dark input,
         body.dark textarea {
-            font-family: Microsoft YaHei, Pingfang SC;
+            font-family: sans-serif, "PingFang SC";
             background: #1e1e1e;
             border-color: #444;
             color: #fff;
@@ -182,7 +182,7 @@
 
             <button type="submit" id="submit-btn" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
         </form>
-        <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+        <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -196,7 +196,15 @@
         let isSubmitting = false;
 
         // 关键词列表配置
-        const KEYWORDS_LIST = ['#学校 School', '#老师 Teachers', '#作业 Homework', '#家人 Family', '#避雷 Avoid', '#奸商 Scammer', '#编程 Coding', '#上课 Class', '#旅游 Travel', '#奇葩 Weird', '#美食 Food', '#生活 Life', '#宠物 Pets', '#科技 Tech', '#娱乐 Fun', '#其他 Others'];
+        const KEYWORDS_LIST = ['#学校 School',
+            '#老师 Teachers', '#作业 Homework',
+            '#家人 Family', '#避雷 Avoid',
+            '#奸商 Scammer', '#编程 Coding',
+            '#上课 Class', '#旅游 Travel',
+            '#奇葩 Weird', '#食物 Food',
+            '#生活 Life', '#宠物 Pets',
+            '#科技 Tech', '#娱乐 Fun',
+            '#其他 Others'];
 
         function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
@@ -271,7 +279,7 @@
                 localStorage.setItem('userPoints', newPts);
 
                 alert(lang === 'zh' ? "发布成功！积分+10" : "Success! Points +10");
-                window.location.href = 'othersPost.html';
+                window.location.href = 'index.html';
 
             } catch (err) {
                 alert("Error: " + err.message);

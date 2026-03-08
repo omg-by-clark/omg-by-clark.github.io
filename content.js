@@ -15,6 +15,9 @@ const TRANS = {
 const urlParams = new URLSearchParams(window.location.search);
 const postId = urlParams.get('id');
 
+// 新增全局变量：用于记录当前帖子的作者名字，供评论区判断 OP 时使用
+let currentPostAuthor = '';
+
 function getNickStyle(inventory) {
     if (!inventory) return '';
     const now = new Date();
@@ -36,6 +39,9 @@ async function loadPostDetails() {
     try {
         const {data: post, error} = await _supabase.from('posts').select('*').eq('id', postId).single();
         if (error) throw error;
+
+        // 核心逻辑：拿到帖子数据后，立刻将作者名字存入全局变量
+        currentPostAuthor = post.nickname;
 
         const {data: author} = await _supabase.from('users').select('points, inventory').eq('username', post.nickname).maybeSingle();
         const lv = getLevelInfo(author ? author.points : 0);
@@ -152,7 +158,13 @@ async function loadComments() {
             const u = userMap[c.nickname];
             const clv = getLevelInfo(u ? u.points : 0);
             const cnStyle = getNickStyle(u ? u.inventory : null);
-            return `<div class="cmt-item"><div class="cmt-content"><b><span style="${cnStyle}">${escapeHTML(c.nickname)}</span> <span class="lv-badge ${clv.class}">${clv.name}</span>:</b> ${escapeHTML(c.content)}</div></div>`;
+
+            // 验证：检查当前渲染的评论作者是否等于帖子的作者，如果是，则生成 OP 标签
+            const isOP = c.nickname === currentPostAuthor;
+            const opBadgeHtml = isOP ? `<span class="op-badge">OP</span>` : '';
+
+            // 在等级标签 ${clv.name} 的左侧插入 ${opBadgeHtml}
+            return `<div class="cmt-item"><div class="cmt-content"><b><span style="${cnStyle}">${escapeHTML(c.nickname)}</span>${opBadgeHtml} <span class="lv-badge ${clv.class}">${clv.name}</span>:</b> ${escapeHTML(c.content)}</div></div>`;
         }).join('') || `<p style="color:#888">${TRANS.noComments[currentLang]}</p>`;
     } catch (err) {
         console.error("加载失败", err);
@@ -163,7 +175,7 @@ async function addCmt() {
     const nick = localStorage.getItem('username');
     if (!nick) {
         alert(TRANS.loginReq[currentLang]);
-        window.location.href = 'index.html';
+        window.location.href = 'index.html'; // 如果之前重命名为 signIn.html，请在这里同步修改哦
         return;
     }
     const content = document.getElementById('cC').value.trim();

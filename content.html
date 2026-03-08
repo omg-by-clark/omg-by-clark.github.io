@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- content.html -->
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0"
+          name="viewport">
     <title>详情 Details - omg-by-Clark</title>
     <style>
         :root {
@@ -178,6 +178,24 @@
             transition: transform 0.1s;
         }
 
+        /* OP 专属徽章样式，大小对齐等级标志 */
+        .op-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 5px;
+            display: inline-block;
+            background-color: #1e66f5; /* 浅色模式背景 */
+            color: #89dceb; /* 浅色模式文字 */
+        }
+
+        /* 深色模式下的 OP 徽章颜色反转 */
+        body.dark .op-badge {
+            background-color: #89dceb;
+            color: #1e66f5;
+        }
+
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -263,36 +281,45 @@
 <body>
 <h1 id="t">...</h1>
 <div id="info"
-     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-</div>
-<div id="kw-row" class="kw-row"></div>
+     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
+<div class="kw-row" id="kw-row"></div>
 <div id="c">Loading...</div>
 
 <div class="action-area">
-    <div id="vote-container" class="vote-pill">
-        <button id="btn-like" class="like-btn" onclick="toggleDetailVote('like')">
+    <div class="vote-pill" id="vote-container">
+        <button class="like-btn" id="btn-like"
+                onclick="toggleDetailVote('like')">
             👍 <span id="like-count">0</span>
         </button>
         <div class="vote-divider"></div>
-        <button id="btn-dislike" class="dislike-btn" onclick="toggleDetailVote('dislike')">
+        <button class="dislike-btn" id="btn-dislike"
+                onclick="toggleDetailVote('dislike')">
             👎 <span id="dislike-count">0</span>
         </button>
     </div>
 </div>
 
 <div class="cmt-box">
-    <h3 data-zh="💬 评论区" data-en="💬 Comments">💬 评论区</h3>
+    <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
+        评论区</h3>
     <div id="cmt-list"></div>
     <div style="margin-top:25px; display:flex; gap:12px;">
-        <input type="text" id="cC" data-zh-ph="神评由此诞生..." data-en-ph="Write a cool comment..." style="flex:1">
-        <button onclick="addCmt()" class="btn-send" data-zh="发送" data-en="Send">发送</button>
+        <input data-en-ph="Write a cool comment..."
+               data-zh-ph="神评由此诞生..."
+               id="cC"
+               style="flex:1"
+               type="text">
+        <button class="btn-send" data-en="Send"
+                data-zh="发送" onclick="addCmt()">发送
+        </button>
     </div>
 </div>
 
 <div class="nav-links">
-    <a href="othersPost.html" style="color:var(--brand);" data-zh="⬅️ 返回广场" data-en="⬅️ Back to Plaza">⬅️
-        返回广场</a>
-    <a href="home.html" style="color:#888;" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+    <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场"
+       href="index.html" style="color:var(--brand);">
+        ⬅️ 返回广场
+    </a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

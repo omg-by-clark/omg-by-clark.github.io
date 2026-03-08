@@ -3,9 +3,10 @@
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no"
+          name="viewport">
     <title>个人信息 Info - omg-by-Clark</title>
     <style>
         :root {
@@ -130,7 +131,7 @@
 
         /* 签到按钮 */
         .btn-checkin {
-            background: linear-gradient(135deg, var(--checkin-start), var(--checkin-end));
+            background: var(--checkin) !important;
             color: #1e1e2e;
             border: none;
             padding: 10px 24px;
@@ -209,186 +210,207 @@
 </head>
 
 <body>
-    <div class="info-card">
-        <h1 data-zh="👤 个人信息" data-en="👤 User Info">👤 个人信息</h1>
+<div class="info-card">
+    <h1 data-en="👤 User Info" data-zh="👤 个人信息">👤
+        个人信息</h1>
 
-        <ul id="info-list">
-            <li id="u-name">👤 Loading...</li>
-            <li id="u-points">💰 Points: 0</li>
-            <li id="u-level">🥇 Level: <span class="lv-badge lv-log">...</span></li>
-            <li id="u-last-check">📅 Last Check-in: -</li>
-            <li id="u-check-count">🔢 Total Check-ins: 0</li>
-        </ul>
+    <ul id="info-list">
+        <li id="u-name">👤 Loading...</li>
+        <li id="u-points">💰 Points: 0</li>
+        <li id="u-level">🥇 Level: <span
+                class="lv-badge lv-log">...</span></li>
+        <li id="u-last-check">📅 Last Check-in: -</li>
+        <li id="u-check-count">🔢 Total Check-ins: 0</li>
+    </ul>
 
-        <button id="btn-checkin" class="btn-checkin" onclick="dailyCheckIn()">
-            📅 <span data-zh="每日签到" data-en="Check-in Now">每日签到</span>
+    <button class="btn-checkin" id="btn-checkin"
+            onclick="dailyCheckIn()">
+        📅 <span data-en="Check-in Now" data-zh="每日签到">每日签到</span>
+    </button>
+
+    <div class="pwd-section">
+        <button data-en="🔐 Change Password"
+                data-zh="🔐 修改密码"
+                onclick="togglePwdForm()"
+                style="background:none; border:none; color:var(--brand); cursor:pointer; font-weight:bold;">🔐 修改密码
         </button>
-
-        <div class="pwd-section">
-            <button onclick="togglePwdForm()"
-                style="background:none; border:none; color:var(--brand); cursor:pointer; font-weight:bold;"
-                data-zh="🔐 修改密码" data-en="🔐 Change Password">🔐 修改密码</button>
-            <div id="pwd-form" style="display:none; margin-top:10px;">
-                <input type="password" id="old-pwd" class="pwd-input" data-zh-ph="输入原密码" data-en-ph="Current Password">
-                <input type="password" id="new-pwd" class="pwd-input" data-zh-ph="输入新密码 (至少6位)"
-                    data-en-ph="New Password (min 6)">
-                <button class="btn-update" onclick="updatePassword()" data-zh="确认修改"
-                    data-en="Confirm Change">确认修改</button>
-            </div>
+        <div id="pwd-form"
+             style="display:none; margin-top:10px;">
+            <input class="pwd-input" data-en-ph="Current Password"
+                   data-zh-ph="输入原密码" id="old-pwd"
+                   type="password">
+            <input class="pwd-input" data-en-ph="New Password (min 6)"
+                   data-zh-ph="输入新密码 (至少6位)"
+                   id="new-pwd"
+                   type="password">
+            <button class="btn-update"
+                    data-en="Confirm Change"
+                    data-zh="确认修改"
+                    onclick="updatePassword()">确认修改
+            </button>
         </div>
-
-        <a href="home.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
-    <script>
-        const lang = localStorage.getItem('lang') || 'zh';
-        let currentPoints = 0;
-        let currentCheckInCount = 0;
+    <a class="back-link" data-en="🏠 Back Home"
+       data-zh="🏠 返回首页" href="index.html">
+        🏠 返回首页
+    </a>
+</div>
 
-        // 🔒 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
-        function escapeHTML(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+<script>
+    const lang = localStorage.getItem('lang') || 'zh';
+    let currentPoints = 0;
+    let currentCheckInCount = 0;
+
+    // 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
+    function escapeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function getNickStyle(inventory) {
+        if (!inventory) return '';
+        const now = new Date();
+        if (inventory['100'] && new Date(inventory['100']) > now) {
+            return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+            return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+        }
+        if (inventory['101'] && new Date(inventory['101']) > now) {
+            return 'color: #04a5e5; font-weight: bold;';
+        }
+        if (inventory['102'] && new Date(inventory['102']) > now) {
+            return 'color: #f9e2af; font-weight: bold; text-shadow: 0 0 5px rgba(250, 179, 135, 0.5);';
+        }
+        return '';
+    }
+
+    function togglePwdForm() {
+        const f = document.getElementById('pwd-form');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+
+    /**
+     * 初始化：从 Supabase 读取积分、签到时间、次数及背包
+     */
+    async function init() {
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        const user = localStorage.getItem('username');
+        if (!user) {
+            alert(localStorage.getItem('lang') === 'zh' ? '你还没有登录，请先登录再查看个人信息！' : 'You have not signed in yet, please sign in now!');
+            window.location.href = 'sign-in.html';
+            return;
         }
 
-        function getNickStyle(inventory) {
-            if (!inventory) return '';
-            const now = new Date();
-            if (inventory['100'] && new Date(inventory['100']) > now) {
-                return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;'; return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
-            }
-            if (inventory['101'] && new Date(inventory['101']) > now) {
-                return 'color: #04a5e5; font-weight: bold;';
-            }
-            if (inventory['102'] && new Date(inventory['102']) > now) {
-                return 'color: #f9e2af; font-weight: bold; text-shadow: 0 0 5px rgba(250, 179, 135, 0.5);';
-            }
-            return '';
-        }
+        // 1. 翻译逻辑
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+        });
+        document.querySelectorAll('[data-zh-ph]').forEach(el => {
+            el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
+        });
 
-        function togglePwdForm() {
-            const f = document.getElementById('pwd-form');
-            f.style.display = f.style.display === 'none' ? 'block' : 'none';
-        }
+        // 2. 获取云端数据
+        const {data} = await _supabase.from('users').select('*').eq('username', user).single();
+        if (data) {
+            currentPoints = data.points || 0;
+            currentCheckInCount = data.check_in_count || 0;
 
-        /**
-         * 初始化：从 Supabase 读取积分、签到时间、次数及背包
-         */
-        async function init() {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            const user = localStorage.getItem('username');
-            if (!user) { window.location.href = 'index.html'; return; }
+            const lv = getLevelInfo(currentPoints);
+            const nStyle = getNickStyle(data.inventory);
+            const safeName = escapeHTML(data.username); // 安全转义
 
-            // 1. 翻译逻辑
-            document.querySelectorAll('[data-zh]').forEach(el => {
-                el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
-            });
-            document.querySelectorAll('[data-zh-ph]').forEach(el => {
-                el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
-            });
+            // 渲染用户名 (带特效预览)
+            document.getElementById('u-name').innerHTML = (lang === 'zh' ? "👤 用户名: " : "👤 Username: ") +
+                `<span style="${nStyle}">${safeName}</span>`;
 
-            // 2. 获取云端数据
-            const { data } = await _supabase.from('users').select('*').eq('username', user).single();
-            if (data) {
-                currentPoints = data.points || 0;
-                currentCheckInCount = data.check_in_count || 0;
+            document.getElementById('u-points').innerText = (lang === 'zh' ? "💰 积分: " : "💰 Points: ") + currentPoints;
+            document.getElementById('u-level').innerHTML = (lang === 'zh' ? "🥇 等级: " : "🥇 Level: ") +
+                `<span class="lv-badge ${lv.class}">${lv.name}</span>`;
 
-                const lv = getLevelInfo(currentPoints);
-                const nStyle = getNickStyle(data.inventory);
-                const safeName = escapeHTML(data.username); // 安全转义
+            document.getElementById('u-check-count').innerText = (lang === 'zh' ? "🔢 签到次数: " : "🔢 Total Check-ins: ") + currentCheckInCount;
 
-                // 🌟 渲染用户名 (带特效预览)
-                document.getElementById('u-name').innerHTML = (lang === 'zh' ? "👤 用户名: " : "👤 Username: ") +
-                    `<span style="${nStyle}">${safeName}</span>`;
+            // 3. 签到状态 (Timezone Aware)
+            if (data.last_check_in) {
+                const lastDateObj = new Date(data.last_check_in);
+                const readableDate = lastDateObj.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
+                document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: " : "📅 Last Check-in: ") + readableDate;
 
-                document.getElementById('u-points').innerText = (lang === 'zh' ? "💰 积分: " : "💰 Points: ") + currentPoints;
-                document.getElementById('u-level').innerHTML = (lang === 'zh' ? "🥇 等级: " : "🥇 Level: ") +
-                    `<span class="lv-badge ${lv.class}">${lv.name}</span>`;
-
-                document.getElementById('u-check-count').innerText = (lang === 'zh' ? "🔢 签到次数: " : "🔢 Total Check-ins: ") + currentCheckInCount;
-
-                // 3. 签到状态 (Timezone Aware)
-                if (data.last_check_in) {
-                    const lastDateObj = new Date(data.last_check_in);
-                    const readableDate = lastDateObj.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
-                    document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: " : "📅 Last Check-in: ") + readableDate;
-
-                    if (lastDateObj.toDateString() === new Date().toDateString()) {
-                        const btn = document.getElementById('btn-checkin');
-                        btn.classList.add('disabled');
-                        btn.innerText = lang === 'zh' ? "✅ 今天已签到" : "✅ Checked In";
-                        btn.disabled = true;
-                    }
-                } else {
-                    document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: 暂无" : "📅 Last Check-in: None");
+                if (lastDateObj.toDateString() === new Date().toDateString()) {
+                    const btn = document.getElementById('btn-checkin');
+                    btn.classList.add('disabled');
+                    btn.innerText = lang === 'zh' ? "✅ 今天已签到" : "✅ Checked In";
+                    btn.disabled = true;
                 }
-            }
-        }
-
-        /**
-         * 每日签到逻辑
-         */
-        async function dailyCheckIn() {
-            const user = localStorage.getItem('username');
-            const btn = document.getElementById('btn-checkin');
-            if (btn.disabled) return;
-
-            const reward = Math.floor(Math.random() * 10) + 1;
-            const newPoints = currentPoints + reward;
-            const newCheckInCount = currentCheckInCount + 1;
-            const nowISO = new Date().toISOString();
-
-            btn.innerText = "⏳ ...";
-
-            const { error } = await _supabase.from('users').update({
-                points: newPoints,
-                last_check_in: nowISO,
-                check_in_count: newCheckInCount
-            }).eq('username', user);
-
-            if (!error) {
-                alert(lang === 'zh' ? `🎉 签到成功！获得了 ${reward} 积分！` : `🎉 Success! You got ${reward} points!`);
-                location.reload();
             } else {
-                alert("Error: " + error.message);
-                btn.innerHTML = '📅 <span data-zh="每日签到" data-en="Check-in Now">' + (lang === 'zh' ? "每日签到" : "Check-in Now") + '</span>';
+                document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: 暂无" : "📅 Last Check-in: None");
             }
         }
+    }
 
-        async function updatePassword() {
-            const oldRaw = document.getElementById('old-pwd').value;
-            const newRaw = document.getElementById('new-pwd').value;
-            const username = localStorage.getItem('username');
+    /**
+     * 每日签到逻辑
+     */
+    async function dailyCheckIn() {
+        const user = localStorage.getItem('username');
+        const btn = document.getElementById('btn-checkin');
+        if (btn.disabled) return;
 
-            if (!oldRaw || !newRaw) return alert(lang === 'zh' ? "请填写完整信息" : "Please fill all fields!");
-            if (newRaw.length < 6) return alert(lang === 'zh' ? "新密码至少需要6位" : "New password too short!");
+        const reward = Math.floor(Math.random() * 10) + 1;
+        const newPoints = currentPoints + reward;
+        const newCheckInCount = currentCheckInCount + 1;
+        const nowISO = new Date().toISOString();
 
-            const confirmMsg = lang === 'zh' ? "确定要修改密码吗？修改后将自动退出登录。" : "Sure to change password? This will logout you.";
-            if (!confirm(confirmMsg)) return;
+        btn.innerText = "⏳ ...";
 
-            const oldHash = await hashPassword(oldRaw);
-            const { data } = await _supabase.from('users').select('password').eq('username', username).single();
+        const {error} = await _supabase.from('users').update({
+            points: newPoints,
+            last_check_in: nowISO,
+            check_in_count: newCheckInCount
+        }).eq('username', user);
 
-            if (data.password !== oldHash) return alert(lang === 'zh' ? "原密码错误！" : "Wrong current password!");
-
-            const newHash = await hashPassword(newRaw);
-            const { error } = await _supabase.from('users').update({ password: newHash }).eq('username', username);
-
-            if (!error) {
-                alert(lang === 'zh' ? "修改成功！请重新登录。" : "Success! Please login again.");
-                localStorage.clear();
-                window.location.href = 'index.html';
-            } else {
-                alert("Error: " + error.message);
-            }
+        if (!error) {
+            alert(lang === 'zh' ? `🎉 签到成功！获得了 ${reward} 积分！` : `🎉 Success! You got ${reward} points!`);
+            location.reload();
+        } else {
+            alert("Error: " + error.message);
+            btn.innerHTML = '📅 <span data-zh="每日签到" data-en="Check-in Now">' + (lang === 'zh' ? "每日签到" : "Check-in Now") + '</span>';
         }
+    }
 
-        init();
-    </script>
+    async function updatePassword() {
+        const oldRaw = document.getElementById('old-pwd').value;
+        const newRaw = document.getElementById('new-pwd').value;
+        const username = localStorage.getItem('username');
+
+        if (!oldRaw || !newRaw) return alert(lang === 'zh' ? "请填写完整信息" : "Please fill all fields!");
+        if (newRaw.length < 6) return alert(lang === 'zh' ? "新密码至少需要6位" : "New password too short!");
+
+        const confirmMsg = lang === 'zh' ? "确定要修改密码吗？修改后将自动退出登录。" : "Sure to change password? This will logout you.";
+        if (!confirm(confirmMsg)) return;
+
+        const oldHash = await hashPassword(oldRaw);
+        const {data} = await _supabase.from('users').select('password').eq('username', username).single();
+
+        if (data.password !== oldHash) return alert(lang === 'zh' ? "原密码错误！" : "Wrong current password!");
+
+        const newHash = await hashPassword(newRaw);
+        const {error} = await _supabase.from('users').update({password: newHash}).eq('username', username);
+
+        if (!error) {
+            alert(lang === 'zh' ? "修改成功！请重新登录。" : "Success! Please login again.");
+            localStorage.clear();
+            window.location.href = 'sign-in.html';
+        } else {
+            alert("Error: " + error.message);
+        }
+    }
+
+    init();
+</script>
 </body>
 
 </html>

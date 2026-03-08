@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!-- index.html -->
+<html lang="zh-CN">
+
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎 Welcome - omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --brand: #ff4757;
+            --card: #fff;
+        }
+
+        /* 深色模式变量 */
+        body.dark {
+            --bg: #121212;
+            --text: #f1f2f6;
+            --brand: #ff6b81;
+            --card: #1e1e1e;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: 0.3s;
+        }
+
+        .auth-card {
+            background: var(--card);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--brand);
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #444;
+            background: var(--bg);
+            color: var(--text);
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        /* 统一 1.1 倍点击放大特效 */
+        .btn-go {
+            width: 100%;
+            padding: 12px;
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.1s;
+        }
+
+        .btn-go:active {
+            transform: scale(1.1);
+        }
+
+        .mode-toggle {
+            margin-top: 20px;
+            font-size: 0.85em;
+            color: #888;
+            text-decoration: underline;
+            cursor: pointer;
+            display: block;
+        }
+
+        .mode-toggle:active {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <a class="auth-card">
+        <h2 id="title" data-zh="🧨 新年快乐！" data-en="🧨 Happy New Year!">🧨 新年快乐！</h2>
+
+        <input type="text" id="u" data-zh-ph="用户名" data-en-ph="Username" placeholder="Username">
+        <input type="password" id="p" data-zh-ph="密码" data-en-ph="Password" placeholder="Password">
+
+        <button class="btn-go" onclick="handleAuth()" id="btn" data-zh="立即登录" data-en="Login">立即登录</button>
+
+        <div class="mode-toggle" onclick="toggle()" id="hint" data-zh="还没账号？点我注册" data-en="No account? Sign up">
+            还没账号？点我注册</div>
+        <div class="mode-toggle" onclick="window.location.href='home.html'" data-zh="不想登录？点我进入游客模式" data-en="Don't have an account? Click here to register">
+            不想登录？点我进入游客模式
+        </div>
+    </a>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script>
+        // 初始化环境
+        function applySettings() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            const lang = localStorage.getItem('lang') || 'zh';
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+            });
+            document.querySelectorAll('[data-zh-ph]').forEach(el => {
+                el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
+            });
+        }
+        applySettings();
+
+        let isReg = false;
+        function toggle() {
+            isReg = !isReg;
+            const lang = localStorage.getItem('lang') || 'zh';
+            const t = document.getElementById('title');
+            const b = document.getElementById('btn');
+            const h = document.getElementById('hint');
+
+            if (isReg) {
+                t.innerText = lang === 'zh' ? "📝 注册新账号" : "📝 New Account";
+                b.innerText = lang === 'zh' ? "立即创建" : "Sign Up";
+                h.innerText = lang === 'zh' ? "已有账号？去登录" : "Back to Login";
+            } else {
+                t.innerText = lang === 'zh' ? "👋 你好呀！" : "👋 Hello there!";
+                b.innerText = lang === 'zh' ? "立即登录" : "Login";
+                h.innerText = lang === 'zh' ? "还没账号？点我注册" : "No account? Sign up";
+            }
+        }
+
+        // SHA-256 加密逻辑
+        async function s256(str) {
+            const buf = new TextEncoder().encode(str);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function handleAuth() {
+            const user = document.getElementById('u').value.trim();
+            const pass = document.getElementById('p').value.trim();
+            const lang = localStorage.getItem('lang') || 'zh';
+            if (!user || !pass) return alert("填完整再点！");
+
+            const hp = await s256(pass);
+
+            if (isReg) {
+                // 注册逻辑：保持原样，不需要额外的日期字段了
+                const { error } = await _supabase.from('users').insert([{ username: user, password: hp, points: 0 }]);
+                if (error) {
+                    alert("失败：名字可能被占用了");
+                } else {
+                    alert("注册成功！去登录吧");
+                    toggle();
+                }
+            } else {
+                // 校验登录
+                const { data, error } = await _supabase.from('users').select('*').eq('username', user).eq('password', hp).single();
+
+                if (data) {
+                    // --- 每次登录都领奖逻辑 ---
+                    const reward = 5;
+                    const currentPoints = (data.points || 0) + reward;
+
+                    // 直接更新数据库，不需要判断日期
+                    await _supabase.from('users')
+                        .update({ points: currentPoints })
+                        .eq('username', user);
+
+                    alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
+
+                    // 存入最新的积分（包含刚才送的5分）
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('userPoints', currentPoints);
+                    if (user === 'Clark') localStorage.setItem('isAdmin', 'true');
+
+                    window.location.href = 'index.html';
+                } else {
+                    alert("❌ 账号或密码不对哦");
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
