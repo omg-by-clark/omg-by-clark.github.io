@@ -11,6 +11,7 @@
         :root {
             --bg: #fffdf5;
             --text: #333;
+            --subtext: #6c6f85;
             --brand: #ff4757;
             /* ^红色 */
             --green: #6fcf2f;
@@ -19,13 +20,15 @@
             /* 关键词按钮颜色配置 */
             --kw-default: #ccc;
             --kw-dark-default: hsl(227deg, 12%, 60%);
-            --kw-active: hsl(35deg, 77%, 49%);
+            --kw-active: #49b530; /* 修改：普通选中关键词的颜色 */
+            --kw-nsfw-active: #fe640b; /* 新增：NSFW选中时的颜色 */
         }
 
         body.dark {
             --bg: #121212;
             --text: #f1f2f6;
             --brand: #ff6b81;
+            --subtext: #a5adce;
         }
 
         body {
@@ -121,6 +124,20 @@
             transform: scale(1.05);
         }
 
+        /* 新增：NSFW按钮选中时的特殊高亮样式 */
+        .kw-btn.nsfw-btn.active {
+            background: var(--kw-nsfw-active) !important;
+        }
+
+        /* NSFW 关键词的介绍 */
+        .describe-nsfw {
+            color: var(--subtext);
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
         /* 立即发布按钮：采用绿色 */
         .btn-post {
             width: 100%;
@@ -171,7 +188,8 @@
         </div>
 
         <form id="pForm">
-            <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..." placeholder="起个标题……" required>
+            <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..." 
+            placeholder="起个标题……" required>
             <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
                 required></textarea>
 
@@ -179,7 +197,10 @@
                 <span class="kw-label" data-zh="添加关键词（可选）：" data-en="Add Keywords (Optional):">添加关键词（可选）：</span>
                 <div id="kw-area"></div>
             </div>
-
+            <div class="describe-nsfw" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。" 
+                 data-en="💡 NSFW means 'Not Safe For Work'.">
+                💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。
+            </div>
             <button type="submit" id="submit-btn" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
         </form>
         <a href="index.html" class="back-link" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
@@ -195,7 +216,6 @@
         // 全局状态锁，防止重复提交
         let isSubmitting = false;
 
-        // 关键词列表配置
         const KEYWORDS_LIST = ['#学校 School',
             '#老师 Teachers', '#作业 Homework',
             '#家人 Family', '#避雷 Avoid',
@@ -204,8 +224,17 @@
             '#奇葩 Weird', '#食物 Food',
             '#生活 Life', '#宠物 Pets',
             '#科技 Tech', '#娱乐 Fun',
-            '#其他 Others'];
+            '#其他 Others', '#NSFW'];
 
+        /*
+          init() 
+          用法：页面加载时执行的基础初始化操作。
+          原理：
+          1. 根据 localStorage 判断是否需给 body 添加 dark 模式类。
+          2. 检查用户登录状态，拦截未登录访问并踢回首页。
+          3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
+          4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
+         */
         function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
@@ -230,6 +259,12 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'kw-btn';
+                
+                // 专门给 NSFW 按钮加上标识类名
+                if (kw === '#NSFW') {
+                    btn.classList.add('nsfw-btn');
+                }
+                
                 btn.innerText = kw;
                 btn.onclick = () => btn.classList.toggle('active');
                 kwArea.appendChild(btn);
@@ -237,7 +272,17 @@
         }
         init();
 
-        // 提交逻辑
+        /*
+          表单 submit 事件监听
+           用法：处理点击“立即发布”后的异步上传逻辑。
+           原理：
+           1. 阻止表单默认刷新行为，并通过 isSubmitting 变量加锁，防止用户连点造成网络拥堵和数据重复。
+           2. 改变提交按钮的文本和禁用状态，提供即时的 UI 反馈。
+           3. 收集输入框的值，并查找所有带有 active 类的关键词按钮，提取出纯文本数组存入 selectedKws。
+           4. 调用 Supabase API，向 posts 表插入包含昵称、标题、内容和关键词数组的新记录。
+           5. 发帖成功后，查询并在 users 表中给当前用户的积分加上 10 分，更新本地存储。
+           6. 处理完毕则弹窗并跳转回首页。如果过程中发生任何错误，catch 会捕获异常，解除提交锁并恢复按钮原始状态。
+         */
         document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -256,6 +301,8 @@
 
             const title = document.getElementById('t').value.trim();
             const content = document.getElementById('c').value.trim();
+            
+            // 抓取所有被选中的关键词按钮文本
             const selectedKws = Array.from(document.querySelectorAll('.kw-btn.active'))
                 .map(btn => btn.innerText);
 
