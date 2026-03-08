@@ -518,7 +518,8 @@
                 head: true
             });
             if (countErr) throw countErr;
-            if (count === 0) return alert("广场还是空荡荡的...");
+            let noPostsMessage = localStorage.getItem("lang") === 'zh' ? "广场还是空荡荡的..." : "The square is still empty...";
+            if (count === 0) return alert(noPostsMessage);
             const fetchUntilFound = async () => {
                 const randomIndex = Math.floor(Math.random() * count);
                 const {
