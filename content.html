@@ -4,8 +4,7 @@
 <head>
     <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0"
-          name="viewport">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>详情 Details - omg-by-Clark</title>
     <style>
         :root {
@@ -21,6 +20,9 @@
             --vote-bg-neutral: hsl(233deg, 10%, 47%);
             --vote-bg-liked: #ff4757;
             --vote-bg-disliked: #7287fd;
+
+            /* 新增：浅色模式下的删除按钮颜色 */
+            --delete-btn: #d20f14;
         }
 
         body.dark {
@@ -35,6 +37,9 @@
             --vote-bg-neutral: #333;
             --vote-bg-liked: #ff6b81;
             --vote-bg-disliked: #7287fd;
+
+            /* 新增：深色模式下的删除按钮颜色 */
+            --delete-btn: #f02832;
         }
 
         body {
@@ -87,8 +92,10 @@
             display: flex;
             align-items: center;
             background-color: var(--vote-bg-neutral);
-            border-radius: 30px; /* 更圆润 */
-            padding: 2px; /* 减小内边距 */
+            border-radius: 30px;
+            /* 更圆润 */
+            padding: 2px;
+            /* 减小内边距 */
             transition: background-color 0.3s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
@@ -99,7 +106,8 @@
 
         .vote-pill.is-liked .like-btn {
             background-color: var(--vote-bg-liked);
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); /* 给激活的按钮一点光晕 */
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+            /* 给激活的按钮一点光晕 */
         }
 
         .vote-pill.is-disliked .dislike-btn {
@@ -119,7 +127,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            border-radius: 28px; /* 适应父容器 */
+            border-radius: 28px;
+            /* 适应父容器 */
         }
 
         .vote-divider {
@@ -137,7 +146,8 @@
         }
 
         /* 简单的点击动画 */
-        .like-btn:active, .dislike-btn:active {
+        .like-btn:active,
+        .dislike-btn:active {
             transform: scale(0.9);
         }
 
@@ -182,18 +192,17 @@
         .op-badge {
             padding: 2px 8px;
             border-radius: 6px;
-            font-size: 0.75em;
+            font-size: 1em;
             font-weight: bold;
             margin-left: 5px;
             display: inline-block;
-            background-color: #1e66f5; /* 浅色模式背景 */
-            color: #89dceb; /* 浅色模式文字 */
+            color: #1e66f5;
+            /* 浅色模式文字 */
         }
 
         /* 深色模式下的 OP 徽章颜色反转 */
         body.dark .op-badge {
-            background-color: #89dceb;
-            color: #1e66f5;
+            color: #54cdfc;
         }
 
         .lv-badge {
@@ -268,6 +277,8 @@
             display: flex;
             gap: 25px;
             justify-content: center;
+            align-items: center;
+            /* 确保返回链接和删除按钮垂直居中对齐 */
         }
 
         .nav-links a {
@@ -275,66 +286,82 @@
             font-weight: bold;
             font-size: 1.05rem;
         }
+
+        /* 新增：作者专属的删除按钮样式 */
+        .btn-delete-post {
+            background-color: var(--delete-btn);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            display: none;
+            /* 默认隐藏，只有在 js 里判断为作者才会改为 block */
+        }
+
+        .btn-delete-post:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 
 <body>
-<h1 id="t">...</h1>
-<div id="info"
-     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
-<div class="kw-row" id="kw-row"></div>
-<div id="c">Loading...</div>
+    <h1 id="t">...</h1>
+    <div id="info"
+        style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+    </div>
+    <div class="kw-row" id="kw-row"></div>
+    <div id="c">Loading...</div>
 
-<div class="action-area">
-    <div class="vote-pill" id="vote-container">
-        <button class="like-btn" id="btn-like"
-                onclick="toggleDetailVote('like')">
-            👍 <span id="like-count">0</span>
-        </button>
-        <div class="vote-divider"></div>
-        <button class="dislike-btn" id="btn-dislike"
-                onclick="toggleDetailVote('dislike')">
-            👎 <span id="dislike-count">0</span>
+    <div class="action-area">
+        <div class="vote-pill" id="vote-container">
+            <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')">
+                👍 <span id="like-count">0</span>
+            </button>
+            <div class="vote-divider"></div>
+            <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')">
+                👎 <span id="dislike-count">0</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="cmt-box">
+        <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
+            评论区</h3>
+        <div id="cmt-list"></div>
+        <div style="margin-top:25px; display:flex; gap:12px;">
+            <input data-en-ph="Write a cool comment..." data-zh-ph="神评由此诞生..." id="cC" style="flex:1" type="text">
+            <button class="btn-send" data-en="Send" data-zh="发送" onclick="addCmt()">发送
+            </button>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场" href="index.html" style="color:var(--brand);">
+            ⬅️ 返回广场
+        </a>
+
+        <button id="btn-delete-post" class="btn-delete-post" onclick="deletePost()" data-en="🗑️ Delete"
+            data-zh="🗑️ 删除帖子">
+            🗑️ 删除帖子
         </button>
     </div>
-</div>
 
-<div class="cmt-box">
-    <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
-        评论区</h3>
-    <div id="cmt-list"></div>
-    <div style="margin-top:25px; display:flex; gap:12px;">
-        <input data-en-ph="Write a cool comment..."
-               data-zh-ph="神评由此诞生..."
-               id="cC"
-               style="flex:1"
-               type="text">
-        <button class="btn-send" data-en="Send"
-                data-zh="发送" onclick="addCmt()">发送
-        </button>
-    </div>
-</div>
-
-<div class="nav-links">
-    <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场"
-       href="index.html" style="color:var(--brand);">
-        ⬅️ 返回广场
-    </a>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js"></script>
-<script>
-    const lang = localStorage.getItem('lang') || 'zh';
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-    document.querySelectorAll('[data-zh]').forEach(el => {
-        el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-    });
-    document.querySelectorAll('[data-zh-ph]').forEach(el => {
-        el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
-    });
-</script>
-<script src="content.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+        document.querySelectorAll('[data-zh-ph]').forEach(el => {
+            el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
+        });
+    </script>
+    <script src="content.js"></script>
 </body>
 
 </html>
