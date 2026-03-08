@@ -140,7 +140,7 @@ async function toggleDetailVote(type) {
                 likedPosts = likedPosts.filter(id => String(id) !== pIdStr);
                 voteContainer.classList.remove('is-liked');
                 likeSpan.innerText = likes;
-            }
+            } 
         }
         dislikeSpan.innerText = dislike;
     }
