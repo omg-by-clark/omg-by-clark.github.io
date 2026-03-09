@@ -5,7 +5,7 @@
     <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>首页 Home - omg-by-Clark</title>
+    <title>用户帖子 User Posts - omg-by-Clark</title>
     <style>
         /* 用途：定义网页根元素的全局 CSS 变量（主要针对浅色模式），集中管理颜色以便后续维护 */
         :root {
@@ -64,10 +64,10 @@
             --kw-text: #838ba7;
         }
 
-        /* 用途：设置网页主体的基础字体、最大宽度、居中对齐、内外边距以及平滑的过渡动画 */
+        /* 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
         body {
             font-family: sans-serif;
-            max-width: 1000px;
+            max-width: 600px; /* 根据要求限制最大宽度 */
             margin: 0 auto;
             padding: 20px;
             background: var(--bg);
@@ -86,6 +86,11 @@
             white-space: nowrap;
         }
 
+        h2 {
+            margin-top: 0; 
+            margin-bottom: 10px;
+        }
+
         /* 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
         .header-container {
             display: flex;
@@ -96,103 +101,6 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(150, 150, 150, 0.1);
             flex-wrap: wrap;
-        }
-
-        /* 用途：顶部搜索框容器，占据中间空余位置，使用相对定位以便下拉列表绝对定位 */
-        .search-container {
-            flex: 1;
-            max-width: 400px;
-            margin: 0 10px;
-            position: relative;
-            min-width: 250px;
-        }
-
-        /* 用途：定义输入框的具体样式，包括颜色、圆角、内边距和聚焦时的发光效果 */
-        #searchInput {
-            width: 100%;
-            padding: 8px 15px;
-            border: 1px solid var(--unliked);
-            border-radius: 20px;
-            background: var(--card);
-            color: var(--text);
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
-            font-size: 0.9em;
-        }
-
-        #searchInput:focus {
-            border-color: var(--brand);
-            box-shadow: 0 0 5px rgba(255, 71, 87, 0.3);
-        }
-
-        /* 用途：当用户输入 # 时弹出的标签下拉列表，默认隐藏，自带滚动条 */
-        .tag-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: var(--card);
-            border: 1px solid var(--unliked);
-            border-radius: 8px;
-            margin-top: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .tag-dropdown.visible {
-            display: block;
-        }
-
-        /* 用途：下拉列表里每一个标签选项的样式和悬停效果 */
-        .tag-dropdown-item {
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9em;
-            color: var(--text);
-        }
-
-        .tag-dropdown-item:hover {
-            background: rgba(150, 150, 150, 0.1);
-        }
-
-        /* 用途：搜索框下方用于展示已选中关键词的容器 */
-        .selected-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 8px;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 99;
-        }
-
-        /* 用途：已被选中的关键词小药丸样式，包含删除按钮布局 */
-        .selected-tag-chip {
-            background: var(--brand);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.3);
-        }
-
-        .selected-tag-chip span {
-            cursor: pointer;
-            font-weight: bold;
-            opacity: 0.8;
-        }
-
-        .selected-tag-chip span:hover {
-            opacity: 1;
         }
 
         /* 用途：顶部导航栏右侧功能按钮组的容器排版，控制按钮间的间距和垂直居中 */
@@ -232,45 +140,7 @@
             transform: scale(0.95);
         }
 
-        /* 用途：页面主体内容区域的并排布局，划分左侧帖子流和右侧热榜 */
-        .layout-container {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-
-        /* 用途：左侧全部帖子列表区域的自适应宽度分配 */
-        .col-all {
-            flex: 1;
-            min-width: 0;
-            margin-top: 25px;
-        }
-
-        /* 用途：右侧热搜排行榜区域的固定样式，包括特殊边框、微透明背景和自适应高度 */
-        .col-hot {
-            flex: 1;
-            min-width: 0;
-            border: 2px solid var(--hot-border);
-            border-radius: 12px;
-            padding: 20px;
-            background: hsla(351, 100%, 71%, 0.03);
-            height: fit-content;
-            margin-top: 25px;
-        }
-
-        /* 用途：移动端媒体查询，屏幕宽度小于768px时，将左右布局改为上下堆叠布局 */
-        @media (max-width: 768px) {
-            .layout-container {
-                flex-direction: column-reverse;
-            }
-
-            .col-hot {
-                width: 100%;
-                box-sizing: border-box;
-            }
-        }
-
-        /* 用途：各个帖子列表（全部、热搜）上方的区块标题文字排版 */
+        /* 用途：各个帖子列表上方的区块标题文字排版 */
         .section-title {
             margin-top: 0;
             margin-bottom: 15px;
@@ -280,7 +150,7 @@
             gap: 8px;
         }
 
-        /* 用途：单个帖子的基础卡片容器，移除默认背景色，设置底部边框作为分割线 */
+        /* 用途：单个帖子的基础卡片容器，以及用户积分信息框的基础设置 */
         .card {
             background: transparent;
             margin: 0;
@@ -350,8 +220,7 @@
         .post-footer {
             display: flex;
             align-items: center;
-            gap: 8.5px;
-            /* 为了适应新的胶囊外边距，微调了整体间距 */
+            gap: 8.5px; /* 适配新的胶囊外边距 */
             margin-top: 12px;
             flex-wrap: wrap;
         }
@@ -365,7 +234,7 @@
             flex-wrap: wrap;
         }
 
-        /* 用途：包裹赞和踩按钮的统一胶囊型灰色背景框。按照要求，点赞胶囊比用户名的外边距(4px)大2.5px，即6.5px */
+        /* 用途：包裹赞和踩按钮的统一胶囊型灰色背景框。同步首页，点赞胶囊的外边距设为 6.5px */
         .vote-pill {
             display: flex;
             align-items: center;
@@ -376,24 +245,21 @@
             height: fit-content;
             gap: 2px;
             margin-right: 6.5px;
-            /* 点赞胶囊比用户名的外边距大2.5px */
         }
 
-        /* 用途：独立的赞和踩透明按钮的尺寸（已缩小尺寸）、圆角和排版设置 */
+        /* 用途：独立的赞和踩透明按钮的缩小版尺寸、圆角和排版设置 */
         .like-btn,
         .dislike-btn {
             background: transparent;
             color: white;
             border: none;
             padding: 2px 6px;
-            /* 缩小了内边距 */
             cursor: pointer;
             font-weight: bold;
             display: flex;
             align-items: center;
             gap: 3px;
             font-size: 12px;
-            /* 缩小了字号 */
             border-radius: 12px;
             transition: all 0.2s;
         }
@@ -402,7 +268,6 @@
         .vote-divider {
             width: 1px;
             height: 14px;
-            /* 适配缩小后的按钮高度 */
             background-color: rgba(255, 255, 255, 0.3);
             margin: 0 2px;
             transition: opacity 0.2s;
@@ -429,18 +294,17 @@
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
         }
-
-        /* 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗，用于跳转主页的暗示 */
+        
+        /* 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗 */
         .author-link {
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
         }
-
+        
         .author-link:hover {
             text-decoration: underline;
             font-weight: 900 !important;
-            /* 悬停时加粗 */
         }
 
         /* 用途：所有用户等级小徽章（如“原木”）的统一样式基类 */
@@ -598,57 +462,33 @@
 
 <body>
     <div class="header-container">
-        <h1
-            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
             omg-by-Clark.github.io</h1>
 
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="搜索帖子或输入 # 选择关键词" autocomplete="off">
-            <div id="tagDropdown" class="tag-dropdown"></div>
-            <div id="selectedTags" class="selected-tags"></div>
-        </div>
-
         <div class="header-actions">
-            <button class="btn-common" data-en="🤔 Random" data-zh="🤔 随机" onclick="goRandom()">
-                🤔 随机
-            </button>
+            <a class="btn-common" data-en="🏠 Home" data-zh="🏠 首页" href="index.html">
+                🏠 首页
+            </a>
             <a class="btn-common" data-en="🤬 Post Now" data-zh="🤬 发帖" href="post-now.html">
                 🤬 发帖
             </a>
-            <a class="btn-common" data-en="🔑 Sign In" data-zh="🔑 登录" href="sign-in.html">
-                🔑 登录
-            </a>
-            <a href="info.html" class="btn-common" data-zh="👤 个人" data-en="👤 Info">
-                👤 个人
-            </a>
-            <a class="btn-common" data-en="⚙️ Settings" data-zh="⚙️ 设置" href="settings.html">
-                ⚙️ 设置
-            </a>
-
         </div>
     </div>
 
-    <div class="layout-container">
-        <div class="col-all">
-            <h2 class="section-title" data-en="📃 All Posts" data-zh="📃 全部帖子">
-                📃 全部帖子
-            </h2>
-            <div id="list-all"></div>
-            <div class="loading-sentinel" id="scroll-sentinel">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="end-message" data-en="🚫 No more posts" data-zh="😀 我也是有底线的！" id="end-message">😀 我也是有底线的！
-            </div>
-        </div>
+    <div class="card" style="text-align:center; margin-bottom:20px; padding: 30px 10px; background: var(--card); border-radius: 12px; border-bottom: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <h2 id="profile-name">加载中...</h2>
+        <p id="profile-stats" style="color: var(--kw-text); margin-bottom: 0; font-weight: bold;">获取积分中...</p>
+    </div>
 
-        <div class="col-hot">
-            <h2 class="section-title" data-en="🔥 Hot Top 5" data-zh="🔥 热搜 Top 5" style="color: var(--brand);">
-                🔥 热搜 Top 5</h2>
-            <div id="list-hot">
-                <div class="loading-sentinel visible" style="height:100px;">
-                    <span></span><span></span><span></span>
-                </div>
-            </div>
+    <div>
+        <h2 class="section-title" data-en="📃 His/Her Posts" data-zh="📃 Ta 的帖子">
+            📃 Ta 的帖子
+        </h2>
+        <div id="list-all"></div>
+        <div class="loading-sentinel" id="scroll-sentinel">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="end-message" data-en="🚫 No more posts" data-zh="😀 我也是有底线的！" id="end-message">😀 我也是有底线的！
         </div>
     </div>
 
@@ -663,111 +503,9 @@
         let hasMore = true;
         let observer;
 
-        // 新增的搜索全局变量
-        const PREDEFINED_TAGS = ['#学校 School', '#老师 Teachers', '#作业 Homework', '#家人 Family', '#避雷 Avoid', '#奸商 Scammer', '#编程 Coding', '#上课 Class', '#旅游 Travel', '#奇葩 Weird', '#食物 Food', '#生活 Life', '#宠物 Pets', '#科技 Tech', '#娱乐 Fun', '#体育 Sport', '#其他 Others', '#NSFW', '#搬运 Reposted'];
-        let currentSearchTags = [];
-        let currentSearchText = '';
-        let searchTimeout = null;
-        let currentSearchId = 0; // 用于避免搜索频率过快导致的数据请求冲突
-
-        /* initSearch
-        用法：初始化搜索框的事件监听，包括输入检测和点击外部关闭下拉框。
-        原理：监听 input 事件，如果是 # 开头则展示关键词列表；否则执行防抖的文本搜索。
-        */
-        function initSearch() {
-            const searchInput = document.getElementById('searchInput');
-            const tagDropdown = document.getElementById('tagDropdown');
-
-            searchInput.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if (val.startsWith('#')) {
-                    const filterText = val.toLowerCase();
-                    const matchedTags = PREDEFINED_TAGS.filter(t => t.toLowerCase().includes(filterText));
-                    renderTagDropdown(matchedTags);
-                } else {
-                    tagDropdown.classList.remove('visible');
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        currentSearchText = val.trim();
-                        triggerSearch();
-                    }, 500); // 防抖：停止输入500毫秒后触发查询
-                }
-            });
-
-            // 点击外部隐藏下拉框
-            document.addEventListener('click', (e) => {
-                if (!document.querySelector('.search-container').contains(e.target)) {
-                    tagDropdown.classList.remove('visible');
-                }
-            });
-        }
-
-        /* renderTagDropdown
-        用法：渲染并显示下拉的关键词选项。
-        原理：接收匹配的关键词数组，生成对应的 div 列表并注入到 tagDropdown 容器中。
-        */
-        function renderTagDropdown(tags) {
-            const tagDropdown = document.getElementById('tagDropdown');
-            if (tags.length === 0) {
-                tagDropdown.classList.remove('visible');
-                return;
-            }
-            tagDropdown.innerHTML = tags.map(tag =>
-                `<div class="tag-dropdown-item" onclick="addSearchTag('${tag}')">${tag}</div>`
-            ).join('');
-            tagDropdown.classList.add('visible');
-        }
-
-        /* addSearchTag
-        用法：将用户点击的关键词加入到筛选列表，并触发重新搜索。
-        原理：将选中的关键词压入 currentSearchTags 数组，清空输入框，隐藏下拉列表并调用 triggerSearch。
-        */
-        function addSearchTag(tag) {
-            if (!currentSearchTags.includes(tag)) {
-                currentSearchTags.push(tag);
-                updateSelectedTagsUI();
-                triggerSearch();
-            }
-            document.getElementById('searchInput').value = '';
-            document.getElementById('tagDropdown').classList.remove('visible');
-            document.getElementById('searchInput').focus();
-        }
-
-        /* removeSearchTag
-        用法：从已选关键词列表中移除某个关键词，并触发重新搜索。
-        原理：过滤掉被点击的关键词，更新 UI 并调用 triggerSearch。
-        */
-        function removeSearchTag(tag) {
-            currentSearchTags = currentSearchTags.filter(t => t !== tag);
-            updateSelectedTagsUI();
-            triggerSearch();
-        }
-
-        /* updateSelectedTagsUI
-        用法：更新搜索框下方的已选标签气泡显示。
-        原理：遍历 currentSearchTags，渲染带有删除图标的 HTML 并插入容器。
-        */
-        function updateSelectedTagsUI() {
-            const selectedTagsDiv = document.getElementById('selectedTags');
-            selectedTagsDiv.innerHTML = currentSearchTags.map(tag =>
-                `<div class="selected-tag-chip">${tag} <span onclick="removeSearchTag('${tag}')">×</span></div>`
-            ).join('');
-        }
-
-        /* triggerSearch
-        用法：重置所有分页状态并清空当前列表，以新的搜索条件重新加载帖子。
-        原理：将 currentPage 置 0，设 hasMore 为 true，恢复加载动画的显示状态，最后调用 loadNextPage。
-        */
-        function triggerSearch() {
-            currentPage = 0;
-            hasMore = true;
-            document.getElementById('list-all').innerHTML = '';
-            document.getElementById('end-message').style.display = 'none';
-            document.getElementById('scroll-sentinel').style.display = 'flex';
-            currentSearchId++; // 让仍在进行中的旧请求失效
-            isFetching = false;
-            loadNextPage();
-        }
+        // 获取 URL 里的用户名参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUser = urlParams.get('user');
 
         /* escapeHTML
         用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
@@ -799,34 +537,6 @@
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
             });
-        }
-
-        /* goRandom
-        用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
-        */
-        async function goRandom() {
-            if (isFetching) return;
-            isFetching = true;
-            try {
-                const { count, error: countErr } = await _supabase.from('posts').select('*', { count: 'exact', head: true });
-                if (countErr) throw countErr;
-                let noPostsMessage = localStorage.getItem("lang") === 'zh' ? "广场还是空荡荡的..." : "The square is still empty...";
-                if (count === 0) return alert(noPostsMessage);
-                const fetchUntilFound = async () => {
-                    const randomIndex = Math.floor(Math.random() * count);
-                    const { data, error } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
-                    if (!data || error) return await fetchUntilFound();
-                    return data.id;
-                };
-                const validId = await fetchUntilFound();
-                location.href = `content.html?id=${validId}`;
-            } catch (error) {
-                let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
-                alert(errCode);
-                console.error("[随机失败]", error);
-            } finally {
-                isFetching = false;
-            }
         }
 
         /* handleVote
@@ -915,7 +625,6 @@
 
         /* createCardHTML
         用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-        补充：在此函数中为用户名新增了带有 .author-link 类的 span，并绑定了跳转到 user.html 的逻辑。
         */
         function createCardHTML(postData, userMap) {
             const author = userMap ? userMap[postData.nickname] : null;
@@ -987,37 +696,23 @@
         }
 
         /* loadNextPage
-        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），支持多条件搜索组合。
+        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），仅加载指定用户的帖子。
         */
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
             isFetching = true;
             document.getElementById('scroll-sentinel').style.display = 'flex';
             document.getElementById('scroll-sentinel').classList.add('visible');
-            let fetchId = currentSearchId;
 
             try {
                 const from = currentPage * PAGE_SIZE;
                 const to = (currentPage + 1) * PAGE_SIZE - 1;
 
-                let query = _supabase.from('posts').select('*').order('created_at', { ascending: false });
-
-                if (currentSearchTags.length > 0) {
-                    query = query.contains('keywords', JSON.stringify(currentSearchTags));
-                }
-
-                if (currentSearchText) {
-                    query = query.or(`title.ilike.%${currentSearchText}%,content.ilike.%${currentSearchText}%`);
-                }
-
+                // 查询逻辑特化：只查找对应 nickname 的帖子
+                let query = _supabase.from('posts').select('*').eq('nickname', targetUser).order('created_at', { ascending: false });
                 const { data, error } = await query.range(from, to);
 
                 if (error) throw error;
-
-                if (fetchId !== currentSearchId) {
-                    isFetching = false;
-                    return;
-                }
 
                 if (data.length > 0) {
                     document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(postData => createCardHTML(postData, globalUserMap)).join(''));
@@ -1031,18 +726,12 @@
                 updateLanguage();
             } catch (err) {
                 console.error("列表加载失败", err);
-
                 document.getElementById('scroll-sentinel').style.display = 'none';
-
                 document.getElementById('list-all').insertAdjacentHTML('beforeend',
-                    `<p style="text-align:center; color:var(--brand); margin-top: 30px; font-weight: bold;">
-                        搜索出错拉闸了：${err.message || '查询解析失败'}
-                    </p>`
+                    `<p style="text-align:center; color:var(--brand); margin-top: 30px; font-weight: bold;">加载 Ta 的帖子失败了！</p>`
                 );
             } finally {
-                if (fetchId === currentSearchId) {
-                    isFetching = false;
-                }
+                isFetching = false;
             }
         }
 
@@ -1057,59 +746,38 @@
         }
 
         /* init
-        用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
+        用法：初始化个人主页数据，首先校验用户是否存在，然后获取该用户积分和历史帖子流。
         */
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            const listHotEl = document.getElementById('list-hot');
-
-            initSearch();
+            
+            if (!targetUser) {
+                alert(localStorage.getItem('lang') === 'zh' ? "未指定用户！" : "User not specified!");
+                location.href = 'index.html';
+                return;
+            }
 
             try {
-                const [postsRes, usersRes] = await Promise.all([
-                    _supabase.from('posts').select('*'),
-                    _supabase.from('users').select('username, points, inventory')
-                ]);
-                if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
-                    acc[user.username] = user;
-                    return acc;
-                }, {});
+                // 1. 获取目标用户的积分和库存信息
+                const { data: userData, error: userErr } = await _supabase.from('users').select('username, points, inventory').eq('username', targetUser).maybeSingle();
 
-                const now = Date.now();
+                if (userData) {
+                    globalUserMap[userData.username] = userData;
+                    const levelInfo = getLevelInfo(userData.points);
+                    const nickStyle = getNicknameStyle(userData.inventory);
+                    
+                    document.getElementById('profile-name').innerHTML = `<span style="${nickStyle}">${escapeHTML(userData.username)}</span>`;
+                    document.getElementById('profile-stats').innerHTML = `💰 积分: ${userData.points} &nbsp;|&nbsp; 🥇 等级: <span class="lv-badge ${levelInfo.class}">${levelInfo.name}</span>`;
+                } else {
+                    document.getElementById('profile-name').innerText = escapeHTML(targetUser);
+                    document.getElementById('profile-stats').innerText = "该用户未注册或不存在";
+                }
 
-                const weightedPosts = postsRes.data.map(post => {
-                    const likes = post.likes || 0;
-                    const dislikes = post.dislike || 0;
-                    let netVotes = likes - dislikes;
-
-                    if (post.keywords && post.keywords.includes('#疑似搬运 Suspected Repost')) {
-                        netVotes -= 5;
-                    } else if (post.keywords && post.keywords.includes('#搬运 Reposted')) {
-                        netVotes -= 2;
-                    }
-
-                    const postTime = new Date(post.created_at).getTime();
-                    const ageInHours = (now - postTime) / (1000 * 60 * 60);
-
-                    let hotScore = 0;
-                    if (netVotes > 0) {
-                        hotScore = netVotes / Math.pow((ageInHours + 225), 1.0001);
-                    } else if (netVotes < 0) {
-                        hotScore = netVotes;
-                    }
-
-                    return { ...post, hotScore };
-                });
-
-                const hotPosts = weightedPosts
-                    .sort((a, b) => b.hotScore - a.hotScore)
-                    .slice(0, 5);
-
-                listHotEl.innerHTML = hotPosts.map(postData => createCardHTML(postData, globalUserMap)).join('');
-
+                // 2. 挂载下拉监听，开始拉取 Ta 的帖子
                 setupIntersectionObserver();
             } catch (err) {
-                listHotEl.innerHTML = "<p>数据加载失败</p>";
+                console.error("加载用户信息失败", err);
+                document.getElementById('profile-stats').innerText = "加载失败";
             }
             updateLanguage();
         }
