@@ -7,7 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>首页 Home - omg-by-Clark</title>
     <style>
-        /* 用途：定义网页根元素的全局CSS变量（主要针对浅色模式），集中管理颜色以便后续维护 */
+        /* 用途：定义网页根元素的全局 CSS 变量（主要针对浅色模式），集中管理颜色以便后续维护 */
         :root {
             --bg: #fffdf5;
             --text: #333;
@@ -83,9 +83,10 @@
             margin: 0;
             font-size: 1.6em;
             user-select: none;
+            white-space: nowrap;
         }
 
-        /* 用途：顶部导航区域的Flexbox布局，控制标题和按钮组的水平两端对齐及底部边框 */
+        /* 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -94,6 +95,104 @@
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(150, 150, 150, 0.1);
+            flex-wrap: wrap;
+        }
+
+        /* 用途：顶部搜索框容器，占据中间空余位置，使用相对定位以便下拉列表绝对定位 */
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 10px;
+            position: relative;
+            min-width: 250px;
+        }
+
+        /* 用途：定义输入框的具体样式，包括颜色、圆角、内边距和聚焦时的发光效果 */
+        #searchInput {
+            width: 100%;
+            padding: 8px 15px;
+            border: 1px solid var(--unliked);
+            border-radius: 20px;
+            background: var(--card);
+            color: var(--text);
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            font-size: 0.9em;
+        }
+
+        #searchInput:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 5px rgba(255, 71, 87, 0.3);
+        }
+
+        /* 用途：当用户输入 # 时弹出的标签下拉列表，默认隐藏，自带滚动条 */
+        .tag-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--unliked);
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tag-dropdown.visible {
+            display: block;
+        }
+
+        /* 用途：下拉列表里每一个标签选项的样式和悬停效果 */
+        .tag-dropdown-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9em;
+            color: var(--text);
+        }
+
+        .tag-dropdown-item:hover {
+            background: rgba(150, 150, 150, 0.1);
+        }
+
+        /* 用途：搜索框下方用于展示已选中关键词的容器 */
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 99;
+        }
+
+        /* 用途：已被选中的关键词小药丸样式，包含删除按钮布局 */
+        .selected-tag-chip {
+            background: var(--brand);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.3);
+        }
+
+        .selected-tag-chip span {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        .selected-tag-chip span:hover {
+            opacity: 1;
         }
 
         /* 用途：顶部导航栏右侧功能按钮组的容器排版，控制按钮间的间距和垂直居中 */
@@ -108,18 +207,18 @@
             background: var(--button-grad);
             color: white;
             border: none;
-            padding: 8px 18px;
-            border-radius: 20px;
+            padding: 4px 12px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(230, 69, 83, 0.3);
+            box-shadow: 0 2px 6px rgba(230, 69, 83, 0.2);
             white-space: nowrap;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         /* 用途：鼠标悬停在通用按钮上时的浮动效果和阴影加深反馈 */
@@ -140,10 +239,11 @@
             align-items: flex-start;
         }
 
-        /* 用途：左侧全量帖子列表区域的自适应宽度分配 */
+        /* 用途：左侧全部帖子列表区域的自适应宽度分配 */
         .col-all {
             flex: 1;
             min-width: 0;
+            margin-top: 25px;
         }
 
         /* 用途：右侧热搜排行榜区域的固定样式，包括特殊边框、微透明背景和自适应高度 */
@@ -155,6 +255,7 @@
             padding: 20px;
             background: hsla(351, 100%, 71%, 0.03);
             height: fit-content;
+            margin-top: 25px;
         }
 
         /* 用途：移动端媒体查询，屏幕宽度小于768px时，将左右布局改为上下堆叠布局 */
@@ -478,7 +579,15 @@
 
 <body>
     <div class="header-container">
-        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">omg-by-Clark.github.io</h1>
+        <h1
+            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+            omg-by-Clark.github.io</h1>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="搜索帖子或输入 # 选择关键词" autocomplete="off">
+            <div id="tagDropdown" class="tag-dropdown"></div>
+            <div id="selectedTags" class="selected-tags"></div>
+        </div>
 
         <div class="header-actions">
             <button class="btn-common" data-en="🤔 Random" data-zh="🤔 随机" onclick="goRandom()">
@@ -535,12 +644,114 @@
         let hasMore = true;
         let observer;
 
+        // 新增的搜索全局变量
+        const PREDEFINED_TAGS = ['#学校 School', '#老师 Teachers', '#作业 Homework', '#家人 Family', '#避雷 Avoid', '#奸商 Scammer', '#编程 Coding', '#上课 Class', '#旅游 Travel', '#奇葩 Weird', '#食物 Food', '#生活 Life', '#宠物 Pets', '#科技 Tech', '#娱乐 Fun', '#体育 Sport', '#其他 Others', '#NSFW', '#搬运 Reposted'];
+        let currentSearchTags = [];
+        let currentSearchText = '';
+        let searchTimeout = null;
+        let currentSearchId = 0; // 用于避免搜索频率过快导致的数据请求冲突
+
+        /* initSearch
+        用法：初始化搜索框的事件监听，包括输入检测和点击外部关闭下拉框。
+        原理：监听 input 事件，如果是 # 开头则展示关键词列表；否则执行防抖的文本搜索。
+        */
+        function initSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const tagDropdown = document.getElementById('tagDropdown');
+
+            searchInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (val.startsWith('#')) {
+                    const filterText = val.toLowerCase();
+                    const matchedTags = PREDEFINED_TAGS.filter(t => t.toLowerCase().includes(filterText));
+                    renderTagDropdown(matchedTags);
+                } else {
+                    tagDropdown.classList.remove('visible');
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentSearchText = val.trim();
+                        triggerSearch();
+                    }, 500); // 防抖：停止输入500毫秒后触发查询
+                }
+            });
+
+            // 点击外部隐藏下拉框
+            document.addEventListener('click', (e) => {
+                if (!document.querySelector('.search-container').contains(e.target)) {
+                    tagDropdown.classList.remove('visible');
+                }
+            });
+        }
+
+        /* renderTagDropdown
+        用法：渲染并显示下拉的关键词选项。
+        原理：接收匹配的关键词数组，生成对应的 div 列表并注入到 tagDropdown 容器中。
+        */
+        function renderTagDropdown(tags) {
+            const tagDropdown = document.getElementById('tagDropdown');
+            if (tags.length === 0) {
+                tagDropdown.classList.remove('visible');
+                return;
+            }
+            tagDropdown.innerHTML = tags.map(tag =>
+                `<div class="tag-dropdown-item" onclick="addSearchTag('${tag}')">${tag}</div>`
+            ).join('');
+            tagDropdown.classList.add('visible');
+        }
+
+        /* addSearchTag
+        用法：将用户点击的关键词加入到筛选列表，并触发重新搜索。
+        原理：将选中的关键词压入 currentSearchTags 数组，清空输入框，隐藏下拉列表并调用 triggerSearch。
+        */
+        function addSearchTag(tag) {
+            if (!currentSearchTags.includes(tag)) {
+                currentSearchTags.push(tag);
+                updateSelectedTagsUI();
+                triggerSearch();
+            }
+            document.getElementById('searchInput').value = '';
+            document.getElementById('tagDropdown').classList.remove('visible');
+            document.getElementById('searchInput').focus();
+        }
+
+        /* removeSearchTag
+        用法：从已选关键词列表中移除某个关键词，并触发重新搜索。
+        原理：过滤掉被点击的关键词，更新 UI 并调用 triggerSearch。
+        */
+        function removeSearchTag(tag) {
+            currentSearchTags = currentSearchTags.filter(t => t !== tag);
+            updateSelectedTagsUI();
+            triggerSearch();
+        }
+
+        /* updateSelectedTagsUI
+        用法：更新搜索框下方的已选标签气泡显示。
+        原理：遍历 currentSearchTags，渲染带有删除图标的 HTML 并插入容器。
+        */
+        function updateSelectedTagsUI() {
+            const selectedTagsDiv = document.getElementById('selectedTags');
+            selectedTagsDiv.innerHTML = currentSearchTags.map(tag =>
+                `<div class="selected-tag-chip">${tag} <span onclick="removeSearchTag('${tag}')">×</span></div>`
+            ).join('');
+        }
+
+        /* triggerSearch
+        用法：重置所有分页状态并清空当前列表，以新的搜索条件重新加载帖子。
+        原理：将 currentPage 置 0，设 hasMore 为 true，恢复加载动画的显示状态，最后调用 loadNextPage。
+        */
+        function triggerSearch() {
+            currentPage = 0;
+            hasMore = true;
+            document.getElementById('list-all').innerHTML = '';
+            document.getElementById('end-message').style.display = 'none';
+            document.getElementById('scroll-sentinel').style.display = 'flex';
+            currentSearchId++; // 让仍在进行中的旧请求失效
+            isFetching = false;
+            loadNextPage();
+        }
+
         /* escapeHTML
         用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
-        原理：在内存中临时创建一个空白的 div 元素，利用浏览器的原生 textContent
-        属性来接收输入值。这会自动将敏感字符（如 <, >, &）进行转义。最后，
-        通过提取该 div 的 innerHTML 来获得完全安全、已被转义过的字符串，
-        这是一种防范 XSS（跨站脚本攻击）的经典手段。
         */
         function escapeHTML(str) {
             if (!str) return '';
@@ -551,10 +762,6 @@
 
         /* getNicknameStyle
         用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
-        原理：检查传入的 inventory 对象中是否包含特定的道具 ID（例如 '100', '101'）。
-        如果存在，利用 JavaScript 的 new Date() 对比当前时间和道具对应的过期时间，
-        以此判断道具是否在有效期内。如果生效，则返回一段包含渐变色、发光或特定颜色
-        等效果的内联 CSS 字符串，以便渲染出特殊外观。
         */
         function getNicknameStyle(inventory) {
             if (!inventory) return '';
@@ -567,10 +774,6 @@
 
         /* updateLanguage
         用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
-        原理：首先读取 localStorage 中键名为 'lang' 的值，如果不存在则默认回退为 'zh'。
-        随后，使用 querySelectorAll 找出 DOM 中所有标记了 `data-zh` 属性的 HTML 元素。
-        遍历这些元素，根据当前的语言状态，将元素的 innerText 替换为自身 `data-zh`
-        或者 `data-en` 属性中所保存的对应语种文本。
         */
         function updateLanguage() {
             const lang = localStorage.getItem('lang') || 'zh';
@@ -581,31 +784,18 @@
 
         /* goRandom
         用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
-        原理：首先向 Supabase 后端发送一个只请求数量的查询（head: true），以获得 `posts`
-        表的总行数。然后使用 Math.random() 在 0 到总行数之间生成一个随机索引。
-        接着利用 range() 查询这个特定索引对应的单一帖子记录，获取其唯一 ID。
-        最终，通过修改浏览器的 location.href，携带该 ID 跳转至内容详情页。
         */
         async function goRandom() {
             if (isFetching) return;
             isFetching = true;
             try {
-                const {
-                    count,
-                    error: countErr
-                } = await _supabase.from('posts').select('*', {
-                    count: 'exact',
-                    head: true
-                });
+                const { count, error: countErr } = await _supabase.from('posts').select('*', { count: 'exact', head: true });
                 if (countErr) throw countErr;
                 let noPostsMessage = localStorage.getItem("lang") === 'zh' ? "广场还是空荡荡的..." : "The square is still empty...";
                 if (count === 0) return alert(noPostsMessage);
                 const fetchUntilFound = async () => {
                     const randomIndex = Math.floor(Math.random() * count);
-                    const {
-                        data,
-                        error
-                    } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+                    const { data, error } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
                     if (!data || error) return await fetchUntilFound();
                     return data.id;
                 };
@@ -622,11 +812,6 @@
 
         /* handleVote
         用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
-        原理：首先调用 event.stopPropagation() 防止点击事件向上层卡片冒泡导致误跳入详情页。
-        随后根据传入的 type 参数区分是顶还是踩，修改 DOM 节点的 UI 高亮状态（添加或移除
-        is-liked/is-disliked 类），并实时增减显示的票数数字。
-        为了记忆用户的投票状态，会将其保存在 localStorage 的数组中，
-        最后发起一个异步请求，将最新的总赞/踩数同步覆写到 Supabase 远程数据库中。
         */
         async function handleVote(event, postId, type) {
             event.stopPropagation();
@@ -683,10 +868,7 @@
             localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
 
             try {
-                await _supabase.from('posts').update({
-                    likes,
-                    dislike
-                }).eq('id', postId);
+                await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
             } catch (err) {
                 console.error("同步失败", err);
             }
@@ -694,10 +876,6 @@
 
         /* toggleNSFW
         用法：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
-        原理：首先调用 event.stopPropagation() 以防止触发卡片跳转详情页的默认行为。
-        通过选择器定位到触发元素所在的卡片，并找到其中负责展示内容的段落元素。
-        利用 classList 切换样式类，使模糊滤镜消失或重现。同时，根据当前的
-        状态切换触发器自身的样式类，实现关键词从“高亮加粗”到“普通样式”的转变。
         */
         function toggleNSFW(event, element) {
             event.stopPropagation();
@@ -718,10 +896,6 @@
 
         /* createCardHTML
         用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-        原理：通过接收的帖子对象和传入的用户映射表(userMap)，匹配发帖人的专属外观。
-        该函数会扫描关键词数组，若发现 #NSFW 则会赋予特殊模糊控制，若发现疑似搬运则套用绿色类。
-        如果发帖人的字数大于200字，会自动使用 substring 方法进行截断并拼接提示。
-        最终通过提取本地缓存的点赞数据，结合模板字面量组装出包含对应标签逻辑的 HTML。
         */
         function createCardHTML(postData, userMap) {
             const author = userMap ? userMap[postData.nickname] : null;
@@ -743,7 +917,7 @@
                     }
                     return `<span>${kw}</span>`;
                 });
-                kwHtml = `<span class="kw-display">关键词：${kwItems.join('&nbsp;&nbsp;&nbsp;')}</span>`;
+                kwHtml = `<span class="kw-display">关键词 Keyword(s)：${kwItems.join('&nbsp;&nbsp;&nbsp;')}</span>`;
             }
 
             let pillClass = 'vote-pill';
@@ -793,23 +967,42 @@
         }
 
         /* loadNextPage
-        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑）。
-        原理：基于设定的当前页码(currentPage)与固定常量(PAGE_SIZE)，算出本次数据库请求
-        所需分页范围索引 (from 和 to)。利用 Supabase 的 range() 进行区间拉取。
-        若成功获取到数据集，则转化成 HTML 并通过 insertAdjacentHTML 拼接到长列表的尾部，
-        并递增当前页码；若返回的记录数少于预期容量，说明数据已枯竭，则隐藏动画并显示底线文字。
+        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），支持多条件搜索组合。
+        修复：完善了异常捕获并隐藏加载圈，同时适配了 jsonb 格式的标签包含查询。
         */
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
             isFetching = true;
+            document.getElementById('scroll-sentinel').style.display = 'flex';
             document.getElementById('scroll-sentinel').classList.add('visible');
+            let fetchId = currentSearchId;
+
             try {
                 const from = currentPage * PAGE_SIZE;
                 const to = (currentPage + 1) * PAGE_SIZE - 1;
-                const {
-                    data,
-                    error
-                } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).range(from, to);
+
+                let query = _supabase.from('posts').select('*').order('created_at', { ascending: false });
+
+                // 核心修复点 1：把数组转换为 JSON 字符串。
+                // 因为前端存入的 keywords 默认在数据库中是 jsonb 格式，Supabase 需要 JSON 字符串才能用 contains 匹配。
+                if (currentSearchTags.length > 0) {
+                    query = query.contains('keywords', JSON.stringify(currentSearchTags));
+                }
+
+                if (currentSearchText) {
+                    query = query.or(`title.ilike.%${currentSearchText}%,content.ilike.%${currentSearchText}%`);
+                }
+
+                const { data, error } = await query.range(from, to);
+
+                // 如果查询报错直接抛出到 catch 块
+                if (error) throw error;
+
+                if (fetchId !== currentSearchId) {
+                    isFetching = false;
+                    return;
+                }
+
                 if (data.length > 0) {
                     document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(postData => createCardHTML(postData, globalUserMap)).join(''));
                     currentPage++;
@@ -820,17 +1013,27 @@
                     document.getElementById('end-message').style.display = 'block';
                 }
                 updateLanguage();
+            } catch (err) {
+                console.error("列表加载失败", err);
+
+                // 核心修复点 2：如果发生错误，必须隐藏那三个跳动的小红点，防止页面永久卡死
+                document.getElementById('scroll-sentinel').style.display = 'none';
+
+                // 给用户一个明确的报错提示，好过看着黑屏发呆
+                document.getElementById('list-all').insertAdjacentHTML('beforeend',
+                    `<p style="text-align:center; color:var(--brand); margin-top: 30px; font-weight: bold;">
+                        搜索出错拉闸了：${err.message || '查询解析失败'}
+                    </p>`
+                );
             } finally {
-                isFetching = false;
+                if (fetchId === currentSearchId) {
+                    isFetching = false;
+                }
             }
         }
 
         /* setupIntersectionObserver
         用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
-        原理：实例化浏览器原生的 IntersectionObserver（交叉观察器） API，
-        专门监视挂载在列表底部的空白哨兵节点 `#scroll-sentinel`。
-        当检测到该哨兵节点进入浏览器视野内（isIntersecting 为 true），
-        且未处于加载状态、且仍有未取完的数据时，直接挂载执行 loadNextPage 函数。
         */
         function setupIntersectionObserver() {
             observer = new IntersectionObserver((entries) => {
@@ -841,14 +1044,13 @@
 
         /* init
         用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
-        原理：首先处理全局的暗黑模式缓存判定。紧接着，并行获取帖子和用户数据。
-        在算力分配阶段，遍历帖子计算净赞数(netVotes)。如果存在搬运标签则扣除50赞作为惩罚。
-        然后套用热度算法公式得出 hotScore，并排序切片出 Top5 发往热榜。
-        最终初始化监听器以备分页，并校验全局翻译标签。
         */
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const listHotEl = document.getElementById('list-hot');
+
+            initSearch();
+
             try {
                 const [postsRes, usersRes] = await Promise.all([
                     _supabase.from('posts').select('*'),
@@ -867,11 +1069,9 @@
                     let netVotes = likes - dislikes;
 
                     if (post.keywords && post.keywords.includes('#疑似搬运 Suspected Repost')) {
-                        netVotes -= 5; 
-                        //如果被打上 '#疑似搬运 Suspected Repost' 标签，扣除 5 个赞作为惩罚
+                        netVotes -= 5;
                     } else if (post.keywords && post.keywords.includes('#搬运 Reposted')) {
-                        netVotes -= 2; 
-                        //如果被打上 '#搬运 Reposted' 标签，扣除 2 个赞作为惩罚，因为这是用户自己承认的，只扣 2 个赞。
+                        netVotes -= 2;
                     }
 
                     const postTime = new Date(post.created_at).getTime();
