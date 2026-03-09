@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<!-- index.html -->
 <html lang="zh-CN">
 
 <head>
     <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0"
-          name="viewport">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>首页 Home - omg-by-Clark</title>
     <style>
+        /* 用途：定义网页根元素的全局CSS变量（主要针对浅色模式），集中管理颜色以便后续维护 */
         :root {
             --bg: #fffdf5;
             --text: #333;
@@ -25,10 +24,21 @@
             --vote-bg-liked: #ff4757;
             --vote-bg-disliked: #7287fd;
 
-            /* 新增：浅色模式下查看全文的蓝字 */
+            /* 浅色模式下查看全文的蓝字 */
             --read-more: #1e66f5;
+
+            /* NSFW 警示色 */
+            --nsfw-color: #fe640b;
+
+            /* 新增：疑似搬运 浅色模式下的绿色 */
+            --repost-color: #40a02b;
+
+            /* 正文和标题颜色变量 */
+            --body-text: #4c4f69;
+            --title-text: #121212;
         }
 
+        /* 用途：定义深色模式下的CSS变量覆盖，当body带有dark类时自动生效，实现黑夜模式适配 */
         body.dark {
             --bg: #1a1a1a;
             --text: #f0f0f0;
@@ -42,10 +52,19 @@
             --vote-bg-neutral: #333;
             --vote-bg-disliked: #7287fd;
 
-            /* 新增：深色模式下查看全文的蓝字 */
+            /* 深色模式下查看全文的蓝字 */
             --read-more: #89dceb;
+
+            /* 新增：疑似搬运 深色模式下的绿色 */
+            --repost-color: #a6e3a1;
+
+            /* 深色模式下的文字颜色适配 */
+            --body-text: #c6d0f5;
+            --title-text: hsl(40, 87%, 91%);
+            --kw-text: #838ba7;
         }
 
+        /* 用途：设置网页主体的基础字体、最大宽度、居中对齐、内外边距以及平滑的过渡动画 */
         body {
             font-family: sans-serif;
             max-width: 1000px;
@@ -56,6 +75,7 @@
             transition: 0.3s;
         }
 
+        /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
         h1 {
             font-family: Consolas, Monaco, monospace;
             font-weight: bold;
@@ -65,6 +85,7 @@
             user-select: none;
         }
 
+        /* 用途：顶部导航区域的Flexbox布局，控制标题和按钮组的水平两端对齐及底部边框 */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -75,12 +96,14 @@
             border-bottom: 1px solid rgba(150, 150, 150, 0.1);
         }
 
+        /* 用途：顶部导航栏右侧功能按钮组的容器排版，控制按钮间的间距和垂直居中 */
         .header-actions {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
+        /* 用途：通用的胶囊型按钮样式，包括渐变背景、圆角、阴影、字体和基础动画设置 */
         .btn-common {
             background: var(--button-grad);
             color: white;
@@ -99,26 +122,31 @@
             gap: 6px;
         }
 
+        /* 用途：鼠标悬停在通用按钮上时的浮动效果和阴影加深反馈 */
         .btn-common:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(230, 69, 83, 0.4);
         }
 
+        /* 用途：鼠标点击按下通用按钮时的轻微缩小动画，提供物理按压感 */
         .btn-common:active {
             transform: scale(0.95);
         }
 
+        /* 用途：页面主体内容区域的并排布局，划分左侧帖子流和右侧热榜 */
         .layout-container {
             display: flex;
             gap: 20px;
             align-items: flex-start;
         }
 
+        /* 用途：左侧全量帖子列表区域的自适应宽度分配 */
         .col-all {
             flex: 1;
             min-width: 0;
         }
 
+        /* 用途：右侧热搜排行榜区域的固定样式，包括特殊边框、微透明背景和自适应高度 */
         .col-hot {
             flex: 1;
             min-width: 0;
@@ -129,6 +157,7 @@
             height: fit-content;
         }
 
+        /* 用途：移动端媒体查询，屏幕宽度小于768px时，将左右布局改为上下堆叠布局 */
         @media (max-width: 768px) {
             .layout-container {
                 flex-direction: column-reverse;
@@ -140,6 +169,7 @@
             }
         }
 
+        /* 用途：各个帖子列表（全部、热搜）上方的区块标题文字排版 */
         .section-title {
             margin-top: 0;
             margin-bottom: 15px;
@@ -149,6 +179,7 @@
             gap: 8px;
         }
 
+        /* 用途：单个帖子的基础卡片容器，移除默认背景色，设置底部边框作为分割线 */
         .card {
             background: transparent;
             margin: 0;
@@ -161,28 +192,60 @@
             border-bottom: 1.5px solid var(--brand);
         }
 
-        /* 这是新增的原理实现代码，用于抹除最后一个帖子的下边框 */
+        /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
         .card:last-child {
             border-bottom: none;
         }
 
+        /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
         .card b {
-            color: #121212;
+            color: var(--title-text);
             font-size: 1.1em;
             display: block;
             margin-bottom: 5px;
         }
 
+        /* 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */
         .card:active {
             background-color: rgba(150, 150, 150, 0.05);
         }
 
+        /* 用途：超过 200 字被截断时，末尾追加的“点击以查看全文”链接文字样式 */
         .read-more {
             color: var(--read-more);
             font-weight: bold;
             margin-left: 5px;
         }
 
+        /* 用途：给 NSFW 内容的文本施加高斯模糊滤镜，防止路人偷窥 */
+        .blur-content {
+            filter: blur(3.5px);
+            user-select: none;
+            transition: filter 0.3s ease;
+        }
+
+        /* 用途：取消模糊滤镜，恢复文本的正常显示状态和可选状态 */
+        .revealed-content {
+            filter: blur(0);
+            user-select: auto;
+        }
+
+        /* 用途：特化展示NSFW标签，使用醒目的橙色、加粗字体和下划线提醒用户 */
+        .nsfw-tag {
+            color: var(--nsfw-color) !important;
+            font-weight: 900 !important;
+            font-size: 1.2em !important;
+            text-decoration: underline 1px solid var(--nsfw-color) !important;
+            cursor: pointer;
+        }
+
+        /* 用途：特化展示疑似搬运标签，使用主题自适应的绿色并加粗 */
+        .repost-tag {
+            color: var(--repost-color) !important;
+            font-weight: bold !important;
+        }
+
+        /* 用途：帖子卡片底部的信息栏布局，利用Flexbox让投票和作者信息水平排列 */
         .post-footer {
             display: flex;
             align-items: center;
@@ -191,6 +254,7 @@
             flex-wrap: wrap;
         }
 
+        /* 用途：卡片底部的作者、等级徽章、发布时间等元数据的字体微调 */
         .post-meta {
             font-size: 13px;
             opacity: 0.85;
@@ -199,6 +263,7 @@
             flex-wrap: wrap;
         }
 
+        /* 用途：包裹赞和踩按钮的统一胶囊型灰色背景框 */
         .vote-pill {
             display: flex;
             align-items: center;
@@ -210,6 +275,7 @@
             gap: 2px;
         }
 
+        /* 用途：独立的赞和踩透明按钮的尺寸、圆角和排版设置 */
         .like-btn,
         .dislike-btn {
             background: transparent;
@@ -226,6 +292,7 @@
             transition: all 0.2s;
         }
 
+        /* 用途：胶囊框里赞和踩两个按钮中间的半透明竖向分割线 */
         .vote-divider {
             width: 1px;
             height: 16px;
@@ -234,23 +301,29 @@
             transition: opacity 0.2s;
         }
 
-        .like-btn:active, .dislike-btn:active {
+        /* 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
+        .like-btn:active,
+        .dislike-btn:active {
             transform: scale(0.9);
         }
 
+        /* 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
         .vote-pill.is-liked .like-btn {
             background-color: var(--vote-bg-liked);
         }
 
+        /* 用途：用户点踩后，踩按钮区域背景变蓝的交互反馈 */
         .vote-pill.is-disliked .dislike-btn {
             background-color: var(--vote-bg-disliked);
         }
 
+        /* 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
         .vote-pill.is-liked .vote-divider,
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
         }
 
+        /* 用途：所有用户等级小徽章（如“原木”）的统一样式基类 */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -264,36 +337,43 @@
             display: inline-block;
         }
 
+        /* 用途：定义等级“原木”的专属配色 */
         .lv-log {
             background: #a1662f;
         }
 
+        /* 用途：定义等级“黑铁”的专属配色 */
         .lv-iron {
             background: #555555;
         }
 
+        /* 用途：定义等级“青铜”的专属配色 */
         .lv-bronze {
             background: #cd7f32;
         }
 
+        /* 用途：定义等级“白银”的专属配色及消除文字阴影 */
         .lv-silver {
             background: #e0e0e0;
             color: #000;
             text-shadow: none;
         }
 
+        /* 用途：定义等级“黄金”的专属配色 */
         .lv-gold {
             background: #ffd700;
             color: black;
             text-shadow: none;
         }
 
+        /* 用途：定义等级“钻石”的专属配色 */
         .lv-diamond {
             background: #add8e6;
             color: #0000ff;
             text-shadow: none;
         }
 
+        /* 用途：定义等级“王者”的渐变配色 */
         .lv-king {
             background: linear-gradient(45deg, #ffd700, #ffaa00);
             color: #fff;
@@ -301,6 +381,7 @@
             text-shadow: none;
         }
 
+        /* 用途：在王者徽章右侧添加一个绝对定位的斜体 V 字装饰 */
         .lv-king::after {
             content: "V";
             position: absolute;
@@ -309,6 +390,7 @@
             font-weight: 900;
         }
 
+        /* 用途：定义等级“史诗”的高级紫渐变配色并添加外发光特效 */
         .lv-epic {
             background: linear-gradient(45deg, #a333c8, #6d28d9);
             color: white;
@@ -316,6 +398,7 @@
             box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
         }
 
+        /* 用途：在史诗徽章右侧同样添加斜体 V 字装饰 */
         .lv-epic::after {
             content: "V";
             position: absolute;
@@ -324,6 +407,7 @@
             font-weight: 900;
         }
 
+        /* 用途：包裹帖子所有关键词的文本容器，定义整体颜色和边距 */
         .kw-display {
             display: block;
             margin-top: 5px;
@@ -333,6 +417,7 @@
             font-size: 0.9em;
         }
 
+        /* 用途：触底无限加载动画的外部容器，默认透明隐藏 */
         .loading-sentinel {
             display: flex;
             justify-content: center;
@@ -343,10 +428,12 @@
             transition: opacity 0.3s;
         }
 
+        /* 用途：当请求数据时，配合JS脚本将加载容器的透明度设为可见 */
         .loading-sentinel.visible {
             opacity: 1;
         }
 
+        /* 用途：渲染加载动画内部的单个小圆点，并绑定无限跳动动画 */
         .loading-sentinel span {
             display: inline-block;
             width: 10px;
@@ -357,23 +444,28 @@
             animation: bounce 0.4s infinite alternate;
         }
 
+        /* 用途：设置加载动画第二个圆点的起跳延迟，形成波浪感 */
         .loading-sentinel span:nth-child(2) {
             animation-delay: 0.2s;
         }
 
+        /* 用途：设置加载动画第三个圆点的起跳延迟，完善波浪感 */
         .loading-sentinel span:nth-child(3) {
             animation-delay: 0.4s;
         }
 
+        /* 用途：声明加载圆点沿Y轴上下位移的关键帧动画 */
         @keyframes bounce {
             from {
                 transform: translateY(0);
             }
+
             to {
                 transform: translateY(-10px);
             }
         }
 
+        /* 用途：当全部帖子加载完毕后，底部的结束提示语的排版样式 */
         .end-message {
             text-align: center;
             color: #999;
@@ -385,277 +477,302 @@
 </head>
 
 <body>
-<div class="header-container">
-    <h1>omg-by-Clark.github.io</h1>
+    <div class="header-container">
+        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">omg-by-Clark.github.io</h1>
 
-    <div class="header-actions">
-        <button class="btn-common" data-en="🤔 Random"
-                data-zh="🤔 随机" onclick="goRandom()">
-            🤔 随机
-        </button>
-        <a class="btn-common" data-en="🤬 Post Now"
-           data-zh="🤬 发帖" href="post-now.html">
-            🤬 发帖
-        </a>
-        <a class="btn-common" data-en="🔑 Sign In"
-           data-zh="🔑 登录" href="sign-in.html">
-            🔑 登录
-        </a>
-        <a href="info.html" class="btn-common"
-           data-zh="👤 个人" data-en="👤 Info">
-            👤 个人
-        </a>
-        <a class="btn-common" data-en="⚙️ Settings"
-           data-zh="⚙️ 设置" href="settings.html">
-            ⚙️ 设置
-        </a>
+        <div class="header-actions">
+            <button class="btn-common" data-en="🤔 Random" data-zh="🤔 随机" onclick="goRandom()">
+                🤔 随机
+            </button>
+            <a class="btn-common" data-en="🤬 Post Now" data-zh="🤬 发帖" href="post-now.html">
+                🤬 发帖
+            </a>
+            <a class="btn-common" data-en="🔑 Sign In" data-zh="🔑 登录" href="sign-in.html">
+                🔑 登录
+            </a>
+            <a href="info.html" class="btn-common" data-zh="👤 个人" data-en="👤 Info">
+                👤 个人
+            </a>
+            <a class="btn-common" data-en="⚙️ Settings" data-zh="⚙️ 设置" href="settings.html">
+                ⚙️ 设置
+            </a>
 
-    </div>
-</div>
-
-<div class="layout-container">
-    <div class="col-all">
-        <h2 class="section-title"
-            data-en="📃 All Posts"
-            data-zh="📃 全部帖子">
-            📃 全部帖子
-        </h2>
-        <div id="list-all"></div>
-        <div class="loading-sentinel" id="scroll-sentinel">
-            <span></span><span></span><span></span>
-        </div>
-        <div class="end-message" data-en="🚫 No more posts"
-             data-zh="😀 我也是有底线的！"
-             id="end-message">😀 我也是有底线的！
         </div>
     </div>
 
-    <div class="col-hot">
-        <h2 class="section-title"
-            data-en="🔥 Hot Top 5"
-            data-zh="🔥 热搜 Top 5"
-            style="color: var(--brand);">
-            🔥 热搜 Top 5</h2>
-        <div id="list-hot">
-            <div class="loading-sentinel visible"
-                 style="height:100px;">
+    <div class="layout-container">
+        <div class="col-all">
+            <h2 class="section-title" data-en="📃 All Posts" data-zh="📃 全部帖子">
+                📃 全部帖子
+            </h2>
+            <div id="list-all"></div>
+            <div class="loading-sentinel" id="scroll-sentinel">
                 <span></span><span></span><span></span>
+            </div>
+            <div class="end-message" data-en="🚫 No more posts" data-zh="😀 我也是有底线的！" id="end-message">😀 我也是有底线的！
+            </div>
+        </div>
+
+        <div class="col-hot">
+            <h2 class="section-title" data-en="🔥 Hot Top 5" data-zh="🔥 热搜 Top 5" style="color: var(--brand);">
+                🔥 热搜 Top 5</h2>
+            <div id="list-hot">
+                <div class="loading-sentinel visible" style="height:100px;">
+                    <span></span><span></span><span></span>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
 
-<script>
-    let currentPage = 0;
-    const PAGE_SIZE = 15;
-    let globalUserMap = {};
-    let isFetching = false;
-    let hasMore = true;
-    let observer;
+    <script>
+        let currentPage = 0;
+        const PAGE_SIZE = 15;
+        let globalUserMap = {};
+        let isFetching = false;
+        let hasMore = true;
+        let observer;
 
-    /* escapeHTML
-    用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
-    原理：在内存中临时创建一个空白的 div 元素，利用浏览器的原生 textContent
-    属性来接收输入值。这会自动将敏感字符（如 <, >, &）进行转义。最后，
-    通过提取该 div 的 innerHTML 来获得完全安全、已被转义过的字符串，
-    这是一种防范 XSS（跨站脚本攻击）的经典手段。
-    */
-    function escapeHTML(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
-    /* getNicknameStyle
-    用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
-    原理：检查传入的 inventory 对象中是否包含特定的道具 ID（例如 '100', '101'）。
-    如果存在，利用 JavaScript 的 new Date() 对比当前时间和道具对应的过期时间，
-    以此判断道具是否在有效期内。如果生效，则返回一段包含渐变色、发光或特定颜色
-    等效果的内联 CSS 字符串，以便渲染出特殊外观。
-    */
-    function getNicknameStyle(inventory) {
-        if (!inventory) return '';
-        const now = new Date();
-        if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
-        if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
-        if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
-        return '';
-    }
-
-    /* updateLanguage
-    用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
-    原理：首先读取 localStorage 中键名为 'lang' 的值，如果不存在则默认回退为 'zh'。
-    随后，使用 querySelectorAll 找出 DOM 中所有标记了 `data-zh` 属性的 HTML 元素。
-    遍历这些元素，根据当前的语言状态，将元素的 innerText 替换为自身 `data-zh`
-    或者 `data-en` 属性中所保存的对应语种文本。
-    */
-    function updateLanguage() {
-        const lang = localStorage.getItem('lang') || 'zh';
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
-        });
-    }
-
-    /* goRandom
-    用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
-    原理：首先向 Supabase 后端发送一个只请求数量的查询（head: true），以获得 `posts`
-    表的总行数。然后使用 Math.random() 在 0 到总行数之间生成一个随机索引。
-    接着利用 range() 查询这个特定索引对应的单一帖子记录，获取其唯一 ID。
-    最终，通过修改浏览器的 location.href，携带该 ID 跳转至内容详情页。
-    */
-    async function goRandom() {
-        if (isFetching) return;
-        isFetching = true;
-        try {
-            const {
-                count,
-                error: countErr
-            } = await _supabase.from('posts').select('*', {
-                count: 'exact',
-                head: true
-            });
-            if (countErr) throw countErr;
-            let noPostsMessage = localStorage.getItem("lang") === 'zh' ? "广场还是空荡荡的..." : "The square is still empty...";
-            if (count === 0) return alert(noPostsMessage);
-            const fetchUntilFound = async () => {
-                const randomIndex = Math.floor(Math.random() * count);
-                const {
-                    data,
-                    error
-                } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
-                if (!data || error) return await fetchUntilFound();
-                return data.id;
-            };
-            const validId = await fetchUntilFound();
-            location.href = `content.html?id=${validId}`;
-        } catch (error) {
-            let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
-            alert(errCode);
-            console.error("[随机失败]", error);
-        } finally {
-            isFetching = false;
+        /* escapeHTML
+        用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
+        原理：在内存中临时创建一个空白的 div 元素，利用浏览器的原生 textContent
+        属性来接收输入值。这会自动将敏感字符（如 <, >, &）进行转义。最后，
+        通过提取该 div 的 innerHTML 来获得完全安全、已被转义过的字符串，
+        这是一种防范 XSS（跨站脚本攻击）的经典手段。
+        */
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
-    }
 
-    /* handleVote
-    用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
-    原理：首先调用 event.stopPropagation() 防止点击事件向上层卡片冒泡导致误跳入详情页。
-    随后根据传入的 type 参数区分是顶还是踩，修改 DOM 节点的 UI 高亮状态（添加或移除
-    is-liked/is-disliked 类），并实时增减显示的票数数字。
-    为了记忆用户的投票状态，会将其保存在 localStorage 的数组中，
-    最后发起一个异步请求，将最新的总赞/踩数同步覆写到 Supabase 远程数据库中。
-    */
-    async function handleVote(event, postId, type) {
-        event.stopPropagation();
-        const card = event.currentTarget.closest('.card');
-        const votePill = card.querySelector('.vote-pill');
-        const likeBtn = card.querySelector('.like-btn');
-        const dislikeBtn = card.querySelector('.dislike-btn');
-        const likeSpan = likeBtn.querySelector('.count');
-        const dislikeSpan = dislikeBtn.querySelector('.count');
+        /* getNicknameStyle
+        用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
+        原理：检查传入的 inventory 对象中是否包含特定的道具 ID（例如 '100', '101'）。
+        如果存在，利用 JavaScript 的 new Date() 对比当前时间和道具对应的过期时间，
+        以此判断道具是否在有效期内。如果生效，则返回一段包含渐变色、发光或特定颜色
+        等效果的内联 CSS 字符串，以便渲染出特殊外观。
+        */
+        function getNicknameStyle(inventory) {
+            if (!inventory) return '';
+            const now = new Date();
+            if (inventory['100'] && new Date(inventory['100']) > now) return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
+            if (inventory['101'] && new Date(inventory['101']) > now) return 'color: #04a5e5; font-weight: bold;';
+            if (inventory['102'] && new Date(inventory['102']) > now) return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
+            return '';
+        }
 
-        let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-        let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+        /* updateLanguage
+        用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
+        原理：首先读取 localStorage 中键名为 'lang' 的值，如果不存在则默认回退为 'zh'。
+        随后，使用 querySelectorAll 找出 DOM 中所有标记了 `data-zh` 属性的 HTML 元素。
+        遍历这些元素，根据当前的语言状态，将元素的 innerText 替换为自身 `data-zh`
+        或者 `data-en` 属性中所保存的对应语种文本。
+        */
+        function updateLanguage() {
+            const lang = localStorage.getItem('lang') || 'zh';
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = (lang === 'zh') ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+            });
+        }
 
-        let likes = parseInt(likeSpan.innerText);
-        let dislike = parseInt(dislikeSpan.innerText);
-
-        if (type === 'like') {
-            if (likedPosts.includes(postId)) {
-                likes--;
-                likedPosts = likedPosts.filter(id => id !== postId);
-                votePill.classList.remove('is-liked');
-            } else {
-                likes++;
-                likedPosts.push(postId);
-                votePill.classList.add('is-liked');
-                if (dislikedPosts.includes(postId)) {
-                    dislike--;
-                    dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                    votePill.classList.remove('is-disliked');
-                    dislikeSpan.innerText = dislike;
-                }
+        /* goRandom
+        用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
+        原理：首先向 Supabase 后端发送一个只请求数量的查询（head: true），以获得 `posts`
+        表的总行数。然后使用 Math.random() 在 0 到总行数之间生成一个随机索引。
+        接着利用 range() 查询这个特定索引对应的单一帖子记录，获取其唯一 ID。
+        最终，通过修改浏览器的 location.href，携带该 ID 跳转至内容详情页。
+        */
+        async function goRandom() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const {
+                    count,
+                    error: countErr
+                } = await _supabase.from('posts').select('*', {
+                    count: 'exact',
+                    head: true
+                });
+                if (countErr) throw countErr;
+                let noPostsMessage = localStorage.getItem("lang") === 'zh' ? "广场还是空荡荡的..." : "The square is still empty...";
+                if (count === 0) return alert(noPostsMessage);
+                const fetchUntilFound = async () => {
+                    const randomIndex = Math.floor(Math.random() * count);
+                    const {
+                        data,
+                        error
+                    } = await _supabase.from('posts').select('id').range(randomIndex, randomIndex).maybeSingle();
+                    if (!data || error) return await fetchUntilFound();
+                    return data.id;
+                };
+                const validId = await fetchUntilFound();
+                location.href = `content.html?id=${validId}`;
+            } catch (error) {
+                let errCode = localStorage.getItem("lang") === 'zh' ? `随机失败，原因: ${error}` : `Random failure. Reason: ${error}`;
+                alert(errCode);
+                console.error("[随机失败]", error);
+            } finally {
+                isFetching = false;
             }
-            likeSpan.innerText = likes;
-        } else {
-            if (dislikedPosts.includes(postId)) {
-                dislike--;
-                dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                votePill.classList.remove('is-disliked');
-            } else {
-                dislike++;
-                dislikedPosts.push(postId);
-                votePill.classList.add('is-disliked');
+        }
+
+        /* handleVote
+        用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
+        原理：首先调用 event.stopPropagation() 防止点击事件向上层卡片冒泡导致误跳入详情页。
+        随后根据传入的 type 参数区分是顶还是踩，修改 DOM 节点的 UI 高亮状态（添加或移除
+        is-liked/is-disliked 类），并实时增减显示的票数数字。
+        为了记忆用户的投票状态，会将其保存在 localStorage 的数组中，
+        最后发起一个异步请求，将最新的总赞/踩数同步覆写到 Supabase 远程数据库中。
+        */
+        async function handleVote(event, postId, type) {
+            event.stopPropagation();
+            const card = event.currentTarget.closest('.card');
+            const votePill = card.querySelector('.vote-pill');
+            const likeBtn = card.querySelector('.like-btn');
+            const dislikeBtn = card.querySelector('.dislike-btn');
+            const likeSpan = likeBtn.querySelector('.count');
+            const dislikeSpan = dislikeBtn.querySelector('.count');
+
+            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+            let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+
+            let likes = parseInt(likeSpan.innerText);
+            let dislike = parseInt(dislikeSpan.innerText);
+
+            if (type === 'like') {
                 if (likedPosts.includes(postId)) {
                     likes--;
                     likedPosts = likedPosts.filter(id => id !== postId);
                     votePill.classList.remove('is-liked');
-                    likeSpan.innerText = likes;
+                } else {
+                    likes++;
+                    likedPosts.push(postId);
+                    votePill.classList.add('is-liked');
+                    if (dislikedPosts.includes(postId)) {
+                        dislike--;
+                        dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                        votePill.classList.remove('is-disliked');
+                        dislikeSpan.innerText = dislike;
+                    }
                 }
+                likeSpan.innerText = likes;
+            } else {
+                if (dislikedPosts.includes(postId)) {
+                    dislike--;
+                    dislikedPosts = dislikedPosts.filter(id => id !== postId);
+                    votePill.classList.remove('is-disliked');
+                } else {
+                    dislike++;
+                    dislikedPosts.push(postId);
+                    votePill.classList.add('is-disliked');
+                    if (likedPosts.includes(postId)) {
+                        likes--;
+                        likedPosts = likedPosts.filter(id => id !== postId);
+                        votePill.classList.remove('is-liked');
+                        likeSpan.innerText = likes;
+                    }
+                }
+                dislikeSpan.innerText = dislike;
             }
-            dislikeSpan.innerText = dislike;
+
+            localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+            localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
+
+            try {
+                await _supabase.from('posts').update({
+                    likes,
+                    dislike
+                }).eq('id', postId);
+            } catch (err) {
+                console.error("同步失败", err);
+            }
         }
 
-        localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-        localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
+        /* toggleNSFW
+        用法：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
+        原理：首先调用 event.stopPropagation() 以防止触发卡片跳转详情页的默认行为。
+        通过选择器定位到触发元素所在的卡片，并找到其中负责展示内容的段落元素。
+        利用 classList 切换样式类，使模糊滤镜消失或重现。同时，根据当前的
+        状态切换触发器自身的样式类，实现关键词从“高亮加粗”到“普通样式”的转变。
+        */
+        function toggleNSFW(event, element) {
+            event.stopPropagation();
+            const card = element.closest('.card');
+            const contentArea = card.querySelector('.post-body');
+            const isBlurry = contentArea.classList.contains('blur-content');
 
-        try {
-            await _supabase.from('posts').update({
-                likes,
-                dislike
-            }).eq('id', postId);
-        } catch (err) {
-            console.error("同步失败", err);
-        }
-    }
-
-    /* createCardHTML
-    用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-    原理：通过接收的帖子对象和传入的用户映射表(userMap)，匹配发帖人的专属外观。
-    如果发帖人的字数大于200字，会自动使用 substring 方法进行截断，并拼接上
-    一段带交互提示的“查看全文”字样，防止帖子过长撑爆屏幕。同时提取本地缓存的
-    历史点赞数据来判断并决定渲染时是否需高亮按钮，最终通过模板字面量组装出带 CSS 的 HTML。
-    */
-    function createCardHTML(postData, userMap) {
-        const author = userMap ? userMap[postData.nickname] : null;
-        const userLevel = getLevelInfo(author ? author.points : 0);
-        const nickStyle = getNicknameStyle(author ? author.inventory : null);
-        const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-        const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
-
-        let kwHtml = postData.keywords && postData.keywords.length > 0 ? `<span class="kw-display">关键词：${postData.keywords.join('&nbsp;&nbsp;&nbsp;')}</span>` : '';
-
-        let pillClass = 'vote-pill';
-        if (likedPosts.includes(postData.id)) pillClass += ' is-liked';
-        if (dislikedPosts.includes(postData.id)) pillClass += ' is-disliked';
-
-        const safeContent = postData.content || '';
-        let displayContent = '';
-
-        if (safeContent.length > 200) {
-            displayContent = escapeHTML(safeContent.substring(0, 200)) +
-                `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
-        } else {
-            displayContent = escapeHTML(safeContent);
+            if (isBlurry) {
+                contentArea.classList.remove('blur-content');
+                contentArea.classList.add('revealed-content');
+                element.classList.remove('nsfw-tag');
+            } else {
+                contentArea.classList.add('blur-content');
+                contentArea.classList.remove('revealed-content');
+                element.classList.add('nsfw-tag');
+            }
         }
 
-        let dateStr = '';
-        if (postData.created_at) {
-            const d = new Date(postData.created_at);
-            const pad = n => n.toString().padStart(2, '0');
-            dateStr = d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-        }
+        /* createCardHTML
+        用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
+        原理：通过接收的帖子对象和传入的用户映射表(userMap)，匹配发帖人的专属外观。
+        该函数会扫描关键词数组，若发现 #NSFW 则会赋予特殊模糊控制，若发现疑似搬运则套用绿色类。
+        如果发帖人的字数大于200字，会自动使用 substring 方法进行截断并拼接提示。
+        最终通过提取本地缓存的点赞数据，结合模板字面量组装出包含对应标签逻辑的 HTML。
+        */
+        function createCardHTML(postData, userMap) {
+            const author = userMap ? userMap[postData.nickname] : null;
+            const userLevel = getLevelInfo(author ? author.points : 0);
+            const nickStyle = getNicknameStyle(author ? author.inventory : null);
+            const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+            const dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
 
-        return `
+            const hasNSFW = postData.keywords && postData.keywords.includes('#NSFW');
+
+            let kwHtml = '';
+            if (postData.keywords && postData.keywords.length > 0) {
+                const kwItems = postData.keywords.map(kw => {
+                    if (kw === '#NSFW') {
+                        return `<span class="nsfw-tag" onclick="toggleNSFW(event, this)">${kw}</span>`;
+                    }
+                    if (kw === '#疑似搬运 Suspected Repost' || kw === '#搬运 Reposted') {
+                        return `<span class="repost-tag">${kw}</span>`;
+                    }
+                    return `<span>${kw}</span>`;
+                });
+                kwHtml = `<span class="kw-display">关键词：${kwItems.join('&nbsp;&nbsp;&nbsp;')}</span>`;
+            }
+
+            let pillClass = 'vote-pill';
+            if (likedPosts.includes(postData.id)) pillClass += ' is-liked';
+            if (dislikedPosts.includes(postData.id)) pillClass += ' is-disliked';
+
+            const safeContent = postData.content || '';
+            let displayContent = '';
+
+            if (safeContent.length > 200) {
+                displayContent = escapeHTML(safeContent.substring(0, 200)) +
+                    `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
+            } else {
+                displayContent = escapeHTML(safeContent);
+            }
+
+            let dateStr = '';
+            if (postData.created_at) {
+                const d = new Date(postData.created_at);
+                const pad = n => n.toString().padStart(2, '0');
+                dateStr = d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+            }
+
+            return `
             <div class="card" onclick="location.href='content.html?id=${postData.id}'">
                 <div style="width: 100%;">
                     <b>${escapeHTML(postData.title)}</b>
                     ${kwHtml}
-                    <p style="font-size:0.9em; color:#4c4f69; margin:8px 0;">${displayContent}</p>
+                    <p class="post-body ${hasNSFW ? 'blur-content' : ''}" style="font-size:0.9em; color: var(--body-text); margin:8px 0;">${displayContent}</p>
 
                     <div class="post-footer">
                         <div class="${pillClass}">
@@ -673,111 +790,118 @@
                     </div>
                 </div>
             </div>`;
-    }
+        }
 
-    /* loadNextPage
-    用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑）。
-    原理：基于设定的当前页码(currentPage)与固定常量(PAGE_SIZE)，算出本次数据库请求
-    所需分页范围索引 (from 和 to)。利用 Supabase 的 range() 进行区间拉取。
-    若成功获取到数据集，则转化成 HTML 并通过 insertAdjacentHTML 拼接到长列表的尾部，
-    并递增当前页码；若返回的记录数少于预期容量，说明数据已枯竭，则隐藏动画并显示底线文字。
-    */
-    async function loadNextPage() {
-        if (isFetching || !hasMore) return;
-        isFetching = true;
-        document.getElementById('scroll-sentinel').classList.add('visible');
-        try {
-            const from = currentPage * PAGE_SIZE;
-            const to = (currentPage + 1) * PAGE_SIZE - 1;
-            const {
-                data,
-                error
-            } = await _supabase.from('posts').select('*').order('created_at', {ascending: false}).range(from, to);
-            if (data.length > 0) {
-                document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(postData => createCardHTML(postData, globalUserMap)).join(''));
-                currentPage++;
+        /* loadNextPage
+        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑）。
+        原理：基于设定的当前页码(currentPage)与固定常量(PAGE_SIZE)，算出本次数据库请求
+        所需分页范围索引 (from 和 to)。利用 Supabase 的 range() 进行区间拉取。
+        若成功获取到数据集，则转化成 HTML 并通过 insertAdjacentHTML 拼接到长列表的尾部，
+        并递增当前页码；若返回的记录数少于预期容量，说明数据已枯竭，则隐藏动画并显示底线文字。
+        */
+        async function loadNextPage() {
+            if (isFetching || !hasMore) return;
+            isFetching = true;
+            document.getElementById('scroll-sentinel').classList.add('visible');
+            try {
+                const from = currentPage * PAGE_SIZE;
+                const to = (currentPage + 1) * PAGE_SIZE - 1;
+                const {
+                    data,
+                    error
+                } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).range(from, to);
+                if (data.length > 0) {
+                    document.getElementById('list-all').insertAdjacentHTML('beforeend', data.map(postData => createCardHTML(postData, globalUserMap)).join(''));
+                    currentPage++;
+                }
+                if (data.length < PAGE_SIZE) {
+                    hasMore = false;
+                    document.getElementById('scroll-sentinel').style.display = 'none';
+                    document.getElementById('end-message').style.display = 'block';
+                }
+                updateLanguage();
+            } finally {
+                isFetching = false;
             }
-            if (data.length < PAGE_SIZE) {
-                hasMore = false;
-                document.getElementById('scroll-sentinel').style.display = 'none';
-                document.getElementById('end-message').style.display = 'block';
+        }
+
+        /* setupIntersectionObserver
+        用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
+        原理：实例化浏览器原生的 IntersectionObserver（交叉观察器） API，
+        专门监视挂载在列表底部的空白哨兵节点 `#scroll-sentinel`。
+        当检测到该哨兵节点进入浏览器视野内（isIntersecting 为 true），
+        且未处于加载状态、且仍有未取完的数据时，直接挂载执行 loadNextPage 函数。
+        */
+        function setupIntersectionObserver() {
+            observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
+            }, { rootMargin: '100px' });
+            observer.observe(document.getElementById('scroll-sentinel'));
+        }
+
+        /* init
+        用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
+        原理：首先处理全局的暗黑模式缓存判定。紧接着，并行获取帖子和用户数据。
+        在算力分配阶段，遍历帖子计算净赞数(netVotes)。如果存在搬运标签则扣除50赞作为惩罚。
+        然后套用热度算法公式得出 hotScore，并排序切片出 Top5 发往热榜。
+        最终初始化监听器以备分页，并校验全局翻译标签。
+        */
+        async function init() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            const listHotEl = document.getElementById('list-hot');
+            try {
+                const [postsRes, usersRes] = await Promise.all([
+                    _supabase.from('posts').select('*'),
+                    _supabase.from('users').select('username, points, inventory')
+                ]);
+                if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
+                    acc[user.username] = user;
+                    return acc;
+                }, {});
+
+                const now = Date.now();
+
+                const weightedPosts = postsRes.data.map(post => {
+                    const likes = post.likes || 0;
+                    const dislikes = post.dislike || 0;
+                    let netVotes = likes - dislikes;
+
+                    if (post.keywords && post.keywords.includes('#疑似搬运 Suspected Repost')) {
+                        netVotes -= 5; 
+                        //如果被打上 '#疑似搬运 Suspected Repost' 标签，扣除 5 个赞作为惩罚
+                    } else if (post.keywords && post.keywords.includes('#搬运 Reposted')) {
+                        netVotes -= 2; 
+                        //如果被打上 '#搬运 Reposted' 标签，扣除 2 个赞作为惩罚，因为这是用户自己承认的，只扣 2 个赞。
+                    }
+
+                    const postTime = new Date(post.created_at).getTime();
+                    const ageInHours = (now - postTime) / (1000 * 60 * 60);
+
+                    let hotScore = 0;
+                    if (netVotes > 0) {
+                        hotScore = netVotes / Math.pow((ageInHours + 225), 1.0001);
+                    } else if (netVotes < 0) {
+                        hotScore = netVotes;
+                    }
+
+                    return { ...post, hotScore };
+                });
+
+                const hotPosts = weightedPosts
+                    .sort((a, b) => b.hotScore - a.hotScore)
+                    .slice(0, 5);
+
+                listHotEl.innerHTML = hotPosts.map(postData => createCardHTML(postData, globalUserMap)).join('');
+
+                setupIntersectionObserver();
+            } catch (err) {
+                listHotEl.innerHTML = "<p>数据加载失败</p>";
             }
             updateLanguage();
-        } finally {
-            isFetching = false;
         }
-    }
 
-    /* setupIntersectionObserver
-    用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
-    原理：实例化浏览器原生的 IntersectionObserver（交叉观察器） API，
-    专门监视挂载在列表底部的空白哨兵节点 `#scroll-sentinel`。
-    当检测到该哨兵节点进入浏览器视野内（isIntersecting 为 true），
-    且未处于加载状态、且仍有未取完的数据时，直接挂载执行 loadNextPage 函数。
-    */
-    function setupIntersectionObserver() {
-        observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasMore && !isFetching) loadNextPage();
-        }, {rootMargin: '100px'});
-        observer.observe(document.getElementById('scroll-sentinel'));
-    }
-
-    /* init
-    用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
-    原理：首先处理全局的暗黑模式缓存判定。紧接着，为了追求极速加载体验，
-    采用 Promise.all 同时并行获取 `posts` 表与 `users` 表的数据集。
-    随后，进入算力分配：遍历帖子，套用一套包含“净赞数除以基于时间偏移的指数”
-    的热度算法公式算出每篇的 hotScore，并依据分数排序切片出 Top5 发往热榜列表。
-    最终，初始化底部的监听器以备后续翻页之需，并校验全局翻译标签。
-    */
-    async function init() {
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        const listHotEl = document.getElementById('list-hot');
-        try {
-            const [postsRes, usersRes] = await Promise.all([
-                _supabase.from('posts').select('*'),
-                _supabase.from('users').select('username, points, inventory')
-            ]);
-            if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
-                acc[user.username] = user;
-                return acc;
-            }, {});
-
-            const now = Date.now();
-
-            const weightedPosts = postsRes.data.map(post => {
-                const likes = post.likes || 0;
-                const dislikes = post.dislike || 0;
-                const netVotes = likes - dislikes;
-
-                const postTime = new Date(post.created_at).getTime();
-                const ageInHours = (now - postTime) / (1000 * 60 * 60);
-
-                let hotScore = 0;
-                if (netVotes > 0) {
-                    hotScore = netVotes / Math.pow((ageInHours + 225), 1.0001);
-                } else if (netVotes < 0) {
-                    hotScore = netVotes;
-                }
-
-                return {...post, hotScore};
-            });
-
-            const hotPosts = weightedPosts
-                .sort((a, b) => b.hotScore - a.hotScore)
-                .slice(0, 5);
-
-            listHotEl.innerHTML = hotPosts.map(postData => createCardHTML(postData, globalUserMap)).join('');
-
-            setupIntersectionObserver();
-        } catch (err) {
-            listHotEl.innerHTML = "<p>数据加载失败</p>";
-        }
-        updateLanguage();
-    }
-
-    init();
-</script>
+        init();
+    </script>
 </body>
 
 </html>

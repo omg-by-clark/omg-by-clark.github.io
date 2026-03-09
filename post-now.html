@@ -223,8 +223,8 @@
             '#上课 Class', '#旅游 Travel',
             '#奇葩 Weird', '#食物 Food',
             '#生活 Life', '#宠物 Pets',
-            '#科技 Tech', '#娱乐 Fun',
-            '#其他 Others', '#NSFW'];
+            '#科技 Tech', '#娱乐 Fun', '#体育 Sport',
+            '#其他 Others', '#NSFW', '#搬运 Reposted'];
 
         /*
           init() 
@@ -261,7 +261,7 @@
                 btn.className = 'kw-btn';
                 
                 // 专门给 NSFW 按钮加上标识类名
-                if (kw === '#NSFW') {
+                if (kw === '#NSFW' || kw === '#搬运 Reposted') {
                     btn.classList.add('nsfw-btn');
                 }
                 

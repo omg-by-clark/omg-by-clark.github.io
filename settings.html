@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- settings.html -->
 <html lang="zh-CN">
 
 <head>
@@ -14,6 +13,8 @@
             --card: #ffffff;
             --brand: #ff4757;
             --green: #28a745;
+            /* 用途：鸣谢名单按钮在浅色模式下的专属绿色文字色 */
+            --btn-credits-color: #40a02b;
         }
 
         body.dark {
@@ -21,6 +22,8 @@
             --text: #f0f0f0;
             --card: #2d2d2d;
             --brand: #ff6b81;
+            /* 用途：鸣谢名单按钮在深色模式下的专属绿色文字色 */
+            --btn-credits-color: #a6d189;
         }
 
         body {
@@ -94,6 +97,25 @@
             transform: scale(1.1);
         }
 
+        /* 用途：将鸣谢按钮重置为纯文字链接样式，去除背景和边框，设置绿色下划线 */
+        .btn-go-credits {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            border: none;
+            color: var(--btn-credits-color);
+            text-decoration: underline;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        /* 用途：鸣谢按钮按下时的放大反馈 */
+        .btn-go-cridits:active {
+            transform: scale(1.1);
+        }
+
         .cancel-link {
             display: block;
             text-align: center;
@@ -133,21 +155,20 @@
     </div>
 
     <button class="btn-save" onclick="save()" data-zh="保存设置" data-en="Save Settings">保存设置</button>
-
+    <button class="btn-go-credits" onclick="window.location.href = 'credits.html'" data-zh="🙏 鸣谢名单"
+        data-en="🙏 Credits">🙏 鸣谢名单</button>
     <a href="index.html" class="cancel-link" data-zh="🏠 取消返回" data-en="🏠 Cancel">🏠 取消返回</a>
 
     <script>
-        /**
-         * 初始化状态：读取本地存储偏好
-         */
+        /* 初始化状态：读取本地存储偏好
+        */
         const savedLang = localStorage.getItem('lang') || 'zh';
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.getElementById('langSelect').value = savedLang;
         document.getElementById('themeSelect').value = savedTheme;
 
-        /**
-         * 保存逻辑：更新本地存储并跳转
-         */
+        /* 保存逻辑：更新本地存储并跳转
+        */
         function save() {
             const lang = document.getElementById('langSelect').value;
             const theme = document.getElementById('themeSelect').value;
@@ -160,9 +181,8 @@
             window.location.href = 'index.html';
         }
 
-        /**
-         * 实时应用：根据当前存储渲染主题和翻译
-         */
+        /* 实时应用：根据当前存储渲染主题和翻译
+        */
         function apply() {
             const lang = localStorage.getItem('lang') || 'zh';
             const mode = localStorage.getItem('theme') || 'light';
