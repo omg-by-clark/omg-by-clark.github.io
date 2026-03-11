@@ -7,6 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>详情 Details - omg-by-Clark</title>
     <style>
+        /* :root 用法：定义浅色模式下的全局基础颜色变量，包括背景、文字、品牌色以及状态色。 */
         :root {
             --bg: #fffdf5;
             --text: #333;
@@ -23,8 +24,14 @@
 
             /* 新增：浅色模式下的删除按钮颜色 */
             --delete-btn: #d20f14;
+            
+            /* 新增：NSFW 警示色 */
+            --nsfw-color: #fe640b;
+            /* 新增：疑似搬运 · 浅色模式下的绿色 */
+            --repost-color: #40a02b;
         }
 
+        /* body.dark 用法：定义深色模式下的颜色变量覆盖，实现页面的暗黑模式自适应。 */
         body.dark {
             --bg: #1a1a1a;
             --text: #f0f0f0;
@@ -40,8 +47,12 @@
 
             /* 新增：深色模式下的删除按钮颜色 */
             --delete-btn: #f02832;
+            
+            /* 新增：疑似搬运 · 深色模式下的绿色 */
+            --repost-color: #a6e3a1;
         }
 
+        /* body 用法：设置页面整体的字体、最大宽度、居中对齐、内外边距及换肤的过渡动画。 */
         body {
             font-family: sans-serif;
             max-width: 600px;
@@ -53,12 +64,14 @@
             transition: 0.3s;
         }
 
+        /* h1 用法：设置详情页主标题的颜色、大小及底部外边距。 */
         h1 {
             color: var(--brand);
             font-size: 1.8rem;
             margin-bottom: 20px;
         }
 
+        /* .kw-row 用法：设置关键词所在行的文字颜色、加粗样式及间距。 */
         .kw-row {
             color: var(--kw-text);
             font-weight: bold;
@@ -67,6 +80,7 @@
             display: block;
         }
 
+        /* #c 用法：设置帖子正文内容区域的背景卡片、圆角、阴影、预格式化换行及字号。 */
         #c {
             white-space: pre-wrap;
             font-size: 1.1em;
@@ -78,6 +92,7 @@
             margin-bottom: 30px;
         }
 
+        /* .action-area 用法：使用 Flexbox 居中排列详情页的交互操作按钮区域。 */
         .action-area {
             display: flex;
             justify-content: center;
@@ -85,35 +100,29 @@
             margin-bottom: 40px;
         }
 
-        /* 详情页的胶囊样式
-           Logic Change: 背景常驻中立色
-        */
+        /* .vote-pill 用法：设置包含点赞/踩按钮的药丸形容器的基础样式、背景色及阴影。 */
         .vote-pill {
             display: flex;
             align-items: center;
             background-color: var(--vote-bg-neutral);
             border-radius: 30px;
-            /* 更圆润 */
             padding: 2px;
-            /* 减小内边距 */
             transition: background-color 0.3s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* 删除了 .vote-pill.is-liked 背景变化
-           新增子元素变化逻辑
-        */
-
+        /* .vote-pill.is-liked .like-btn 用法：当帖子被点赞时，使点赞按钮呈现高亮色及光晕阴影。 */
         .vote-pill.is-liked .like-btn {
             background-color: var(--vote-bg-liked);
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-            /* 给激活的按钮一点光晕 */
         }
 
+        /* .vote-pill.is-disliked .dislike-btn 用法：当帖子被点踩时，使点踩按钮呈现对应的深色。 */
         .vote-pill.is-disliked .dislike-btn {
             background-color: var(--vote-bg-disliked);
         }
 
+        /* .like-btn, .dislike-btn 用法：设置独立的赞/踩按钮的透明背景、边距、圆角和基础文字排版。 */
         .like-btn,
         .dislike-btn {
             background: transparent;
@@ -128,9 +137,9 @@
             align-items: center;
             gap: 8px;
             border-radius: 28px;
-            /* 适应父容器 */
         }
 
+        /* .vote-divider 用法：在点赞和点踩按钮之间绘制一条半透明的垂直分割线。 */
         .vote-divider {
             width: 1px;
             height: 24px;
@@ -139,24 +148,26 @@
             transition: opacity 0.2s;
         }
 
-        /* 激活时隐藏分割线 */
+        /* .vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider 用法：投票激活状态下，降低中间分割线的透明度使其融入背景。 */
         .vote-pill.is-liked .vote-divider,
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
         }
 
-        /* 简单的点击动画 */
+        /* .like-btn:active, .dislike-btn:active 用法：点击按钮时缩小元素的缩放比例，提供物理按压反馈。 */
         .like-btn:active,
         .dislike-btn:active {
             transform: scale(0.9);
         }
 
+        /* .cmt-box 用法：评论区外层容器，设置顶部边框线及与上方内容的间距。 */
         .cmt-box {
             margin-top: 20px;
             border-top: 2px solid var(--brand);
             padding-top: 25px;
         }
 
+        /* .cmt-item 用法：单条评论的卡片样式，包含灰色半透明背景、圆角及 Flex 排版。 */
         .cmt-item {
             background: rgba(128, 128, 128, 0.08);
             padding: 15px;
@@ -167,6 +178,7 @@
             align-items: center;
         }
 
+        /* input 用法：设置评论输入框的边框、背景、字体颜色和圆角。 */
         input {
             padding: 12px;
             border-radius: 10px;
@@ -177,6 +189,7 @@
             outline: none;
         }
 
+        /* .btn-send 用法：设置发送评论按钮的主题色背景、文字颜色和圆角等样式。 */
         .btn-send {
             background: var(--brand);
             color: white;
@@ -188,7 +201,7 @@
             transition: transform 0.1s;
         }
 
-        /* OP 专属徽章样式，大小对齐等级标志 */
+        /* .op-badge 用法：为发帖人在评论区的名字旁添加专属的蓝色 OP 徽章标识。 */
         .op-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -197,14 +210,14 @@
             margin-left: 5px;
             display: inline-block;
             color: #1e66f5;
-            /* 浅色模式文字 */
         }
 
-        /* 深色模式下的 OP 徽章颜色反转 */
+        /* body.dark .op-badge 用法：深色模式下自动反转 OP 徽章为较亮的浅蓝色。 */
         body.dark .op-badge {
             color: #54cdfc;
         }
 
+        /* .lv-badge 用法：所有用户等级徽章的基础排版样式，包含边距、字号和圆角。 */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -214,42 +227,50 @@
             display: inline-block;
         }
 
+        /* .lv-log 用法：定义等级“原木”的背景和字体配色。 */
         .lv-log {
             background: #8b5a2b;
             color: white;
         }
 
+        /* .lv-iron 用法：定义等级“黑铁”的背景和字体配色。 */
         .lv-iron {
             background: #4a4a4a;
             color: white;
         }
 
+        /* .lv-bronze 用法：定义等级“青铜”的背景和字体配色。 */
         .lv-bronze {
             background: #cd7f32;
             color: white;
         }
 
+        /* .lv-silver 用法：定义等级“白银”的背景和字体配色。 */
         .lv-silver {
             background: #e0e0e0;
             color: #333;
         }
 
+        /* .lv-gold 用法：定义等级“黄金”的背景和字体配色。 */
         .lv-gold {
             background: #ffd700;
             color: #856404;
         }
 
+        /* .lv-diamond 用法：定义等级“钻石”的背景和字体配色。 */
         .lv-diamond {
             background: #b9f2ff;
             color: #007bff;
         }
 
+        /* .lv-king 用法：定义等级“王者”的渐变背景色及内部右边距预留。 */
         .lv-king {
             background: linear-gradient(45deg, #ffd700, #ffaa00);
             color: #fff;
             padding-right: 18px;
         }
 
+        /* .lv-king::after 用法：利用伪元素在王者徽章右侧添加斜体字母 V 装饰。 */
         .lv-king::after {
             content: "V";
             position: absolute;
@@ -258,12 +279,14 @@
             font-weight: 900;
         }
 
+        /* .lv-epic 用法：定义等级“史诗”的渐变紫背景及内部右边距预留。 */
         .lv-epic {
             background: linear-gradient(45deg, #a333c8, #6d28d9);
             color: white;
             padding-right: 18px;
         }
 
+        /* .lv-epic::after 用法：利用伪元素在史诗徽章右侧添加斜体字母 V 装饰。 */
         .lv-epic::after {
             content: "V";
             position: absolute;
@@ -272,22 +295,23 @@
             font-weight: 900;
         }
 
+        /* .nav-links 用法：页面底部导航区域，让返回链接和删除按钮水平居中对齐。 */
         .nav-links {
             margin-top: 40px;
             display: flex;
             gap: 25px;
             justify-content: center;
             align-items: center;
-            /* 确保返回链接和删除按钮垂直居中对齐 */
         }
 
+        /* .nav-links a 用法：取消底部链接的下划线并加粗文字。 */
         .nav-links a {
             text-decoration: none;
             font-weight: bold;
             font-size: 1.05rem;
         }
 
-        /* 新增：作者专属的删除按钮样式 */
+        /* .btn-delete-post 用法：设置删除帖子按钮的红色样式，默认隐藏。 */
         .btn-delete-post {
             background-color: var(--delete-btn);
             color: white;
@@ -298,11 +322,39 @@
             font-weight: bold;
             transition: 0.2s;
             display: none;
-            /* 默认隐藏，只有在 js 里判断为作者才会改为 block */
         }
 
+        /* .btn-delete-post:active 用法：设置删除帖子按钮点击时的缩小动效反馈。 */
         .btn-delete-post:active {
             transform: scale(0.95);
+        }
+
+        /* .blur-content 用法：给带有 NSFW 标签的文本施加高斯模糊滤镜，防止直接查看。 */
+        .blur-content {
+            filter: blur(3.5px);
+            user-select: none;
+            transition: filter 0.3s ease;
+        }
+
+        /* .revealed-content 用法：取消文本的高斯模糊状态，使其正常显示并允许选中文本。 */
+        .revealed-content {
+            filter: blur(0);
+            user-select: auto;
+        }
+
+        /* .nsfw-tag 用法：对 NSFW 关键词进行强样式覆盖，呈现下划线粗体橙色。 */
+        .nsfw-tag {
+            color: var(--nsfw-color) !important;
+            font-weight: 900 !important;
+            font-size: 1.2em !important;
+            text-decoration: underline 1px solid var(--nsfw-color) !important;
+            cursor: pointer;
+        }
+
+        /* .repost-tag 用法：对搬运类关键词进行加粗变绿的强样式覆盖。 */
+        .repost-tag {
+            color: var(--repost-color) !important;
+            font-weight: bold !important;
         }
     </style>
 </head>
