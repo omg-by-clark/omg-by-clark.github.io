@@ -13,7 +13,9 @@ const TRANS = {
     // 新增：删除相关的翻译词条
     confirmDelete: { zh: "警告：此操作不可逆！\n你确定要删除这篇帖子吗？", en: "Warning: Irreversible action!\nAre you sure you want to delete this post?" },
     deleteSuccess: { zh: "帖子已彻底删除 💥", en: "Post completely deleted 💥" },
-    deleteFail: { zh: "删除失败，可能是权限不足", en: "Delete failed, might be a permission issue" }
+    deleteFail: { zh: "删除失败，可能是权限不足", en: "Delete failed, might be a permission issue" },
+    // 新增：违反网站公约拦截提示
+    policyViolation: { zh: "请勿发送违反《网站公约》的内容", en: "Please do not send content that violates the Website Convention" }
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -235,6 +237,20 @@ async function addCmt() {
     }
     const content = document.getElementById('cC').value.trim();
     if (!content) return alert(TRANS.emptyContent[currentLang]);
+
+    // 规则 1：包含脏话（利用正则表达式 /i 忽略大小写匹配英文，同时包含中文违禁词）
+    const containsBadWords = /sb|傻逼|屎|垃圾|idiot|fuck/i.test(content);
+
+    // 规则 2：完全等于无意义水帖词汇
+    const exactMatchWords = ['沙发', '板凳', '地板', '地缝', '下水道', '已阅', '666'];
+    const isWaterPost = exactMatchWords.includes(content);
+
+    // 如果触发上述任一规则，拦截发送
+    if (containsBadWords || isWaterPost) {
+        alert(TRANS.policyViolation[currentLang]);
+        return;
+    }
+
     const { error } = await _supabase.from('comments').insert([{ post_id: postId, nickname: nick, content: content }]);
     if (error) {
         alert(TRANS.sendFail[currentLang]);

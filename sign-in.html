@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- index.html -->
+<!-- sign-in.html -->
 <html lang="zh-CN">
 
 <head>
@@ -8,21 +8,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>欢迎 Welcome - omg-by-Clark</title>
     <style>
+        /* :root 用途：定义浅色模式下的全局 CSS 变量。 */
         :root {
             --bg: #fffdf5;
             --text: #333;
             --brand: #ff4757;
             --card: #fff;
+            --btn-cap-bg: #626880;
+            --btn-cap-bg-success: #4fcc33;
+            --error-text: #d20f39;
         }
 
-        /* 深色模式变量 */
+        /* body.dark 用途：定义深色模式下的 CSS 变量。 */
         body.dark {
             --bg: #121212;
             --text: #f1f2f6;
             --brand: #ff6b81;
             --card: #1e1e1e;
+            --btn-cap-bg: #7c7f93;
+            --btn-cap-bg-success: #a6d189;
+            --error-text: #df585a;
         }
 
+        /* body 用途：设置页面整体的字体、居中布局和背景过渡效果。 */
         body {
             font-family: sans-serif;
             background: var(--bg);
@@ -35,6 +43,7 @@
             transition: 0.3s;
         }
 
+        /* .auth-card 用途：设置登录/注册面板的卡片外观、阴影和内边距。 */
         .auth-card {
             background: var(--card);
             padding: 35px;
@@ -45,11 +54,13 @@
             text-align: center;
         }
 
+        /* h2 用途：设置卡片标题的品牌色和底部边距。 */
         h2 {
             color: var(--brand);
             margin-bottom: 25px;
         }
 
+        /* input 用途：设置用户名和密码输入框的宽度、边距、边框及圆角。 */
         input {
             width: 100%;
             padding: 12px;
@@ -61,7 +72,18 @@
             box-sizing: border-box;
         }
 
-        /* 统一 1.1 倍点击放大特效 */
+        /* #pwd-error 用途：设置密码长度不足时的红色错误提示文本样式。 */
+        #pwd-error {
+            display: none;
+            text-align: left;
+            font-size: 0.85em;
+            margin-top: -4px;
+            margin-bottom: 10px;
+            color: var(--error-text);
+            font-weight: bold;
+        }
+
+        /* .btn-go 用途：设置登录/注册主按钮的背景、字体和点击过渡效果。 */
         .btn-go {
             width: 100%;
             padding: 12px;
@@ -75,10 +97,39 @@
             transition: 0.1s;
         }
 
+        /* .btn-go:active 用途：实现按钮点击时的放大特效。 */
         .btn-go:active {
             transform: scale(1.1);
         }
 
+        /* .btn-captcha 用途：用于验证码按钮的默认灰色外观及布局。 */
+        .btn-captcha {
+            width: 100%;
+            padding: 12px;
+            background: var(--btn-cap-bg);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+            display: none;
+        }
+
+        /* .btn-captcha.success 用途：验证码通过后，将按钮背景修改为绿色并取消可点击状态。 */
+        .btn-captcha.success {
+            background: var(--btn-cap-bg-success) !important;
+            cursor: default;
+            transform: none !important;
+        }
+
+        /* .btn-captcha:active 用途：给验证码按钮添加物理点击放大反馈。 */
+        .btn-captcha:not(.success):active {
+            transform: scale(1.05);
+        }
+
+        /* .mode-toggle 用途：设置切换登录/注册及游客模式的链接文字样式。 */
         .mode-toggle {
             margin-top: 20px;
             font-size: 0.85em;
@@ -88,6 +139,7 @@
             display: block;
         }
 
+        /* .mode-toggle:active 用途：实现切换链接点击时的放大特效。 */
         .mode-toggle:active {
             transform: scale(1.1);
         }
@@ -95,25 +147,31 @@
 </head>
 
 <body>
-    <a class="auth-card">
+    <div class="auth-card">
         <h2 id="title" data-zh="🧨 新年快乐！" data-en="🧨 Happy New Year!">🧨 新年快乐！</h2>
 
         <input type="text" id="u" data-zh-ph="用户名" data-en-ph="Username" placeholder="Username">
         <input type="password" id="p" data-zh-ph="密码" data-en-ph="Password" placeholder="Password">
+        <div id="pwd-error" data-zh="❗ 密码需要超过 6 位" data-en="❗ Password must be over 6 chars">❗ 密码需要超过 6 位</div>
 
         <button class="btn-go" onclick="handleAuth()" id="btn" data-zh="立即登录" data-en="Login">立即登录</button>
+        <button id="btn-captcha" class="btn-captcha" data-zh="👆 我不是机器人" data-en="👆 I am not a robot" onclick="verifyCaptcha()">👆 我不是机器人</button>
 
         <div class="mode-toggle" onclick="toggle()" id="hint" data-zh="还没账号？点我注册" data-en="No account? Sign up">
             还没账号？点我注册</div>
-        <div class="mode-toggle" onclick="window.location.href='home.html'" data-zh="不想登录？点我进入游客模式" data-en="Don't have an account? Click here to register">
+        <div class="mode-toggle" onclick="window.location.href='index.html'" data-zh="不想登录？点我进入游客模式"
+            data-en="Don't want to log in? Enter guest mode">
             不想登录？点我进入游客模式
         </div>
-    </a>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
     <script>
-        // 初始化环境
+        /* applySettings
+        用法：页面加载时初始化主题和语言环境。
+        原理：从 localStorage 读取 theme 和 lang 设置，并应用到 body 类和具有双语 data 属性的 DOM 元素上。
+        */
         function applySettings() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const lang = localStorage.getItem('lang') || 'zh';
@@ -127,8 +185,17 @@
         applySettings();
 
         let isReg = false;
+        let pendingAuthData = null; // 用于在验证码验证期间暂存用户数据
+
+        /* toggle
+        用法：在登录和注册模式之间切换UI。
+        原理：修改全局变量 isReg，清空之前的错误提示与验证码，并根据当前语言动态更新标题、按钮文字和底部提示链接。
+        */
         function toggle() {
             isReg = !isReg;
+            resetAuthUI();
+            document.getElementById('pwd-error').style.display = 'none';
+
             const lang = localStorage.getItem('lang') || 'zh';
             const t = document.getElementById('title');
             const b = document.getElementById('btn');
@@ -145,55 +212,153 @@
             }
         }
 
-        // SHA-256 加密逻辑
+        /* s256
+        用法：对字符串进行 SHA-256 加密。
+        原理：利用浏览器的 crypto.subtle.digest API，将明文密码转化为不可逆的哈希字符串，提高数据库安全性。
+        */
         async function s256(str) {
             const buf = new TextEncoder().encode(str);
             const hash = await crypto.subtle.digest('SHA-256', buf);
             return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+        /* handleAuth
+        用法：处理点击“立即登录/注册”主按钮时的拦截与数据库校验。
+        原理：如果是注册，检测密码长度；如果是登录，对密码加密并从 Supabase 验证；如果都正确，则隐藏当前按钮，显示 CAPTCHA 按钮供用户进行最后一步操作。
+        */
         async function handleAuth() {
             const user = document.getElementById('u').value.trim();
             const pass = document.getElementById('p').value.trim();
-            const lang = localStorage.getItem('lang') || 'zh';
-            if (!user || !pass) return alert("填完整再点！");
+            const pwdError = document.getElementById('pwd-error');
+            
+            pwdError.style.display = 'none';
 
-            const hp = await s256(pass);
+            if (!user || !pass) return alert(localStorage.getItem('lang') === 'zh' ? "填完整再点！" : "Please fill in all fields!");
 
             if (isReg) {
-                // 注册逻辑：保持原样，不需要额外的日期字段了
-                const { error } = await _supabase.from('users').insert([{ username: user, password: hp, points: 0 }]);
-                if (error) {
-                    alert("失败：名字可能被占用了");
-                } else {
-                    alert("注册成功！去登录吧");
-                    toggle();
+                if (pass.length <= 6) {
+                    pwdError.style.display = 'block';
+                    return;
                 }
+                // 校验通过，暂存数据并呼出验证码
+                pendingAuthData = { action: 'reg', user, pass };
+                showCaptchaUI();
             } else {
-                // 校验登录
+                // 登录模式：先查数据库确认密码是否正确
+                const hp = await s256(pass);
                 const { data, error } = await _supabase.from('users').select('*').eq('username', user).eq('password', hp).single();
 
                 if (data) {
-                    // --- 每次登录都领奖逻辑 ---
-                    const reward = 5;
-                    const currentPoints = (data.points || 0) + reward;
-
-                    // 直接更新数据库，不需要判断日期
-                    await _supabase.from('users')
-                        .update({ points: currentPoints })
-                        .eq('username', user);
-
-                    alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
-
-                    // 存入最新的积分（包含刚才送的5分）
-                    localStorage.setItem('username', data.username);
-                    localStorage.setItem('userPoints', currentPoints);
-                    if (user === 'Clark') localStorage.setItem('isAdmin', 'true');
-
-                    window.location.href = 'index.html';
+                    pendingAuthData = { action: 'login', user, data };
+                    showCaptchaUI();
                 } else {
-                    alert("❌ 账号或密码不对哦");
+                    alert(localStorage.getItem('lang') === 'zh' ? "❌ 账号或密码不对哦" : "❌ Incorrect username or password");
                 }
+            }
+        }
+
+        /* showCaptchaUI
+        用法：切换按钮显示状态。
+        原理：将操作按钮隐藏，弹出灰色的自定义行为验证码按钮，迫使用户必须点击它才能继续。
+        */
+        function showCaptchaUI() {
+            document.getElementById('btn').style.display = 'none';
+            document.getElementById('btn-captcha').style.display = 'block';
+        }
+
+        /* resetAuthUI
+        用法：重置按钮和验证码的状态，以便用户切换模式或验证失败后再次操作。
+        原理：恢复默认的 DOM display 属性，清空验证码类名并重置文字。
+        */
+        function resetAuthUI() {
+            document.getElementById('btn').style.display = 'block';
+            const capBtn = document.getElementById('btn-captcha');
+            capBtn.style.display = 'none';
+            capBtn.classList.remove('success');
+            capBtn.innerText = (localStorage.getItem('lang') === 'zh') ? "👆 我不是机器人" : "👆 I am not a robot";
+            captchaPassed = false;
+            pendingAuthData = null;
+        }
+
+        // --- 自定义验证码数据采集中心 ---
+        let captchaPassed = false;
+        let botMetrics = {
+            mouseMoves: 0,
+            hasWindowSize: false,
+            touchArea: 0,
+            gyroMoved: false
+        };
+
+        if (window.innerWidth > 0 && window.innerHeight > 0) botMetrics.hasWindowSize = true;
+        window.addEventListener('mousemove', () => { botMetrics.mouseMoves++; });
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) botMetrics.touchArea = e.touches[0].radiusX || e.touches[0].radiusY || 1;
+        });
+        window.addEventListener('deviceorientation', (e) => {
+            if (e.alpha || e.beta || e.gamma) botMetrics.gyroMoved = true;
+        });
+
+        /* verifyCaptcha
+        用法：用户点击“我不是机器人”按钮时触发行为判定。
+        原理：综合判断PC端的鼠标移动次数与窗口属性，以及手机端的触摸面积和陀螺仪数据。符合人类物理特征则放行并执行最终授权。
+        */
+        async function verifyCaptcha() {
+            if (captchaPassed) return;
+            const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+            let isHuman = false;
+
+            if (isMobile) {
+                if (botMetrics.touchArea > 0 || botMetrics.gyroMoved) isHuman = true;
+                if (botMetrics.mouseMoves > 0) isHuman = true; // 手机端部分浏览器会兼容触发鼠标事件
+            } else {
+                if (botMetrics.mouseMoves > 5 && botMetrics.hasWindowSize) isHuman = true;
+            }
+
+            if (isHuman) {
+                captchaPassed = true;
+                const capBtn = document.getElementById('btn-captcha');
+                capBtn.classList.add('success');
+                capBtn.innerText = (localStorage.getItem('lang') === 'zh') ? "✅ 验证通过" : "✅ Verified";
+                
+                // 验证通过，短暂延迟后执行真正的注册或登录逻辑，给用户看一眼变绿的动画
+                setTimeout(executeFinalAuth, 400);
+            } else {
+                alert((localStorage.getItem('lang') === 'zh') ? "行为异常：系统认为你是机器人！请多滑动几下再试。" : "Anomaly: System thinks you are a bot! Please move around and try again.");
+            }
+        }
+
+        /* executeFinalAuth
+        用法：当用户通过行为验证码后，执行真正的数据库写入或本地状态保存。
+        原理：读取暂存区的 pendingAuthData 中的操作类型和用户数据，调用 Supabase API 完成数据落库，并发放奖励后重定向至主页。
+        */
+        async function executeFinalAuth() {
+            const lang = localStorage.getItem('lang') || 'zh';
+
+            if (pendingAuthData.action === 'reg') {
+                const hp = await s256(pendingAuthData.pass);
+                const { error } = await _supabase.from('users').insert([{ username: pendingAuthData.user, password: hp, points: 0 }]);
+                if (error) {
+                    alert(lang === 'zh' ? "注册失败：名字可能被占用了" : "Failed: Username might be taken");
+                    resetAuthUI();
+                } else {
+                    alert(lang === 'zh' ? "注册成功！去登录吧" : "Registered! Please log in");
+                    document.getElementById('p').value = ""; // 清空密码框
+                    toggle(); 
+                }
+            } else if (pendingAuthData.action === 'login') {
+                const data = pendingAuthData.data;
+                const reward = 5;
+                const currentPoints = (data.points || 0) + reward;
+
+                await _supabase.from('users').update({ points: currentPoints }).eq('username', pendingAuthData.user);
+
+                alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
+
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('userPoints', currentPoints);
+                if (pendingAuthData.user === 'Clark') localStorage.setItem('isAdmin', 'true');
+
+                window.location.href = 'index.html';
             }
         }
     </script>

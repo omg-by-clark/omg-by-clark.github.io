@@ -615,7 +615,7 @@
             <a class="btn-common" data-en="🤬 Post Now" data-zh="🤬 发帖" href="post-now.html">
                 🤬 发帖
             </a>
-            <a class="btn-common" data-en="🔑 Sign In" data-zh="🔑 登录" href="sign-in.html">
+            <a id="btn-auth" class="btn-common" data-en="🔑 Sign In" data-zh="🔑 登录" href="sign-in.html">
                 🔑 登录
             </a>
             <a href="info.html" class="btn-common" data-zh="👤 个人" data-en="👤 Info">
@@ -1065,6 +1065,19 @@
 
             initSearch();
 
+            /* 修改：检查用户是否已登录。如果已登录，将“登录”按钮改为“退出登录”并绑定退出逻辑 */
+            const authBtn = document.getElementById('btn-auth');
+            if (localStorage.getItem('username')) {
+                authBtn.setAttribute('data-zh', '🚪 退出登录');
+                authBtn.setAttribute('data-en', '🚪 Sign Out');
+                authBtn.href = "javascript:void(0)"; // 阻止默认的页面跳转
+                authBtn.onclick = function () {
+                    localStorage.removeItem('username'); // 核心：清理本地的用户名凭证
+                    alert(localStorage.getItem('lang') === 'zh' ? '已成功退出登录！' : 'Successfully signed out!');
+                    window.location.reload(); // 刷新页面以恢复未登录状态
+                };
+            }
+
             try {
                 const [postsRes, usersRes] = await Promise.all([
                     _supabase.from('posts').select('*'),
@@ -1111,7 +1124,7 @@
             } catch (err) {
                 listHotEl.innerHTML = "<p>数据加载失败</p>";
             }
-            updateLanguage();
+            updateLanguage(); // 这里会自动将前面设置的 data-zh 或 data-en 渲染到按钮文字上
         }
 
         init();
