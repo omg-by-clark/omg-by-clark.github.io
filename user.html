@@ -7,7 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>用户帖子 User Posts - omg-by-Clark</title>
     <style>
-        /* 用途：定义网页根元素的全局 CSS 变量（主要针对浅色模式），集中管理颜色以便后续维护 */
+        /* [:root] 用途：定义网页根元素的全局 CSS 变量（主要针对浅色模式），集中管理颜色以便后续维护 */
         :root {
             --bg: #fffdf5;
             --text: #333;
@@ -38,7 +38,7 @@
             --title-text: #121212;
         }
 
-        /* 用途：定义深色模式下的CSS变量覆盖，当body带有dark类时自动生效，实现黑夜模式适配 */
+        /* [body.dark] 用途：定义深色模式下的CSS变量覆盖，当body带有dark类时自动生效，实现黑夜模式适配 */
         body.dark {
             --bg: #1a1a1a;
             --text: #f0f0f0;
@@ -64,10 +64,10 @@
             --kw-text: #838ba7;
         }
 
-        /* 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
+        /* [body] 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
         body {
             font-family: sans-serif;
-            max-width: 600px; /* 根据要求限制最大宽度 */
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
             background: var(--bg);
@@ -75,7 +75,7 @@
             transition: 0.3s;
         }
 
-        /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
+        /* [h1] 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
         h1 {
             font-family: Consolas, Monaco, monospace;
             font-weight: bold;
@@ -86,12 +86,13 @@
             white-space: nowrap;
         }
 
+        /* [h2] 用途：控制 h2 标题的上下边距，保持紧凑的文字排版 */
         h2 {
-            margin-top: 0; 
+            margin-top: 0;
             margin-bottom: 10px;
         }
 
-        /* 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
+        /* [.header-container] 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -103,14 +104,14 @@
             flex-wrap: wrap;
         }
 
-        /* 用途：顶部导航栏右侧功能按钮组的容器排版，控制按钮间的间距和垂直居中 */
+        /* [.header-actions] 用途：顶部导航栏右侧功能按钮组的容器排版，控制按钮间的间距和垂直居中 */
         .header-actions {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        /* 用途：通用的胶囊型按钮样式，包括渐变背景、圆角、阴影、字体和基础动画设置 */
+        /* [.btn-common] 用途：通用的胶囊型按钮样式，包括渐变背景、圆角、阴影、字体和基础动画设置 */
         .btn-common {
             background: var(--button-grad);
             color: white;
@@ -129,18 +130,18 @@
             gap: 4px;
         }
 
-        /* 用途：鼠标悬停在通用按钮上时的浮动效果和阴影加深反馈 */
+        /* [.btn-common:hover] 用途：鼠标悬停在通用按钮上时的浮动效果和阴影加深反馈 */
         .btn-common:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(230, 69, 83, 0.4);
         }
 
-        /* 用途：鼠标点击按下通用按钮时的轻微缩小动画，提供物理按压感 */
+        /* [.btn-common:active] 用途：鼠标点击按下通用按钮时的轻微缩小动画，提供物理按压感 */
         .btn-common:active {
             transform: scale(0.95);
         }
 
-        /* 用途：各个帖子列表上方的区块标题文字排版 */
+        /* [.section-title] 用途：各个帖子列表上方的区块标题文字排版 */
         .section-title {
             margin-top: 0;
             margin-bottom: 15px;
@@ -150,7 +151,7 @@
             gap: 8px;
         }
 
-        /* 用途：单个帖子的基础卡片容器，以及用户积分信息框的基础设置 */
+        /* [.card] 用途：单个帖子的基础卡片容器，以及用户积分信息框的基础设置 */
         .card {
             background: transparent;
             margin: 0;
@@ -163,12 +164,12 @@
             border-bottom: 1.5px solid var(--brand);
         }
 
-        /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
+        /* [.card:last-child] 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
         .card:last-child {
             border-bottom: none;
         }
 
-        /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
+        /* [.card b] 用途：卡片内帖子主标题的字体大小和颜色渲染 */
         .card b {
             color: var(--title-text);
             font-size: 1.1em;
@@ -176,32 +177,32 @@
             margin-bottom: 5px;
         }
 
-        /* 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */
+        /* [.card:active] 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */
         .card:active {
             background-color: rgba(150, 150, 150, 0.05);
         }
 
-        /* 用途：超过 200 字被截断时，末尾追加的“点击以查看全文”链接文字样式 */
+        /* [.read-more] 用途：超过 200 字被截断时，末尾追加的“点击以查看全文”链接文字样式 */
         .read-more {
             color: var(--read-more);
             font-weight: bold;
             margin-left: 5px;
         }
 
-        /* 用途：给 NSFW 内容的文本施加高斯模糊滤镜，防止路人偷窥 */
+        /* [.blur-content] 用途：给 NSFW 内容的文本施加高斯模糊滤镜，防止路人偷窥 */
         .blur-content {
             filter: blur(3.5px);
             user-select: none;
             transition: filter 0.3s ease;
         }
 
-        /* 用途：取消模糊滤镜，恢复文本的正常显示状态和可选状态 */
+        /* [.revealed-content] 用途：取消模糊滤镜，恢复文本的正常显示状态和可选状态 */
         .revealed-content {
             filter: blur(0);
             user-select: auto;
         }
 
-        /* 用途：特化展示NSFW标签，使用醒目的橙色、加粗字体和下划线提醒用户 */
+        /* [.nsfw-tag] 用途：特化展示NSFW标签，使用醒目的橙色、加粗字体和下划线提醒用户 */
         .nsfw-tag {
             color: var(--nsfw-color) !important;
             font-weight: 900 !important;
@@ -210,22 +211,22 @@
             cursor: pointer;
         }
 
-        /* 用途：特化展示疑似搬运标签，使用主题自适应的绿色并加粗 */
+        /* [.repost-tag] 用途：特化展示疑似搬运标签，使用主题自适应的绿色并加粗 */
         .repost-tag {
             color: var(--repost-color) !important;
             font-weight: bold !important;
         }
 
-        /* 用途：帖子卡片底部的信息栏布局，利用Flexbox让投票和作者信息水平排列 */
+        /* [.post-footer] 用途：帖子卡片底部的信息栏布局，利用Flexbox让投票和作者信息水平排列 */
         .post-footer {
             display: flex;
             align-items: center;
-            gap: 8.5px; /* 适配新的胶囊外边距 */
+            gap: 8.5px;
             margin-top: 12px;
             flex-wrap: wrap;
         }
 
-        /* 用途：卡片底部的作者、等级徽章、发布时间等元数据的字体微调 */
+        /* [.post-meta] 用途：卡片底部的作者、等级徽章、发布时间等元数据的字体微调 */
         .post-meta {
             font-size: 13px;
             opacity: 0.85;
@@ -234,7 +235,7 @@
             flex-wrap: wrap;
         }
 
-        /* 用途：包裹赞和踩按钮的统一胶囊型灰色背景框。同步首页，点赞胶囊的外边距设为 6.5px */
+        /* [.vote-pill] 用途：包裹赞和踩按钮的统一胶囊型灰色背景框。同步首页，点赞胶囊的外边距设为 6.5px */
         .vote-pill {
             display: flex;
             align-items: center;
@@ -247,7 +248,7 @@
             margin-right: 6.5px;
         }
 
-        /* 用途：独立的赞和踩透明按钮的缩小版尺寸、圆角和排版设置 */
+        /* [.like-btn, .dislike-btn] 用途：独立的赞和踩透明按钮的缩小版尺寸、圆角和排版设置 */
         .like-btn,
         .dislike-btn {
             background: transparent;
@@ -264,7 +265,7 @@
             transition: all 0.2s;
         }
 
-        /* 用途：胶囊框里赞和踩两个按钮中间的半透明竖向分割线 */
+        /* [.vote-divider] 用途：胶囊框里赞和踩两个按钮中间的半透明竖向分割线 */
         .vote-divider {
             width: 1px;
             height: 14px;
@@ -273,41 +274,42 @@
             transition: opacity 0.2s;
         }
 
-        /* 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
+        /* [.like-btn:active, .dislike-btn:active] 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
         .like-btn:active,
         .dislike-btn:active {
             transform: scale(0.9);
         }
 
-        /* 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
+        /* [.vote-pill.is-liked .like-btn] 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
         .vote-pill.is-liked .like-btn {
             background-color: var(--vote-bg-liked);
         }
 
-        /* 用途：用户点踩后，踩按钮区域背景变蓝的交互反馈 */
+        /* [.vote-pill.is-disliked .dislike-btn] 用途：用户点踩后，踩按钮区域背景变蓝的交互反馈 */
         .vote-pill.is-disliked .dislike-btn {
             background-color: var(--vote-bg-disliked);
         }
 
-        /* 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
+        /* [.vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider] 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
         .vote-pill.is-liked .vote-divider,
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
         }
-        
-        /* 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗 */
+
+        /* [.author-link] 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗 */
         .author-link {
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
         }
-        
+
+        /* [.author-link:hover] 用途：悬停状态下的粗体及下划线样式 */
         .author-link:hover {
             text-decoration: underline;
             font-weight: 900 !important;
         }
 
-        /* 用途：所有用户等级小徽章（如“原木”）的统一样式基类 */
+        /* [.lv-badge] 用途：所有用户等级小徽章（如“原木”）的统一样式基类 */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -321,43 +323,43 @@
             display: inline-block;
         }
 
-        /* 用途：定义等级“原木”的专属配色 */
+        /* [.lv-log] 用途：定义等级“原木”的专属配色 */
         .lv-log {
             background: #a1662f;
         }
 
-        /* 用途：定义等级“黑铁”的专属配色 */
+        /* [.lv-iron] 用途：定义等级“黑铁”的专属配色 */
         .lv-iron {
             background: #555555;
         }
 
-        /* 用途：定义等级“青铜”的专属配色 */
+        /* [.lv-bronze] 用途：定义等级“青铜”的专属配色 */
         .lv-bronze {
             background: #cd7f32;
         }
 
-        /* 用途：定义等级“白银”的专属配色及消除文字阴影 */
+        /* [.lv-silver] 用途：定义等级“白银”的专属配色及消除文字阴影 */
         .lv-silver {
             background: #e0e0e0;
             color: #000;
             text-shadow: none;
         }
 
-        /* 用途：定义等级“黄金”的专属配色 */
+        /* [.lv-gold] 用途：定义等级“黄金”的专属配色 */
         .lv-gold {
             background: #ffd700;
             color: black;
             text-shadow: none;
         }
 
-        /* 用途：定义等级“钻石”的专属配色 */
+        /* [.lv-diamond] 用途：定义等级“钻石”的专属配色 */
         .lv-diamond {
             background: #add8e6;
             color: #0000ff;
             text-shadow: none;
         }
 
-        /* 用途：定义等级“王者”的渐变配色 */
+        /* [.lv-king] 用途：定义等级“王者”的渐变配色 */
         .lv-king {
             background: linear-gradient(45deg, #ffd700, #ffaa00);
             color: #fff;
@@ -365,7 +367,7 @@
             text-shadow: none;
         }
 
-        /* 用途：在王者徽章右侧添加一个绝对定位的斜体 V 字装饰 */
+        /* [.lv-king::after] 用途：在王者徽章右侧添加一个绝对定位的斜体 V 字装饰 */
         .lv-king::after {
             content: "V";
             position: absolute;
@@ -374,7 +376,7 @@
             font-weight: 900;
         }
 
-        /* 用途：定义等级“史诗”的高级紫渐变配色并添加外发光特效 */
+        /* [.lv-epic] 用途：定义等级“史诗”的高级紫渐变配色并添加外发光特效 */
         .lv-epic {
             background: linear-gradient(45deg, #a333c8, #6d28d9);
             color: white;
@@ -382,7 +384,7 @@
             box-shadow: 0 0 5px rgba(255, 0, 204, 0.5);
         }
 
-        /* 用途：在史诗徽章右侧同样添加斜体 V 字装饰 */
+        /* [.lv-epic::after] 用途：在史诗徽章右侧同样添加斜体 V 字装饰 */
         .lv-epic::after {
             content: "V";
             position: absolute;
@@ -391,7 +393,7 @@
             font-weight: 900;
         }
 
-        /* 用途：包裹帖子所有关键词的文本容器，定义整体颜色和边距 */
+        /* [.kw-display] 用途：包裹帖子所有关键词的文本容器，定义整体颜色和边距 */
         .kw-display {
             display: block;
             margin-top: 5px;
@@ -401,7 +403,7 @@
             font-size: 0.9em;
         }
 
-        /* 用途：触底无限加载动画的外部容器，默认透明隐藏 */
+        /* [.loading-sentinel] 用途：触底无限加载动画的外部容器，默认透明隐藏 */
         .loading-sentinel {
             display: flex;
             justify-content: center;
@@ -412,12 +414,12 @@
             transition: opacity 0.3s;
         }
 
-        /* 用途：当请求数据时，配合JS脚本将加载容器的透明度设为可见 */
+        /* [.loading-sentinel.visible] 用途：当请求数据时，配合JS脚本将加载容器的透明度设为可见 */
         .loading-sentinel.visible {
             opacity: 1;
         }
 
-        /* 用途：渲染加载动画内部的单个小圆点，并绑定无限跳动动画 */
+        /* [.loading-sentinel span] 用途：渲染加载动画内部的单个小圆点，并绑定无限跳动动画 */
         .loading-sentinel span {
             display: inline-block;
             width: 10px;
@@ -428,17 +430,17 @@
             animation: bounce 0.4s infinite alternate;
         }
 
-        /* 用途：设置加载动画第二个圆点的起跳延迟，形成波浪感 */
+        /* [.loading-sentinel span:nth-child(2)] 用途：设置加载动画第二个圆点的起跳延迟，形成波浪感 */
         .loading-sentinel span:nth-child(2) {
             animation-delay: 0.2s;
         }
 
-        /* 用途：设置加载动画第三个圆点的起跳延迟，完善波浪感 */
+        /* [.loading-sentinel span:nth-child(3)] 用途：设置加载动画第三个圆点的起跳延迟，完善波浪感 */
         .loading-sentinel span:nth-child(3) {
             animation-delay: 0.4s;
         }
 
-        /* 用途：声明加载圆点沿Y轴上下位移的关键帧动画 */
+        /* [@keyframes bounce] 用途：声明加载圆点沿Y轴上下位移的关键帧动画 */
         @keyframes bounce {
             from {
                 transform: translateY(0);
@@ -449,7 +451,7 @@
             }
         }
 
-        /* 用途：当全部帖子加载完毕后，底部的结束提示语的排版样式 */
+        /* [.end-message] 用途：当全部帖子加载完毕后，底部的结束提示语的排版样式 */
         .end-message {
             text-align: center;
             color: #999;
@@ -457,12 +459,49 @@
             padding: 20px;
             display: none;
         }
+
+        /* [.profile-header] 用途：个人主页头部信息容器，采用Flex布局使头像和信息左右排列 */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* [.profile-info] 用途：个人主页头部右侧的信息块，纵向排列用户名和积分信息 */
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+        }
+
+        /* [.profile-avatar] 用途：展示用户头像的大圆形容器，包含默认背景色和居中对齐文字的能力 */
+        .profile-avatar {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* [.profile-avatar img] 用途：确保头像图片完全覆盖圆形容器且不拉伸变形 */
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 
 <body>
     <div class="header-container">
-        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+        <h1
+            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
             omg-by-Clark.github.io</h1>
 
         <div class="header-actions">
@@ -475,9 +514,14 @@
         </div>
     </div>
 
-    <div class="card" style="text-align:center; margin-bottom:20px; padding: 30px 10px; background: var(--card); border-radius: 12px; border-bottom: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-        <h2 id="profile-name">加载中...</h2>
-        <p id="profile-stats" style="color: var(--kw-text); margin-bottom: 0; font-weight: bold;">获取积分中...</p>
+    <div class="card profile-header"
+        style="margin-bottom:20px; padding: 30px 20px; background: var(--card); border-radius: 12px; border-bottom: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div id="profile-avatar-container" class="profile-avatar">
+        </div>
+        <div class="profile-info">
+            <h2 id="profile-name">加载中...</h2>
+            <p id="profile-stats" style="color: var(--kw-text); margin-bottom: 0; font-weight: bold;">获取积分中...</p>
+        </div>
     </div>
 
     <div>
@@ -509,6 +553,7 @@
 
         /* escapeHTML
         用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
+        原理：创建一个虚拟的 div 元素，将文本作为 textContent 插入，再取出 innerHTML 实现安全转义。
         */
         function escapeHTML(str) {
             if (!str) return '';
@@ -517,8 +562,21 @@
             return div.innerHTML;
         }
 
+        /* getSafeFileName
+        用法：将用户名进行 Base64 编码，并移除等号，以匹配 Supabase 存储桶的安全路径要求。
+        原理：使用 encodeURIComponent 处理中文字符，再用 btoa 转为 Base64，最后用 replace 删去末尾的等号，与 info.html 保持一致。
+        */
+        /* getSafeFileName
+        用法：将用户名转换为与存储桶中一致的 Base64 文件名。
+        原理：直接对 encodeURIComponent 处理后的原始百分号字符串进行 Base64 编码，不移除任何字符。
+        */
+        function getSafeFileName(username) {
+            return btoa(encodeURIComponent(username));
+        }
+
         /* getNicknameStyle
         用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
+        原理：读取 inventory 对象，检查特定 ID（如 100, 101, 102）的物品过期时间，若在有效期内则返回对应内联 CSS。
         */
         function getNicknameStyle(inventory) {
             if (!inventory) return '';
@@ -531,6 +589,7 @@
 
         /* updateLanguage
         用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
+        原理：遍历带有 data-zh 和 data-en 属性的 DOM 元素，根据当前 lang 变量的值替换匹配的 innerText。
         */
         function updateLanguage() {
             const lang = localStorage.getItem('lang') || 'zh';
@@ -541,6 +600,7 @@
 
         /* handleVote
         用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
+        原理：根据本地 localStorage 缓存判断用户是否已投票，切换选中状态并更新计数，最后通过 supabase 客户端 API 异步更新至数据库。
         */
         async function handleVote(event, postId, type) {
             event.stopPropagation();
@@ -605,6 +665,7 @@
 
         /* toggleNSFW
         用法：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
+        原理：通过 classList.contains 判断是否有 blur-content 类名，并在其与 revealed-content 之间进行互相切换。
         */
         function toggleNSFW(event, element) {
             event.stopPropagation();
@@ -625,6 +686,7 @@
 
         /* createCardHTML
         用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
+        原理：根据数据拼接包含标题、关键词、作者、时间和操作按钮的模板字符串，并针对 XSS 安全进行 HTML 实体转义处理。
         */
         function createCardHTML(postData, userMap) {
             const author = userMap ? userMap[postData.nickname] : null;
@@ -697,6 +759,7 @@
 
         /* loadNextPage
         用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），仅加载指定用户的帖子。
+        原理：利用分页变量 currentPage 和 PAGE_SIZE，向 Supabase 发起指定范围的 range 请求获取该用户的帖子，拼接进 DOM 并控制触底状态。
         */
         async function loadNextPage() {
             if (isFetching || !hasMore) return;
@@ -737,6 +800,7 @@
 
         /* setupIntersectionObserver
         用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
+        原理：使用 IntersectionObserver API 监听 #scroll-sentinel 元素，当其进入视口区域时触发 loadNextPage 实现懒加载。
         */
         function setupIntersectionObserver() {
             observer = new IntersectionObserver((entries) => {
@@ -746,11 +810,12 @@
         }
 
         /* init
-        用法：初始化个人主页数据，首先校验用户是否存在，然后获取该用户积分和历史帖子流。
+        用法：初始化个人主页数据，首先校验用户是否存在，然后获取该用户积分、头像和历史帖子流。
+        原理：根据 URL 参数读取 targetUser，调用 Supabase 查询用户基础信息，计算并拼装含有 fallback 回退机制的头像，随后挂载下拉加载监听。
         */
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-            
+
             if (!targetUser) {
                 alert(localStorage.getItem('lang') === 'zh' ? "未指定用户！" : "User not specified!");
                 location.href = 'index.html';
@@ -765,7 +830,7 @@
                     globalUserMap[userData.username] = userData;
                     const levelInfo = getLevelInfo(userData.points);
                     const nickStyle = getNicknameStyle(userData.inventory);
-                    
+
                     document.getElementById('profile-name').innerHTML = `<span style="${nickStyle}">${escapeHTML(userData.username)}</span>`;
                     document.getElementById('profile-stats').innerHTML = `💰 积分: ${userData.points} &nbsp;|&nbsp; 🥇 等级: <span class="lv-badge ${levelInfo.class}">${levelInfo.name}</span>`;
                 } else {
@@ -773,7 +838,21 @@
                     document.getElementById('profile-stats').innerText = "该用户未注册或不存在";
                 }
 
-                // 2. 挂载下拉监听，开始拉取 Ta 的帖子
+                // 2. 渲染头像 (使用 onerror 实现当无自定义头像时降级渲染随机色块首字母)
+                const avatarContainer = document.getElementById('profile-avatar-container');
+                const randomHue = Math.floor(Math.random() * 361);
+                const defaultBg = `hsl(${randomHue}, 100%, 50%)`;
+                const firstChar = targetUser.charAt(0);
+
+                // 调用刚补充的 getSafeFileName 方法来对齐 info.html 的编码逻辑
+                const safeName = getSafeFileName(targetUser);
+
+                const { data: publicUrlData } = _supabase.storage.from('avatars').getPublicUrl(`${safeName}.webp`);
+                const avatarUrl = publicUrlData.publicUrl + "?t=" + new Date().getTime(); // 添加时间戳防止缓存
+
+                avatarContainer.innerHTML = `<img src="${avatarUrl}" alt="${escapeHTML(targetUser)}的头像" onerror="this.outerHTML='<div style=\\'width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${defaultBg}; color: white; font-size: 2.2em; font-weight: bold;\\'>${escapeHTML(firstChar)}</div>'">`;
+
+                // 3. 挂载下拉监听，开始拉取 Ta 的帖子
                 setupIntersectionObserver();
             } catch (err) {
                 console.error("加载用户信息失败", err);

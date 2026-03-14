@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- info.html -->
 <html lang="zh-CN">
 
 <head>
@@ -8,6 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport">
     <title>个人信息 Info - omg-by-Clark</title>
     <style>
+        /* [:root] 定义全局 CSS 变量，包括背景色、文字颜色和品牌主色 */
         :root {
             --bg: #fffdf5;
             --text: #333;
@@ -17,6 +17,7 @@
             --checkin: linear-gradient(135deg, #fab387, #f9e2af);
         }
 
+        /* [body.dark] 定义暗黑模式下的颜色变量替换 */
         body.dark {
             --bg: #121212;
             --text: #f1f2f6;
@@ -24,6 +25,7 @@
             --disabled: #444;
         }
 
+        /* [body] 页面基础样式，使用 Flex 布局使内容居中 */
         body {
             background-color: var(--bg);
             color: var(--text);
@@ -37,6 +39,7 @@
             transition: background-color 0.3s;
         }
 
+        /* [.info-card] 个人信息卡片容器，包含阴影和圆角效果 */
         .info-card {
             text-align: center;
             padding: 30px;
@@ -47,7 +50,40 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        /* 等级徽章 */
+        /* [.avatar-container] 头像展示区域，点击可触发文件选择 */
+        .avatar-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            cursor: pointer;
+        }
+
+        /* [#avatar-img] 实际显示的头像图片，设定为圆形并覆盖容器 */
+        #avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--brand);
+            background: #eee;
+        }
+
+        /* [.avatar-upload-hint] 鼠标悬停在头像上时显示的修改提示 */
+        .avatar-upload-hint {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--brand);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            line-height: 24px;
+        }
+
+        /* [.lv-badge] 等级徽章的基础样式 */
         .lv-badge {
             padding: 2px 8px;
             border-radius: 6px;
@@ -59,66 +95,77 @@
             position: relative;
         }
 
+        /* [.lv-log] 原木等级颜色 */
         .lv-log {
             background: #a1662f;
             color: white;
         }
 
+        /* [.lv-bronze] 青铜等级颜色 */
         .lv-bronze {
             background: #cd7f32;
             color: white;
         }
 
+        /* [.lv-iron] 黑铁等级颜色 */
         .lv-iron {
             background: #555555;
             color: white;
         }
 
+        /* [.lv-silver] 白银等级颜色 */
         .lv-silver {
             background: #e0e0e0;
             color: #000;
         }
 
+        /* [.lv-gold] 黄金等级颜色 */
         .lv-gold {
             background: #ffd700;
             color: black;
         }
 
+        /* [.lv-diamond] 钻石等级颜色 */
         .lv-diamond {
             background: #add8e6;
             color: #0000ff;
         }
 
+        /* [.lv-king] 王者等级样式 */
         .lv-king {
-            background: #ffd700;
-            color: #ff8c00;
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #fff;
             padding-right: 18px;
         }
 
+        /* [.lv-king::after] 王者等级的 V 字符装饰 */
         .lv-king::after {
             content: "V";
             position: absolute;
             right: 4px;
-            color: #ff8c00;
+            color: #fff;
             font-weight: 900;
             font-style: italic;
         }
 
+        /* [.lv-epic] 史诗等级样式 */
         .lv-epic {
-            background: #a333c8;
-            color: white;
+            background: linear-gradient(45deg, #a333c8, #6d28d9);
+            color: #fff;
             padding-right: 18px;
         }
 
+        /* [.lv-epic::after] 史诗等级的 V 字符装饰 */
         .lv-epic::after {
             content: "V";
             position: absolute;
             right: 4px;
-            color: #e0b0ff;
+            color: #fff;
             font-weight: 900;
             font-style: italic;
         }
 
+        /* [ul] 信息列表样式，取消默认列表符号 */
         ul {
             list-style: none;
             padding: 0;
@@ -128,7 +175,7 @@
             margin-bottom: 20px;
         }
 
-        /* 签到按钮 */
+        /* [.btn-checkin] 签到按钮样式 */
         .btn-checkin {
             background: var(--checkin) !important;
             color: #1e1e2e;
@@ -145,10 +192,12 @@
             transition: transform 0.2s, filter 0.2s;
         }
 
+        /* [.btn-checkin:active] 按钮点击时的缩放反馈 */
         .btn-checkin:active {
             transform: scale(0.95);
         }
 
+        /* [.btn-checkin.disabled] 签到后的禁用状态样式 */
         .btn-checkin.disabled {
             background: var(--disabled);
             box-shadow: none;
@@ -157,6 +206,7 @@
             color: white;
         }
 
+        /* [.pwd-section] 修改密码区域的顶部分隔线 */
         .pwd-section {
             margin-top: 25px;
             border-top: 1px dashed #ccc;
@@ -164,6 +214,7 @@
             text-align: left;
         }
 
+        /* [.pwd-input] 密码输入框通用样式 */
         .pwd-input {
             width: 100%;
             padding: 10px;
@@ -176,6 +227,7 @@
             outline: none;
         }
 
+        /* [.btn-update] 确认修改按钮样式 */
         .btn-update {
             background: var(--brand);
             color: white;
@@ -189,10 +241,12 @@
             transition: transform 0.1s;
         }
 
+        /* [.btn-update:active] 确认修改按钮点击反馈 */
         .btn-update:active {
             transform: scale(0.98);
         }
 
+        /* [.back-link] 返回首页链接样式 */
         .back-link {
             color: #888;
             text-decoration: none;
@@ -202,6 +256,7 @@
             transition: transform 0.1s;
         }
 
+        /* [.back-link:active] 返回链接点击缩放 */
         .back-link:active {
             transform: scale(1.1);
         }
@@ -210,8 +265,14 @@
 
 <body>
     <div class="info-card">
-        <h1 data-en="👤 User Info" data-zh="👤 个人信息">👤
-            个人信息</h1>
+        <h1 data-en="👤 User Info" data-zh="👤 个人信息">👤 个人信息</h1>
+
+        <div class="avatar-container" onclick="document.getElementById('avatar-input').click()">
+            <img id="avatar-img" src="https://via.placeholder.com/80?text=..." alt="Avatar">
+            <div class="avatar-upload-hint">✎</div>
+        </div>
+        <input type="file" id="avatar-input" accept="image/*" style="display: none"
+            onchange="handleAvatarUpload(event)">
 
         <ul id="info-list">
             <li id="u-name">👤 Loading...</li>
@@ -250,7 +311,7 @@
         let currentPoints = 0;
         let currentCheckInCount = 0;
 
-        // 安全增强：转义 HTML 字符，防止 <b>hi</b> 这种注入
+        // escapeHTML 函数用于将特殊字符转义为 HTML 实体，防止用户输入的恶意代码被浏览器执行
         function escapeHTML(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -258,11 +319,17 @@
             return div.innerHTML;
         }
 
+        // getSafeFileName 函数将用户名进行 Base64 编码，解决 Supabase 存储桶不支持中文字符路径的问题
+        function getSafeFileName(username) {
+            // btoa 将字符串转为 Base64，encodeURIComponent 处理非拉丁字符
+            return btoa(encodeURIComponent(username)).replace(/=/g, "");
+        }
+
+        // getNickStyle 函数根据用户背包中的道具 ID 和有效期，返回对应的 CSS 样式字符串
         function getNickStyle(inventory) {
             if (!inventory) return '';
             const now = new Date();
             if (inventory['100'] && new Date(inventory['100']) > now) {
-                return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
                 return 'background: linear-gradient(to right, #d20f39, #fe640b, #df8e1d, #40a02b, #04a5e5, #8839ef); -webkit-background-clip: text; color: transparent; font-weight: bold;';
             }
             if (inventory['101'] && new Date(inventory['101']) > now) {
@@ -274,14 +341,88 @@
             return '';
         }
 
+        // togglePwdForm 函数切换修改密码表单的显示或隐藏状态
         function togglePwdForm() {
             const f = document.getElementById('pwd-form');
             f.style.display = f.style.display === 'none' ? 'block' : 'none';
         }
 
-        /**
-         * 初始化：从 Supabase 读取积分、签到时间、次数及背包
-         */
+        // handleAvatarUpload 函数负责处理用户选取的图片文件，包括 5MB 大小检查、转 WebP 以及上传
+        async function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            const username = localStorage.getItem('username');
+            if (!file || !username) return;
+
+            // 检查文件大小是否超过 5MB
+            if (file.size > 5 * 1024 * 1024) {
+                alert(lang === 'zh' ? "图片太大啦，不能超过 5MB 哦！" : "Image too large, max 5MB!");
+                return;
+            }
+
+            const imgElement = document.getElementById('avatar-img');
+            const originalSrc = imgElement.src;
+            imgElement.src = "https://via.placeholder.com/80?text=⏳";
+
+            try {
+                // 转换图片为 WebP 格式
+                const webpBlob = await convertToWebP(file);
+                // 获取经过编码的、对 Supabase 安全的文件名
+                const safeName = getSafeFileName(username);
+
+                // 上传到 Supabase 存储桶 'avatars'，使用 WebP 格式和覆盖模式
+                const { data, error } = await _supabase.storage
+                    .from('avatars')
+                    .upload(`${safeName}.webp`, webpBlob, {
+                        contentType: 'image/webp',
+                        upsert: true
+                    });
+
+                if (error) throw error;
+
+                // 强制刷新预览图，利用 blob 链接即时显示
+                imgElement.src = URL.createObjectURL(webpBlob);
+                alert(lang === 'zh' ? "头像更新成功！" : "Avatar updated!");
+            } catch (err) {
+                console.error(err);
+                alert(lang === 'zh' ? "上传失败：" + err.message : "Upload failed: " + err.message);
+                imgElement.src = originalSrc;
+            }
+        }
+
+        // convertToWebP 函数利用 HTML5 Canvas 将任意图片格式转换为 WebP 压缩 Blob
+        function convertToWebP(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        canvas.toBlob((blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error("Canvas conversion failed"));
+                        }, 'image/webp', 0.8);
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        // loadAvatarUrl 函数尝试获取用户的头像链接，使用编码后的安全文件名
+        function loadAvatarUrl(username) {
+            const safeName = getSafeFileName(username);
+            const { data } = _supabase.storage.from('avatars').getPublicUrl(`${safeName}.webp`);
+            // 拼接时间戳后缀，确保浏览器不会因为缓存而显示老头像
+            return data.publicUrl + "?t=" + new Date().getTime();
+        }
+
+        // init 函数在页面加载时运行，初始化翻译、读取用户信息以及加载用户头像
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
             const user = localStorage.getItem('username');
@@ -291,7 +432,6 @@
                 return;
             }
 
-            // 1. 翻译逻辑
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
             });
@@ -299,7 +439,9 @@
                 el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
             });
 
-            // 2. 获取云端数据
+            // 初始化加载头像
+            document.getElementById('avatar-img').src = loadAvatarUrl(user);
+
             const { data } = await _supabase.from('users').select('*').eq('username', user).single();
             if (data) {
                 currentPoints = data.points || 0;
@@ -307,9 +449,8 @@
 
                 const lv = getLevelInfo(currentPoints);
                 const nStyle = getNickStyle(data.inventory);
-                const safeName = escapeHTML(data.username); // 安全转义
+                const safeName = escapeHTML(data.username);
 
-                // 渲染用户名 (带特效预览)
                 document.getElementById('u-name').innerHTML = (lang === 'zh' ? "👤 用户名: " : "👤 Username: ") +
                     `<span style="${nStyle}">${safeName}</span>`;
 
@@ -319,7 +460,6 @@
 
                 document.getElementById('u-check-count').innerText = (lang === 'zh' ? "🔢 签到次数: " : "🔢 Total Check-ins: ") + currentCheckInCount;
 
-                // 3. 签到状态 (Timezone Aware)
                 if (data.last_check_in) {
                     const lastDateObj = new Date(data.last_check_in);
                     const readableDate = lastDateObj.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
@@ -337,9 +477,7 @@
             }
         }
 
-        /**
-         * 每日签到逻辑
-         */
+        // dailyCheckIn 函数执行签到操作，更新数据库中的积分和最后签到时间
         async function dailyCheckIn() {
             const user = localStorage.getItem('username');
             const btn = document.getElementById('btn-checkin');
@@ -367,6 +505,7 @@
             }
         }
 
+        // updatePassword 函数验证原密码正确性并更新为加密后的新密码
         async function updatePassword() {
             const oldRaw = document.getElementById('old-pwd').value;
             const newRaw = document.getElementById('new-pwd').value;
