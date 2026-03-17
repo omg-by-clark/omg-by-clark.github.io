@@ -22,6 +22,7 @@
             --kw-dark-default: hsl(227deg, 12%, 60%);
             --kw-active: #49b530; /* 修改：普通选中关键词的颜色 */
             --kw-nsfw-active: #fe640b; /* 新增：NSFW选中时的颜色 */
+            --button: #fe9152;
         }
 
         body.dark {
@@ -29,6 +30,7 @@
             --text: #f1f2f6;
             --brand: #ff6b81;
             --subtext: #a5adce;
+            --button: #fab387;
         }
 
         body {
@@ -130,7 +132,7 @@
         }
 
         /* NSFW 关键词的介绍 */
-        .describe-nsfw {
+        .advice {
             color: var(--subtext);
             font-size: 0.85em;
             opacity: 0.7;
@@ -157,6 +159,15 @@
             background-color: #ccc;
             cursor: not-allowed;
             transform: none !important;
+        }
+
+        .btn-go-to-advice {
+            display: inline-block;
+            margin-right: 15px;
+            color: var(--button);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: 0.1s;
         }
 
         /* 返回首页按钮：红色样式 */
@@ -197,7 +208,7 @@
                 <span class="kw-label" data-zh="添加关键词（可选）：" data-en="Add Keywords (Optional):">添加关键词（可选）：</span>
                 <div id="kw-area"></div>
             </div>
-            <div class="describe-nsfw" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。" 
+            <div class="advice" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。" 
                  data-en="💡 NSFW means 'Not Safe For Work'.">
                 💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。
             </div>
@@ -235,7 +246,7 @@
           3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
           4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
          */
-        function init() {
+        function init() {z
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
             if (!user) {
