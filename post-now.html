@@ -246,7 +246,7 @@
           3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
           4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
          */
-        function init() {
+        function init() { 
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
             if (!user) {

@@ -118,7 +118,7 @@ h1 {
 }
 
 /* 用途：当用户输入 # 时弹出的标签下拉列表，默认隐藏，自带滚动条 */
-.tag-dropdown {
+.keyword-dropdown {
     position: absolute;
     top: 100%;
     left: 0;
@@ -134,12 +134,12 @@ h1 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.tag-dropdown.visible {
+.keyword-dropdown.visible {
     display: block;
 }
 
 /* 用途：下拉列表里每一个标签选项的样式和悬停效果 */
-.tag-dropdown-item {
+.keyword-dropdown-item {
     padding: 8px 15px;
     cursor: pointer;
     transition: background 0.2s;
@@ -147,12 +147,12 @@ h1 {
     color: var(--text);
 }
 
-.tag-dropdown-item:hover {
+.keyword-dropdown-item:hover {
     background: rgba(150, 150, 150, 0.1);
 }
 
 /* 用途：搜索框下方用于展示已选中关键词的容器 */
-.selected-tags {
+.selected-keywords {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
@@ -164,7 +164,7 @@ h1 {
 }
 
 /* 用途：已被选中的关键词小药丸样式，包含删除按钮布局 */
-.selected-tag-chip {
+.selected-keyword-chip {
     background: var(--brand);
     color: white;
     padding: 2px 8px;
@@ -176,13 +176,13 @@ h1 {
     box-shadow: 0 2px 5px rgba(255, 71, 87, 0.3);
 }
 
-.selected-tag-chip span {
+.selected-keyword-chip span {
     cursor: pointer;
     font-weight: bold;
     opacity: 0.8;
 }
 
-.selected-tag-chip span:hover {
+.selected-keyword-chip span:hover {
     opacity: 1;
 }
 
@@ -285,9 +285,7 @@ h1 {
 }
 
 /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
-.card:last-child {
-    border-bottom: none;
-}
+.card:last-child { border-bottom: none; }
 
 /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
 .card b {
@@ -298,9 +296,7 @@ h1 {
 }
 
 /* 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */
-.card:active {
-    background-color: rgba(150, 150, 150, 0.05);
-}
+.card:active { background-color: rgba(150, 150, 150, 0.05); }
 
 /* 用途：超过 200 字被截断时，末尾追加的“点击以查看全文”链接文字样式 */
 .read-more {
@@ -323,7 +319,7 @@ h1 {
 }
 
 /* 用途：特化展示NSFW标签，使用醒目的橙色、加粗字体和下划线提醒用户 */
-.nsfw-tag {
+.nsfw-keyword {
     color: var(--nsfw-color) !important;
     font-weight: 900 !important;
     font-size: 1.2em !important;
@@ -332,7 +328,7 @@ h1 {
 }
 
 /* 用途：特化展示疑似搬运标签，使用主题自适应的绿色并加粗 */
-.repost-tag {
+.repost-keyword {
     color: var(--repost-color) !important;
     font-weight: bold !important;
 }
@@ -401,9 +397,7 @@ h1 {
 
 /* 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
 .like-btn:active,
-.dislike-btn:active {
-    transform: scale(0.9);
-}
+.dislike-btn:active { transform: scale(0.9); }
 
 /* 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
 .vote-pill.is-liked .like-btn {
@@ -417,9 +411,7 @@ h1 {
 
 /* 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
 .vote-pill.is-liked .vote-divider,
-.vote-pill.is-disliked .vote-divider {
-    opacity: 0.2;
-}
+.vote-pill.is-disliked .vote-divider { opacity: 0.2; }
 
 /* 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗，用于跳转主页的暗示 */
 .author-link {
@@ -449,19 +441,13 @@ h1 {
 }
 
 /* 用途：定义等级“原木”的专属配色 */
-.lv-log {
-    background: #a1662f;
-}
+.lv-log { background: #a1662f; }
 
 /* 用途：定义等级“黑铁”的专属配色 */
-.lv-iron {
-    background: #555555;
-}
+.lv-iron { background: #555555; }
 
 /* 用途：定义等级“青铜”的专属配色 */
-.lv-bronze {
-    background: #cd7f32;
-}
+.lv-bronze { background: #cd7f32; }
 
 /* 用途：定义等级“白银”的专属配色及消除文字阴影 */
 .lv-silver {
@@ -540,9 +526,7 @@ h1 {
 }
 
 /* 用途：当请求数据时，配合JS脚本将加载容器的透明度设为可见 */
-.loading-sentinel.visible {
-    opacity: 1;
-}
+.loading-sentinel.visible { opacity: 1; }
 
 /* 用途：渲染加载动画内部的单个小圆点，并绑定无限跳动动画 */
 .loading-sentinel span {
@@ -556,24 +540,16 @@ h1 {
 }
 
 /* 用途：设置加载动画第二个圆点的起跳延迟，形成波浪感 */
-.loading-sentinel span:nth-child(2) {
-    animation-delay: 0.2s;
-}
+.loading-sentinel span:nth-child(2) { animation-delay: 0.2s; }
 
 /* 用途：设置加载动画第三个圆点的起跳延迟，完善波浪感 */
-.loading-sentinel span:nth-child(3) {
-    animation-delay: 0.4s;
-}
+.loading-sentinel span:nth-child(3) { animation-delay: 0.4s; }
 
 /* 用途：声明加载圆点沿Y轴上下位移的关键帧动画 */
 @keyframes bounce {
-    from {
-        transform: translateY(0);
-    }
+    from { transform: translateY(0); }
 
-    to {
-        transform: translateY(-10px);
-    }
+    to { transform: translateY(-10px); }
 }
 
 /* 用途：当全部帖子加载完毕后，底部的结束提示语的排版样式 */

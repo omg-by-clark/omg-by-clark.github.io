@@ -12,14 +12,13 @@
 
 <body>
     <div class="header-container">
-        <h1
-            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
             omg-by-Clark.github.io</h1>
 
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="搜索帖子或输入 # 选择关键词" autocomplete="off">
-            <div id="tagDropdown" class="tag-dropdown"></div>
-            <div id="selectedTags" class="selected-tags"></div>
+            <div id="keywordDropdown" class="keyword-dropdown"></div>
+            <div id="selectedKeywords" class="selected-keywords"></div>
         </div>
 
         <div class="header-actions">
@@ -78,8 +77,27 @@
         let observer;
 
         // 新增的搜索全局变量
-        const PREDEFINED_TAGS = ['#学校 School', '#老师 Teachers', '#作业 Homework', '#家人 Family', '#避雷 Avoid', '#奸商 Scammer', '#编程 Coding', '#上课 Class', '#旅游 Travel', '#奇葩 Weird', '#食物 Food', '#生活 Life', '#宠物 Pets', '#科技 Tech', '#娱乐 Fun', '#体育 Sport', '#其他 Others', '#NSFW', '#搬运 Reposted'];
-        let currentSearchTags = [];
+        const keywords = [
+            '#学校 School',
+            '#老师 Teachers',
+            '#作业 Homework',
+            '#家人 Family',
+            '#避雷 Avoid',
+            '#奸商 Scammer',
+            '#编程 Coding',
+            '#上课 Class',
+            '#旅游 Travel',
+            '#奇葩 Weird',
+            '#食物 Food',
+            '#生活 Life',
+            '#宠物 Pets',
+            '#科技 Tech',
+            '#娱乐 Fun',
+            '#体育 Sport',
+            '#其他 Others',
+            '#NSFW',
+            '#搬运 Reposted'];
+        let currentSearchKeywords = [];
         let currentSearchText = '';
         let searchTimeout = null;
         let currentSearchId = 0; // 用于避免搜索频率过快导致的数据请求冲突
@@ -90,16 +108,16 @@
         */
         function initSearch() {
             const searchInput = document.getElementById('searchInput');
-            const tagDropdown = document.getElementById('tagDropdown');
+            const keywordDropdown = document.getElementById('keywordDropdown');
 
             searchInput.addEventListener('input', (e) => {
                 const val = e.target.value;
                 if (val.startsWith('#')) {
                     const filterText = val.toLowerCase();
-                    const matchedTags = PREDEFINED_TAGS.filter(t => t.toLowerCase().includes(filterText));
-                    renderTagDropdown(matchedTags);
+                    const matcheds = keywords.filter(t => t.toLowerCase().includes(filterText));
+                    renderKeywordDropdown(matcheds);
                 } else {
-                    tagDropdown.classList.remove('visible');
+                    keywordDropdown.classList.remove('visible');
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(() => {
                         currentSearchText = val.trim();
@@ -111,39 +129,39 @@
             // 点击外部隐藏下拉框
             document.addEventListener('click', (e) => {
                 if (!document.querySelector('.search-container').contains(e.target)) {
-                    tagDropdown.classList.remove('visible');
+                    keywordDropdown.classList.remove('visible');
                 }
             });
         }
 
-        /* renderTagDropdown
+        /* renderKeywordDropdown
         用法：渲染并显示下拉的关键词选项。
-        原理：接收匹配的关键词数组，生成对应的 div 列表并注入到 tagDropdown 容器中。
+        原理：接收匹配的关键词数组，生成对应的 div 列表并注入到 keywordDropdown 容器中。
         */
-        function renderTagDropdown(tags) {
-            const tagDropdown = document.getElementById('tagDropdown');
+        function renderKeywordDropdown(tags) {
+            const keywordDropdown = document.getElementById('keywordDropdown');
             if (tags.length === 0) {
-                tagDropdown.classList.remove('visible');
+                keywordDropdown.classList.remove('visible');
                 return;
             }
-            tagDropdown.innerHTML = tags.map(tag =>
+            keywordDropdown.innerHTML = tags.map(tag =>
                 `<div class="tag-dropdown-item" onclick="addSearchTag('${tag}')">${tag}</div>`
             ).join('');
-            tagDropdown.classList.add('visible');
+            keywordDropdown.classList.add('visible');
         }
 
         /* addSearchTag
         用法：将用户点击的关键词加入到筛选列表，并触发重新搜索。
         原理：将选中的关键词压入 currentSearchTags 数组，清空输入框，隐藏下拉列表并调用 triggerSearch。
         */
-        function addSearchTag(tag) {
-            if (!currentSearchTags.includes(tag)) {
-                currentSearchTags.push(tag);
-                updateSelectedTagsUI();
+        function addSearchKeyword(keyword) {
+            if (!currentSearchKeywords.includes(keyword)) {
+                currentSearchKeywords.push(keyword);
+                updateSelectedKeywordsUI();
                 triggerSearch();
             }
             document.getElementById('searchInput').value = '';
-            document.getElementById('tagDropdown').classList.remove('visible');
+            document.getElementById('keywordDropdown').classList.remove('visible');
             document.getElementById('searchInput').focus();
         }
 
@@ -151,20 +169,20 @@
         用法：从已选关键词列表中移除某个关键词，并触发重新搜索。
         原理：过滤掉被点击的关键词，更新 UI 并调用 triggerSearch。
         */
-        function removeSearchTag(tag) {
-            currentSearchTags = currentSearchTags.filter(t => t !== tag);
-            updateSelectedTagsUI();
+        function removeSearchKeyword(keyword) {
+            currentSearchKeywords = currentSearchKeywords.filter(t => t !== keyword);
+            updateSelectedKeywordsUI();
             triggerSearch();
         }
 
-        /* updateSelectedTagsUI
-        用法：更新搜索框下方的已选标签气泡显示。
-        原理：遍历 currentSearchTags，渲染带有删除图标的 HTML 并插入容器。
+        /* updateSelectedKeywordsUI
+        用法：更新搜索框下方的已选关键词气泡显示。
+        原理：遍历 currentSearchKeywords，渲染带有删除图标的 HTML 并插入容器。
         */
-        function updateSelectedTagsUI() {
-            const selectedTagsDiv = document.getElementById('selectedTags');
-            selectedTagsDiv.innerHTML = currentSearchTags.map(tag =>
-                `<div class="selected-tag-chip">${tag} <span onclick="removeSearchTag('${tag}')">×</span></div>`
+        function updateSelectedKeywordsUI() {
+            const selectedKeywordsDiv = document.getElementById('selectedKeywords');
+            selectedKeywordsDiv.innerHTML = currentSearchKeywords.map(keyword =>
+                `<div class="selected-keyword   -chip">${keyword} <span onclick="removeSearchKeyword('${keyword}')">×</span></div>`
             ).join('');
         }
 
@@ -319,11 +337,11 @@
             if (isBlurry) {
                 contentArea.classList.remove('blur-content');
                 contentArea.classList.add('revealed-content');
-                element.classList.remove('nsfw-tag');
+                element.classList.remove('nsfw-keyword');
             } else {
                 contentArea.classList.add('blur-content');
                 contentArea.classList.remove('revealed-content');
-                element.classList.add('nsfw-tag');
+                element.classList.add('nsfw-keyword');
             }
         }
 
@@ -344,10 +362,10 @@
             if (postData.keywords && postData.keywords.length > 0) {
                 const kwItems = postData.keywords.map(kw => {
                     if (kw === '#NSFW') {
-                        return `<span class="nsfw-tag" onclick="toggleNSFW(event, this)">${kw}</span>`;
+                        return `<span class="nsfw-keyword" onclick="toggleNSFW(event, this)">${kw}</span>`;
                     }
                     if (kw === '#疑似搬运 Suspected Repost' || kw === '#搬运 Reposted') {
-                        return `<span class="repost-tag">${kw}</span>`;
+                        return `<span class="repost-keyword">${kw}</span>`;
                     }
                     return `<span>${kw}</span>`;
                 });
@@ -361,11 +379,12 @@
             const safeContent = postData.content || '';
             let displayContent = '';
 
+            // 修改：截取字数按原样计算，只在最后将换行符 \n 替换为两个不换行空格 &nbsp;&nbsp; 供前端显示
             if (safeContent.length > 200) {
-                displayContent = escapeHTML(safeContent.substring(0, 200)) +
+                displayContent = escapeHTML(safeContent.substring(0, 200)).replace(/\n/g, '&nbsp;&nbsp;') +
                     `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
             } else {
-                displayContent = escapeHTML(safeContent);
+                displayContent = escapeHTML(safeContent).replace(/\n/g, '&nbsp;&nbsp;');
             }
 
             let dateStr = '';
@@ -416,8 +435,8 @@
 
                 let query = _supabase.from('posts').select('*').order('created_at', { ascending: false });
 
-                if (currentSearchTags.length > 0) {
-                    query = query.contains('keywords', JSON.stringify(currentSearchTags));
+                if (currentSearchKeywords.length > 0) {
+                    query = query.contains('keywords', JSON.stringify(currentSearchKeywords));
                 }
 
                 if (currentSearchText) {
