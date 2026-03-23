@@ -10,6 +10,9 @@
     --button-grad: linear-gradient(45deg, #e64553, #fe640b);
     --kw-text: #5c5f77;
 
+    /* 问候语框背景色 - 浅色模式 */
+    --greeting-bg: #7c7f93;
+
     /* 投票胶囊颜色变量 - 浅色模式 */
     --vote-bg-neutral: hsl(233deg, 10%, 47%);
     --vote-bg-liked: #ff4757;
@@ -38,6 +41,9 @@ body.dark {
     --unliked: hsl(233deg, 10%, 47%);
     --disliked: #a4b0be;
     --hot-border: #ff6b81;
+
+    /* 问候语框背景色 - 深色模式 */
+    --greeting-bg: #626880;
 
     /* 投票胶囊颜色变量 · 深色模式 */
     --vote-bg-neutral: #333;
@@ -191,6 +197,24 @@ h1 {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
+    /* 确保屏幕小时可以自动换行 */
+}
+
+/* 用途：新增用户名问候语框样式，背景根据主题变色，文字垂直居中 */
+.user-greeting {
+    background: var(--greeting-bg);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: normal;
+    display: none;
+    /* 默认隐藏，JS检测到登录后再显示 */
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* 用途：通用的胶囊型按钮样式，包括渐变背景、圆角、阴影、字体和基础动画设置 */
@@ -285,7 +309,9 @@ h1 {
 }
 
 /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
-.card:last-child { border-bottom: none; }
+.card:last-child {
+    border-bottom: none;
+}
 
 /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
 .card b {
@@ -296,7 +322,9 @@ h1 {
 }
 
 /* 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */
-.card:active { background-color: rgba(150, 150, 150, 0.05); }
+.card:active {
+    background-color: rgba(150, 150, 150, 0.05);
+}
 
 /* 用途：超过 200 字被截断时，末尾追加的“点击以查看全文”链接文字样式 */
 .read-more {
@@ -397,7 +425,9 @@ h1 {
 
 /* 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
 .like-btn:active,
-.dislike-btn:active { transform: scale(0.9); }
+.dislike-btn:active {
+    transform: scale(0.9);
+}
 
 /* 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
 .vote-pill.is-liked .like-btn {
@@ -411,7 +441,9 @@ h1 {
 
 /* 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
 .vote-pill.is-liked .vote-divider,
-.vote-pill.is-disliked .vote-divider { opacity: 0.2; }
+.vote-pill.is-disliked .vote-divider {
+    opacity: 0.2;
+}
 
 /* 用途：用户名的悬停效果，鼠标移上去显示下划线并且字体加粗，用于跳转主页的暗示 */
 .author-link {
@@ -441,13 +473,19 @@ h1 {
 }
 
 /* 用途：定义等级“原木”的专属配色 */
-.lv-log { background: #a1662f; }
+.lv-log {
+    background: #a1662f;
+}
 
 /* 用途：定义等级“黑铁”的专属配色 */
-.lv-iron { background: #555555; }
+.lv-iron {
+    background: #555555;
+}
 
 /* 用途：定义等级“青铜”的专属配色 */
-.lv-bronze { background: #cd7f32; }
+.lv-bronze {
+    background: #cd7f32;
+}
 
 /* 用途：定义等级“白银”的专属配色及消除文字阴影 */
 .lv-silver {
@@ -504,7 +542,7 @@ h1 {
     font-weight: 900;
 }
 
-/* 用途：包裹帖子所有关键词的文本容器，定义整体颜色和边距 */
+/* 用途：包裹帖子所有关键词的文本容器，定义整体颜色 and 边距 */
 .kw-display {
     display: block;
     margin-top: 5px;
@@ -526,7 +564,9 @@ h1 {
 }
 
 /* 用途：当请求数据时，配合JS脚本将加载容器的透明度设为可见 */
-.loading-sentinel.visible { opacity: 1; }
+.loading-sentinel.visible {
+    opacity: 1;
+}
 
 /* 用途：渲染加载动画内部的单个小圆点，并绑定无限跳动动画 */
 .loading-sentinel span {
@@ -540,16 +580,24 @@ h1 {
 }
 
 /* 用途：设置加载动画第二个圆点的起跳延迟，形成波浪感 */
-.loading-sentinel span:nth-child(2) { animation-delay: 0.2s; }
+.loading-sentinel span:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
 /* 用途：设置加载动画第三个圆点的起跳延迟，完善波浪感 */
-.loading-sentinel span:nth-child(3) { animation-delay: 0.4s; }
+.loading-sentinel span:nth-child(3) {
+    animation-delay: 0.4s;
+}
 
 /* 用途：声明加载圆点沿Y轴上下位移的关键帧动画 */
 @keyframes bounce {
-    from { transform: translateY(0); }
+    from {
+        transform: translateY(0);
+    }
 
-    to { transform: translateY(-10px); }
+    to {
+        transform: translateY(-10px);
+    }
 }
 
 /* 用途：当全部帖子加载完毕后，底部的结束提示语的排版样式 */

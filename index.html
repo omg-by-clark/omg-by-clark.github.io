@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- index.html -->
 <html lang="zh-CN">
 
 <head>
@@ -12,7 +11,8 @@
 
 <body>
     <div class="header-container">
-        <h1 onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+        <h1
+            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
             omg-by-Clark.github.io</h1>
 
         <div class="search-container">
@@ -22,6 +22,8 @@
         </div>
 
         <div class="header-actions">
+            <div id="user-greeting" class="user-greeting"></div>
+
             <button class="btn-common" data-en="🤔 Random" data-zh="🤔 随机" onclick="goRandom()">
                 🤔 随机
             </button>
@@ -182,7 +184,7 @@
         function updateSelectedKeywordsUI() {
             const selectedKeywordsDiv = document.getElementById('selectedKeywords');
             selectedKeywordsDiv.innerHTML = currentSearchKeywords.map(keyword =>
-                `<div class="selected-keyword   -chip">${keyword} <span onclick="removeSearchKeyword('${keyword}')">×</span></div>`
+                `<div class="selected-keyword-chip">${keyword} <span onclick="removeSearchKeyword('${keyword}')">×</span></div>`
             ).join('');
         }
 
@@ -498,9 +500,10 @@
 
             initSearch();
 
-            /* 修改：检查用户是否已登录。如果已登录，将“登录”按钮改为“退出登录”并绑定退出逻辑 */
+            /* 检查用户是否已登录。如果已登录，将“登录”按钮改为“退出登录”并绑定退出逻辑 */
             const authBtn = document.getElementById('btn-auth');
-            if (localStorage.getItem('username')) {
+            const username = localStorage.getItem('username');
+            if (username) {
                 authBtn.setAttribute('data-zh', '🚪 退出登录');
                 authBtn.setAttribute('data-en', '🚪 Sign Out');
                 authBtn.href = "javascript:void(0)"; // 阻止默认的页面跳转
@@ -520,6 +523,27 @@
                     acc[user.username] = user;
                     return acc;
                 }, {});
+
+                /* 新增：登录后在顶部显示个性化问候语 */
+                if (username) {
+                    const greetingEl = document.getElementById('user-greeting');
+                    const hour = new Date().getHours();
+                    let greetingText = '';
+
+                    // 根据时间范围设置不同的问候语
+                    if (hour >= 6 && hour <= 9) greetingText = '☀️ 早上好';
+                    else if (hour >= 10 && hour <= 11) greetingText = '☀️ 上午好';
+                    else if (hour >= 12 && hour <= 13) greetingText = '⛱️ 中午好';
+                    else if (hour >= 14 && hour <= 17) greetingText = '🌻 下午好';
+                    else greetingText = '🌙 晚上好'; // 覆盖 18:00 - 05:59
+
+                    // 获取该用户的个性化变色样式
+                    const nickStyle = getNicknameStyle(globalUserMap[username] ? globalUserMap[username].inventory : null);
+
+                    // 渲染问候语和加粗的变色用户名
+                    greetingEl.innerHTML = `${greetingText}，<b style="${nickStyle}">${escapeHTML(username)}</b>`;
+                    greetingEl.style.display = 'inline-flex';
+                }
 
                 const now = Date.now();
 
