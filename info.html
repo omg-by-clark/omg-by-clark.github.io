@@ -19,6 +19,7 @@
 
         /* [body.dark] 定义暗黑模式下的颜色变量替换 */
         body.dark {
+            --brand: #ff6b81;
             --bg: #121212;
             --text: #f1f2f6;
             --card: #1e1e1e;
@@ -48,6 +49,7 @@
             background: var(--card);
             border-radius: 20px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            position: relative; /* 为签到气泡定位提供参考 */
         }
 
         /* [.avatar-container] 头像展示区域，点击可触发文件选择 */
@@ -177,7 +179,7 @@
 
         /* [.btn-checkin] 签到按钮样式 */
         .btn-checkin {
-            background: var(--checkin) !important;
+            background: var(--checkin);
             color: #1e1e2e;
             border: none;
             padding: 10px 24px;
@@ -190,6 +192,7 @@
             margin: 10px 0 20px 0;
             box-shadow: 0 4px 12px rgba(250, 179, 135, 0.3);
             transition: transform 0.2s, filter 0.2s;
+            position: relative; /* 方便气泡在其上方显示 */
         }
 
         /* [.btn-checkin:active] 按钮点击时的缩放反馈 */
@@ -199,11 +202,38 @@
 
         /* [.btn-checkin.disabled] 签到后的禁用状态样式 */
         .btn-checkin.disabled {
-            background: var(--disabled);
+            background: var(--disabled) !important;
             box-shadow: none;
             cursor: not-allowed;
             transform: none;
             color: white;
+        }
+
+        /* [.streak-bubble] 连签气泡动画样式 */
+        .streak-bubble {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f08400;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: bubbleUp 2s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* [bubbleUp] 气泡升起并消失的动画 */
+        @keyframes bubbleUp {
+            0% { opacity: 0; transform: translate(-50%, 0); }
+            20% { opacity: 1; transform: translate(-50%, -10px); }
+            80% { opacity: 1; transform: translate(-50%, -15px); }
+            100% { opacity: 0; transform: translate(-50%, -25px); }
         }
 
         /* [.pwd-section] 修改密码区域的顶部分隔线 */
@@ -310,6 +340,8 @@
         const lang = localStorage.getItem('lang') || 'zh';
         let currentPoints = 0;
         let currentCheckInCount = 0;
+        let currentStreak = 0; // 新增：记录当前连签天数
+        let lastCheckInDate = null; // 新增：记录最后签到日期对象
 
         // escapeHTML 函数用于将特殊字符转义为 HTML 实体，防止用户输入的恶意代码被浏览器执行
         function escapeHTML(str) {
@@ -321,7 +353,6 @@
 
         // getSafeFileName 函数将用户名进行 Base64 编码，解决 Supabase 存储桶不支持中文字符路径的问题
         function getSafeFileName(username) {
-            // btoa 将字符串转为 Base64，encodeURIComponent 处理非拉丁字符
             return btoa(encodeURIComponent(username)).replace(/=/g, "");
         }
 
@@ -353,7 +384,6 @@
             const username = localStorage.getItem('username');
             if (!file || !username) return;
 
-            // 检查文件大小是否超过 5MB
             if (file.size > 5 * 1024 * 1024) {
                 alert(lang === 'zh' ? "图片太大啦，不能超过 5MB 哦！" : "Image too large, max 5MB!");
                 return;
@@ -364,12 +394,9 @@
             imgElement.src = "https://via.placeholder.com/80?text=⏳";
 
             try {
-                // 转换图片为 WebP 格式
                 const webpBlob = await convertToWebP(file);
-                // 获取经过编码的、对 Supabase 安全的文件名
                 const safeName = getSafeFileName(username);
 
-                // 上传到 Supabase 存储桶 'avatars'，使用 WebP 格式和覆盖模式
                 const { data, error } = await _supabase.storage
                     .from('avatars')
                     .upload(`${safeName}.webp`, webpBlob, {
@@ -379,7 +406,6 @@
 
                 if (error) throw error;
 
-                // 强制刷新预览图，利用 blob 链接即时显示
                 imgElement.src = URL.createObjectURL(webpBlob);
                 alert(lang === 'zh' ? "头像更新成功！" : "Avatar updated!");
             } catch (err) {
@@ -389,7 +415,6 @@
             }
         }
 
-        // convertToWebP 函数利用 HTML5 Canvas 将任意图片格式转换为 WebP 压缩 Blob
         function convertToWebP(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -414,11 +439,9 @@
             });
         }
 
-        // loadAvatarUrl 函数尝试获取用户的头像链接，使用编码后的安全文件名
         function loadAvatarUrl(username) {
             const safeName = getSafeFileName(username);
             const { data } = _supabase.storage.from('avatars').getPublicUrl(`${safeName}.webp`);
-            // 拼接时间戳后缀，确保浏览器不会因为缓存而显示老头像
             return data.publicUrl + "?t=" + new Date().getTime();
         }
 
@@ -439,13 +462,13 @@
                 el.placeholder = lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph');
             });
 
-            // 初始化加载头像
             document.getElementById('avatar-img').src = loadAvatarUrl(user);
 
             const { data } = await _supabase.from('users').select('*').eq('username', user).single();
             if (data) {
                 currentPoints = data.points || 0;
                 currentCheckInCount = data.check_in_count || 0;
+                currentStreak = data.daily_streak || 0; // 从数据库读取连签天数
 
                 const lv = getLevelInfo(currentPoints);
                 const nStyle = getNickStyle(data.inventory);
@@ -461,15 +484,16 @@
                 document.getElementById('u-check-count').innerText = (lang === 'zh' ? "🔢 签到次数: " : "🔢 Total Check-ins: ") + currentCheckInCount;
 
                 if (data.last_check_in) {
-                    const lastDateObj = new Date(data.last_check_in);
-                    const readableDate = lastDateObj.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
+                    lastCheckInDate = new Date(data.last_check_in);
+                    const readableDate = lastCheckInDate.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
                     document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: " : "📅 Last Check-in: ") + readableDate;
 
-                    if (lastDateObj.toDateString() === new Date().toDateString()) {
+                    // 检查今天是否已经签到
+                    if (lastCheckInDate.toDateString() === new Date().toDateString()) {
                         const btn = document.getElementById('btn-checkin');
-                        btn.classList.add('disabled');
+                        btn.classList.add('disabled'); // 变为 --disabled 颜色
                         btn.innerText = lang === 'zh' ? "✅ 今天已签到" : "✅ Checked In";
-                        btn.disabled = true;
+                        btn.disabled = true; // 彻底禁用按钮点击
                     }
                 } else {
                     document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: 暂无" : "📅 Last Check-in: None");
@@ -477,7 +501,7 @@
             }
         }
 
-        // dailyCheckIn 函数执行签到操作，更新数据库中的积分和最后签到时间
+        // dailyCheckIn 函数执行签到操作，更新数据库中的积分、最后签到时间以及连签天数
         async function dailyCheckIn() {
             const user = localStorage.getItem('username');
             const btn = document.getElementById('btn-checkin');
@@ -486,21 +510,50 @@
             const reward = Math.floor(Math.random() * 10) + 1;
             const newPoints = currentPoints + reward;
             const newCheckInCount = currentCheckInCount + 1;
-            const nowISO = new Date().toISOString();
+            const now = new Date();
+            const nowISO = now.toISOString();
+
+            // 计算连签逻辑：检查最后一次签到是不是昨天
+            let newStreak = 1; // 默认重新开始连签
+            if (lastCheckInDate) {
+                const yesterday = new Date();
+                yesterday.setDate(now.getDate() - 1);
+
+                // 如果最后签到日期等于昨天，则连签 +1
+                if (lastCheckInDate.toDateString() === yesterday.toDateString()) {
+                    newStreak = currentStreak + 1;
+                } else if (lastCheckInDate.toDateString() === now.toDateString()) {
+                    // 防止并发操作，如果已经是今天则不处理
+                    return;
+                }
+            }
 
             btn.innerText = "⏳ ...";
+            btn.disabled = true;
 
             const { error } = await _supabase.from('users').update({
                 points: newPoints,
                 last_check_in: nowISO,
-                check_in_count: newCheckInCount
+                check_in_count: newCheckInCount,
+                daily_streak: newStreak // 更新连签字段
             }).eq('username', user);
 
             if (!error) {
-                alert(lang === 'zh' ? `🎉 签到成功！获得了 ${reward} 积分！` : `🎉 Success! You got ${reward} points!`);
-                location.reload();
+                // 如果连签天数大于1，弹出彩色对话框（气泡）
+                if (newStreak >= 1) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'streak-bubble';
+                    bubble.innerText = lang === 'zh' ? `🎉连续签到 ${newStreak} 天！` : `🎉 Streak: ${newStreak} days!`;
+                    btn.appendChild(bubble);
+                }
+
+                setTimeout(() => {
+                    alert(lang === 'zh' ? `🎉 签到成功！获得了 ${reward} 积分！` : `🎉 Success! You got ${reward} points!`);
+                    location.reload();
+                }, 1500); // 留一点时间看气泡动画
             } else {
                 alert("Error: " + error.message);
+                btn.disabled = false;
                 btn.innerHTML = '📅 <span data-zh="每日签到" data-en="Check-in Now">' + (lang === 'zh' ? "每日签到" : "Check-in Now") + '</span>';
             }
         }
