@@ -181,9 +181,7 @@
 
     <script>
         const currentLang = localStorage.getItem('lang') || 'zh';
-        if (localStorage.getItem('theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add('dark');
-        }
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
         function updateUI() {
             document.querySelectorAll('[data-zh]').forEach(el => {
