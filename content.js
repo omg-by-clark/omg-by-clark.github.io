@@ -239,7 +239,7 @@ async function addCmt() {
     if (!content) return alert(TRANS.emptyContent[currentLang]);
 
     // 规则 1：包含脏话（利用正则表达式 /i 忽略大小写匹配英文，同时包含中文违禁词）
-    const containsBadWords = /sb|傻逼|屎|垃圾|idiot|fuck/i.test(content);
+    const containsBadWords = /sb|傻逼|屎|垃圾|idiot|fuck|草|妈的/i.test(content);
 
     // 规则 2：完全等于无意义水帖词汇
     const exactMatchWords = ['沙发', '板凳', '地板', '地缝', '下水道', '已阅', '666'];
