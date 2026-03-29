@@ -458,11 +458,20 @@ async function init() {
             let greetingText = '';
 
             // 根据时间范围设置不同的问候语
-            if (hour >= 6 && hour <= 9) greetingText = '☀️ 早上好';
-            else if (hour >= 10 && hour <= 11) greetingText = '☀️ 上午好';
-            else if (hour >= 12 && hour <= 13) greetingText = '⛱️ 中午好';
-            else if (hour >= 14 && hour <= 17) greetingText = '🌻 下午好';
-            else greetingText = '🌙 晚上好'; // 覆盖 18:00 - 05:59
+            if (localStorage.getItem('lang') === 'zh') {
+                if (hour >= 6 && hour <= 9) greetingText = '☀️ 早上好';
+                else if (hour >= 10 && hour <= 11) greetingText = '☀️ 上午好';
+                else if (hour >= 12 && hour <= 13) greetingText = '⛱️ 中午好';
+                else if (hour >= 14 && hour <= 17) greetingText = '🌻 下午好';
+                else greetingText = '🌙 晚上好'; // 覆盖 18:00 - 05:59
+            } else {
+                if (hour >= 6 && hour <= 9) greetingText = '☀️ Good morning';
+                else if (hour >= 10 && hour <= 11) greetingText = '☀️ Good morning';
+                else if (hour >= 12 && hour <= 13) greetingText = '⛱️ Good afternoon';
+                else if (hour >= 14 && hour <= 17) greetingText = '🌻 Good afternoon';
+                else if (hour >= 18 && hour <= 19) greetingText = '🌇 Good evening'; // 英语多加一个傍晚的问候语
+                else greetingText = '🌙 Good night'; // 覆盖 20:00 - 05:59
+            }
 
             // 获取该用户的个性化变色样式
             const nickStyle = getNicknameStyle(globalUserMap[username] ? globalUserMap[username].inventory : null);
