@@ -70,6 +70,9 @@ body {
     background: var(--bg);
     color: var(--text);
     transition: 0.3s;
+    /* 新增：防止全局超长单词撑破网页容器，强制在其越界时打破单词边界换行 */
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
@@ -309,9 +312,7 @@ h1 {
 }
 
 /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
-.card:last-child {
-    border-bottom: none;
-}
+.card:last-child { border-bottom: none; }
 
 /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
 .card b {
@@ -319,6 +320,15 @@ h1 {
     font-size: 1.1em;
     display: block;
     margin-bottom: 5px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* 用途：新增专门针对卡片内正文的文本截断和长单词换行控制 */
+.post-body {
+    /* 新增：双重保险，针对动态插入的正文内容防止溢出 */
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* 用途：在移动端触摸或鼠标长按卡片时的灰色背景反馈 */

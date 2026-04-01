@@ -65,6 +65,9 @@
             color: var(--text);
             line-height: 1.7;
             transition: 0.3s;
+            /* 新增：强制超长连续字符（如外星文、长URL）越界时换行，防止出现横向滚动条 */
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         /* h1 用法：设置详情页主标题的颜色、大小及底部外边距。 */
@@ -93,6 +96,9 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             min-height: 120px;
             margin-bottom: 30px;
+            /* 新增：配合 pre-wrap 使用，允许无空格的长字符串强行打断，不至于撑破卡片 */
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         /* .action-area 用法：使用 Flexbox 居中排列详情页的交互操作按钮区域。 */
@@ -179,6 +185,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            /* 新增：防止评论里的乱码长文本破坏整行的 Flex 布局边界 */
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* 新增：.cmt-content 用法：确保评论文本区在 Flex 容器中可以被正确压缩并允许长文本换行，防止挤出屏幕外。 */
+        .cmt-content {
+            flex: 1;
+            min-width: 0;
         }
 
         /* input 用法：设置评论输入框的边框、背景、字体颜色和圆角。 */
@@ -363,60 +378,60 @@
 </head>
 
 <body>
-    <h1 id="t">...</h1>
-    <div id="info"
-        style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+<h1 id="t">...</h1>
+<div id="info"
+     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+</div>
+<div class="kw-row" id="kw-row"></div>
+<div id="c">Loading...</div>
+
+<div class="action-area">
+    <div class="vote-pill" id="vote-container">
+        <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')">
+            👍 <span id="like-count">0</span>
+        </button>
+        <div class="vote-divider"></div>
+        <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')">
+            👎 <span id="dislike-count">0</span>
+        </button>
     </div>
-    <div class="kw-row" id="kw-row"></div>
-    <div id="c">Loading...</div>
+</div>
 
-    <div class="action-area">
-        <div class="vote-pill" id="vote-container">
-            <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')">
-                👍 <span id="like-count">0</span>
-            </button>
-            <div class="vote-divider"></div>
-            <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')">
-                👎 <span id="dislike-count">0</span>
-            </button>
-        </div>
+<div class="cmt-box">
+    <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
+        评论区</h3>
+    <div id="cmt-list"></div>
+    <div style="margin-top:25px; display:flex; gap:12px;">
+        <input data-en-ph="Write a cool comment..." data-zh-ph="神评由此诞生..." id="cC" style="flex:1" type="text">
+        <button class="btn-send" data-en="Send" data-zh="发送" onclick="addCmt()">发送
+        </button>
     </div>
+</div>
 
-    <div class="cmt-box">
-        <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
-            评论区</h3>
-        <div id="cmt-list"></div>
-        <div style="margin-top:25px; display:flex; gap:12px;">
-            <input data-en-ph="Write a cool comment..." data-zh-ph="神评由此诞生..." id="cC" style="flex:1" type="text">
-            <button class="btn-send" data-en="Send" data-zh="发送" onclick="addCmt()">发送
-            </button>
-        </div>
-    </div>
+<div class="nav-links">
+    <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场" href="index.html" style="color:var(--brand);">
+        ⬅️ 返回广场
+    </a>
 
-    <div class="nav-links">
-        <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场" href="index.html" style="color:var(--brand);">
-            ⬅️ 返回广场
-        </a>
-
-        <button id="btn-delete-post" class="btn-delete-post" onclick="deletePost()" data-en="🗑️ Delete"
+    <button id="btn-delete-post" class="btn-delete-post" onclick="deletePost()" data-en="🗑️ Delete"
             data-zh="🗑️ 删除帖子">
-            🗑️ 删除帖子
-        </button> 
-    </div>
+        🗑️ 删除帖子
+    </button>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
-    <script>
-        const lang = localStorage.getItem('lang') || 'zh';
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        document.querySelectorAll('[data-zh]').forEach(el => {
-            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-        });
-        document.querySelectorAll('[data-zh-ph]').forEach(el => {
-            el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
-        });
-    </script>
-    <script src="content.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js"></script>
+<script>
+    const lang = localStorage.getItem('lang') || 'zh';
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+    document.querySelectorAll('[data-zh]').forEach(el => {
+        el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+    });
+    document.querySelectorAll('[data-zh-ph]').forEach(el => {
+        el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
+    });
+</script>
+<script src="content.js"></script>
 </body>
 
 </html>
