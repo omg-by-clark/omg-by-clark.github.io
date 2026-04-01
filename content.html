@@ -243,6 +243,8 @@
             font-weight: bold;
             margin-left: 5px;
             display: inline-block;
+            /* 修改Bug关键点：添加相对定位，限制内部绝对定位元素（如王者/史诗的V）的活动范围，防止溢出到屏幕边缘 */
+            position: relative;
         }
 
         /* .lv-log 用法：定义等级“原木”的背景和字体配色。 */
