@@ -1,3 +1,4 @@
+/* store.js */
 /**
  * 根据用户的背包数据，返回昵称的 CSS 样式
  * @param {Object} inventory 用户背包对象

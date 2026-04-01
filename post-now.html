@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- postNow.html -->
+<!-- post-now.html -->
 <html lang="zh-CN">
 
 <head>
@@ -199,7 +199,7 @@
         </div>
 
         <form id="pForm">
-            <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..." 
+            <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..."
             placeholder="起个标题……" required>
             <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
                 required></textarea>
@@ -208,7 +208,7 @@
                 <span class="kw-label" data-zh="添加关键词（可选）：" data-en="Add Keywords (Optional):">添加关键词（可选）：</span>
                 <div id="kw-area"></div>
             </div>
-            <div class="advice" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。" 
+            <div class="advice" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。"
                  data-en="💡 NSFW means 'Not Safe For Work'.">
                 💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。
             </div>
@@ -223,7 +223,7 @@
         // 初始化变量
         const user = localStorage.getItem('username');
         const lang = localStorage.getItem('lang') || 'zh';
-        
+
         // 全局状态锁，防止重复提交
         let isSubmitting = false;
 
@@ -238,7 +238,7 @@
             '#其他 Others', '#NSFW', '#搬运 Reposted'];
 
         /*
-          init() 
+          init()
           用法：页面加载时执行的基础初始化操作。
           原理：
           1. 根据 localStorage 判断是否需给 body 添加 dark 模式类。
@@ -246,7 +246,7 @@
           3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
           4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
          */
-        function init() { 
+        function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
             if (!user) {
@@ -270,12 +270,12 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'kw-btn';
-                
+
                 // 专门给 NSFW 按钮加上标识类名
                 if (kw === '#NSFW' || kw === '#搬运 Reposted') {
                     btn.classList.add('nsfw-btn');
                 }
-                
+
                 btn.innerText = kw;
                 btn.onclick = () => btn.classList.toggle('active');
                 kwArea.appendChild(btn);
@@ -312,7 +312,7 @@
 
             const title = document.getElementById('t').value.trim();
             const content = document.getElementById('c').value.trim();
-            
+
             // 抓取所有被选中的关键词按钮文本
             const selectedKws = Array.from(document.querySelectorAll('.kw-btn.active'))
                 .map(btn => btn.innerText);
@@ -342,7 +342,7 @@
             } catch (err) {
                 alert("Error: " + err.message);
                 console.error("[错误]" + err);
-                
+
                 // 如果出错，释放锁并恢复按钮
                 isSubmitting = false;
                 submitBtn.disabled = false;

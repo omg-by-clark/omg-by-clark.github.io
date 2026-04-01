@@ -1,3 +1,4 @@
+/* index.js */
 let currentPage = 0;
 const PAGE_SIZE = 15;
 let globalUserMap = {};

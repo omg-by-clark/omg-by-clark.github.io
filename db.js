@@ -1,6 +1,4 @@
-/**
- * db.js
- */
+/* db.js */
 
 const { createClient } = supabase;
 
