@@ -24,15 +24,15 @@ const keywords = [
     '#科技 Tech',
     '#娱乐 Fun',
     '#体育 Sport',
-    '#其他 Others',
-    '#NSFW',
-    '#搬运 Reposted'];
+    '#其他 Others'
+];
 let currentSearchKeywords = [];
 let currentSearchText = '';
 let searchTimeout = null;
 let currentSearchId = 0; // 用于避免搜索频率过快导致的数据请求冲突
 
 /* initSearch
+用途：初始化搜索模块。
 用法：初始化搜索框的事件监听，包括输入检测和点击外部关闭下拉框。
 原理：监听 input 事件，如果是 # 开头则展示关键词列表；否则执行防抖的文本搜索。
 */
@@ -65,6 +65,7 @@ function initSearch() {
 }
 
 /* renderKeywordDropdown
+用途：渲染搜索下拉提示。
 用法：渲染并显示下拉的关键词选项。
 原理：接收匹配的关键词数组，生成对应的 div 列表并注入到 keywordDropdown 容器中。
 */
@@ -75,14 +76,15 @@ function renderKeywordDropdown(tags) {
         return;
     }
     keywordDropdown.innerHTML = tags.map(tag =>
-        `<div class="tag-dropdown-item" onclick="addSearchTag('${tag}')">${tag}</div>`
+        `<div class="tag-dropdown-item" onclick="addSearchKeyword('${tag}')">${tag}</div>`
     ).join('');
     keywordDropdown.classList.add('visible');
 }
 
-/* addSearchTag
+/* addSearchKeyword
+用途：添加筛选标签。
 用法：将用户点击的关键词加入到筛选列表，并触发重新搜索。
-原理：将选中的关键词压入 currentSearchTags 数组，清空输入框，隐藏下拉列表并调用 triggerSearch。
+原理：将选中的关键词压入 currentSearchKeywords 数组，清空输入框，隐藏下拉列表并调用 triggerSearch。
 */
 function addSearchKeyword(keyword) {
     if (!currentSearchKeywords.includes(keyword)) {
@@ -95,7 +97,8 @@ function addSearchKeyword(keyword) {
     document.getElementById('searchInput').focus();
 }
 
-/* removeSearchTag
+/* removeSearchKeyword
+用途：移除筛选标签。
 用法：从已选关键词列表中移除某个关键词，并触发重新搜索。
 原理：过滤掉被点击的关键词，更新 UI 并调用 triggerSearch。
 */
@@ -106,6 +109,7 @@ function removeSearchKeyword(keyword) {
 }
 
 /* updateSelectedKeywordsUI
+用途：更新已选标签视图。
 用法：更新搜索框下方的已选关键词气泡显示。
 原理：遍历 currentSearchKeywords，渲染带有删除图标的 HTML 并插入容器。
 */
@@ -117,6 +121,7 @@ function updateSelectedKeywordsUI() {
 }
 
 /* triggerSearch
+用途：触发列表检索。
 用法：重置所有分页状态并清空当前列表，以新的搜索条件重新加载帖子。
 原理：将 currentPage 置 0，设 hasMore 为 true，恢复加载动画的显示状态，最后调用 loadNextPage。
 */
@@ -132,7 +137,9 @@ function triggerSearch() {
 }
 
 /* escapeHTML
+用途：安全处理字符串。
 用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
+原理：创建一个内存中的 div 元素，将文本设为 textContent，然后读取 innerHTML，由浏览器原生完成转义。
 */
 function escapeHTML(str) {
     if (!str) return '';
@@ -142,7 +149,9 @@ function escapeHTML(str) {
 }
 
 /* getNicknameStyle
+用途：个性化用户名展示。
 用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
+原理：判断 inventory 中的特定道具 ID 及过期时间，返回预设的内联 CSS 字符串（如渐变色或特定文字发光）。
 */
 function getNicknameStyle(inventory) {
     if (!inventory) return '';
@@ -154,7 +163,9 @@ function getNicknameStyle(inventory) {
 }
 
 /* updateLanguage
+用途：前端国际化显示。
 用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
+原理：遍历带有 data-zh 或 data-en 属性的 DOM 元素，根据当前选定的语言标识替换其 innerText。
 */
 function updateLanguage() {
     const lang = localStorage.getItem('lang') || 'zh';
@@ -164,7 +175,9 @@ function updateLanguage() {
 }
 
 /* goRandom
+用途：随机阅读功能。
 用法：触发时计算并随机跳转到数据库中的某一篇吐槽帖子。
+原理：先查询 posts 表获取总行数，生成随机索引，再利用 range 方法查出对应行的 ID，最后拼接 URL 跳转。
 */
 async function goRandom() {
     if (isFetching) return;
@@ -192,7 +205,9 @@ async function goRandom() {
 }
 
 /* handleVote
+用途：点赞与点踩交互。
 用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
+原理：读取 localStorage 判断是否已操作，计算新的赞踩数量并更新 UI 类名，最后通过 Supabase API 更新后端。
 */
 async function handleVote(event, postId, type) {
     event.stopPropagation();
@@ -256,7 +271,9 @@ async function handleVote(event, postId, type) {
 }
 
 /* toggleNSFW
+用途：敏感内容控制。
 用法：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
+原理：获取帖子内容容器，通过 classList 增加或移除 blur-content 和 revealed-content 类，实现 CSS 滤镜切换。
 */
 function toggleNSFW(event, element) {
     event.stopPropagation();
@@ -276,8 +293,9 @@ function toggleNSFW(event, element) {
 }
 
 /* createCardHTML
+用途：帖子卡片组件渲染。
 用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-补充：在此函数中为用户名新增了带有 .author-link 类的 span，并绑定了跳转到 user.html 的逻辑。
+原理：拼接作者信息、点赞状态、关键词标签和正文的 HTML 字符串，并包含跳转至对应 user.html 详情页的点击事件。
 */
 function createCardHTML(postData, userMap) {
     const author = userMap ? userMap[postData.nickname] : null;
@@ -309,7 +327,7 @@ function createCardHTML(postData, userMap) {
     const safeContent = postData.content || '';
     let displayContent = '';
 
-    // 修改：截取字数按原样计算，只在最后将换行符 \n 替换为两个不换行空格 &nbsp;&nbsp; 供前端显示
+    // 截取字数按原样计算，只在最后将换行符 \n 替换为两个不换行空格 &nbsp;&nbsp; 供前端显示
     if (safeContent.length > 200) {
         displayContent = escapeHTML(safeContent.substring(0, 200)).replace(/\n/g, '&nbsp;&nbsp;') +
             `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
@@ -350,7 +368,9 @@ function createCardHTML(postData, userMap) {
 }
 
 /* loadNextPage
+用途：数据分页加载与搜索过滤。
 用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），支持多条件搜索组合。
+原理：计算偏移量，构建 Supabase 查询（包含标签与文本匹配），获取数据后调用 createCardHTML 渲染并追加到列表中。
 */
 async function loadNextPage() {
     if (isFetching || !hasMore) return;
@@ -410,7 +430,9 @@ async function loadNextPage() {
 }
 
 /* setupIntersectionObserver
+用途：无限滚动监听。
 用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
+原理：利用浏览器的 IntersectionObserver API，当底部的 sentinel 元素进入视口时调用 loadNextPage。
 */
 function setupIntersectionObserver() {
     observer = new IntersectionObserver((entries) => {
@@ -420,7 +442,9 @@ function setupIntersectionObserver() {
 }
 
 /* init
+用途：页面初始化入口。
 用法：作为应用的主要入口文件，当页面完成基本渲染后负责拉取底层数据。
+原理：加载主题、绑定搜索、鉴权检查显示特定按钮、并一次性拉取用户和热榜数据进行首页的初始渲染加载。
 */
 async function init() {
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');

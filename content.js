@@ -10,11 +10,11 @@ const TRANS = {
     loginReq: { zh: "请先登录！", en: "Please login first!" },
     emptyContent: { zh: "内容不能为空", en: "Content cannot be empty" },
     sendFail: { zh: "发送失败 😢", en: "Send failed 😢" },
-    // 新增：删除相关的翻译词条
+    // 删除相关的翻译词条
     confirmDelete: { zh: "警告：此操作不可逆！\n你确定要删除这篇帖子吗？", en: "Warning: Irreversible action!\nAre you sure you want to delete this post?" },
     deleteSuccess: { zh: "帖子已彻底删除 💥", en: "Post completely deleted 💥" },
     deleteFail: { zh: "删除失败，可能是权限不足", en: "Delete failed, might be a permission issue" },
-    // 新增：违反网站公约拦截提示
+    // 违反网站公约拦截提示
     policyViolation: { zh: "请勿发送违反《网站公约》的内容", en: "Please do not send content that violates the Website Convention" }
 };
 
