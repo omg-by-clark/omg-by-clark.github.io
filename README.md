@@ -1,5 +1,3 @@
-![logo](https://omg-by-clark.github.io/logo.svg)
-
 ### 😀👋 Hi, this is `README.md`, if you're looking for some tips, you've come to the right place!
 
 🎈 Our website is a platform that you can **post your life stories** that **make you feel upset or angry**, you can also **use our code to improve your project or website**.
