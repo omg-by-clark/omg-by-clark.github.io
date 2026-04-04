@@ -22,7 +22,6 @@
 
             /* 投票胶囊颜色变量 - 浅色模式 */
             --vote-bg-neutral: hsl(233deg, 10%, 47%);
-            --vote-bg-liked: #ff4757;
             --vote-bg-disliked: #7287fd;
 
             /* 浅色模式下查看全文的蓝字 */
@@ -64,7 +63,10 @@
             --title-text: hsl(40, 87%, 91%);
             --kw-text: #838ba7;
         }
-
+        /* selection 用途：设置用户选择时的字体颜色 */
+        ::selection {
+            background: hsla(355, 100%, 75%, 0.3);
+        }
         /* [body] 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
         body {
             font-family: sans-serif;
@@ -283,7 +285,7 @@
 
         /* [.vote-pill.is-liked .like-btn] 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
         .vote-pill.is-liked .like-btn {
-            background-color: var(--vote-bg-liked);
+            background-color: var(--brand);
         }
 
         /* [.vote-pill.is-disliked .dislike-btn] 用途：用户点踩后，踩按钮区域背景变蓝的交互反馈 */

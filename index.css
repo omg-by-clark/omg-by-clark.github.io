@@ -11,21 +11,20 @@
     --button-grad: linear-gradient(45deg, #e64553, #fe640b);
     --kw-text: #5c5f77;
 
-    /* 问候语框背景色 - 浅色模式 */
+    /* 问候语框背景色 */
     --greeting-bg: #7c7f93;
 
-    /* 投票胶囊颜色变量 - 浅色模式 */
+    /* 投票胶囊颜色变量 */
     --vote-bg-neutral: hsl(233deg, 10%, 47%);
-    --vote-bg-liked: #ff4757;
     --vote-bg-disliked: #7287fd;
 
-    /* 浅色模式下查看全文的蓝字 */
+    /* 查看全文的蓝字 */
     --read-more: #1e66f5;
 
     /* NSFW 警示色 */
     --nsfw-color: #fe640b;
 
-    /* 疑似搬运 · 浅色模式下的绿色 */
+    /* 疑似搬运的绿色 */
     --repost-color: #40a02b;
 
     /* 正文和标题颜色变量 */
@@ -43,17 +42,17 @@ body.dark {
     --disliked: #a4b0be;
     --hot-border: #ff6b81;
 
-    /* 问候语框背景色 - 深色模式 */
+    /* 问候语框背景色 */
     --greeting-bg: #626880;
 
-    /* 投票胶囊颜色变量 · 深色模式 */
+    /* 投票胶囊颜色变量 */
     --vote-bg-neutral: #333;
     --vote-bg-disliked: #7287fd;
 
-    /* 深色模式下查看全文的蓝字 */
+    /* 查看全文的蓝字 */
     --read-more: #89dceb;
 
-    /* 疑似搬运 · 深色模式下的绿色 */
+    /* 疑似搬运的绿色 */
     --repost-color: #a6e3a1;
 
     /* 深色模式下的文字颜色适配 */
@@ -76,6 +75,10 @@ body {
     word-break: break-word;
 }
 
+/* 用途：设置选择任何文本时都能显示 brand 色 */
+::selection {
+    background: hsla(355, 100%, 75%, 0.3);
+}
 /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
 h1 {
     font-family: Consolas, Monaco, monospace;
@@ -442,7 +445,7 @@ h1 {
 
 /* 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
 .vote-pill.is-liked .like-btn {
-    background-color: var(--vote-bg-liked);
+    background-color: var(--brand);
 }
 
 /* 用途：用户点踩后，踩按钮区域背景变蓝的交互反馈 */

@@ -21,7 +21,6 @@
 
             /* 投票胶囊颜色变量 - 浅色模式 */
             --vote-bg-neutral: hsl(233deg, 10%, 47%);
-            --vote-bg-liked: #ff4757;
             --vote-bg-disliked: #7287fd;
 
             /* 新增：浅色模式下的删除按钮颜色 */
@@ -46,7 +45,6 @@
 
             /* 投票胶囊颜色变量 - 深色模式 */
             --vote-bg-neutral: #333;
-            --vote-bg-liked: #ff6b81;
             --vote-bg-disliked: #7287fd;
 
             /* 新增：深色模式下的删除按钮颜色 */
@@ -55,7 +53,10 @@
             /* 新增：疑似搬运 · 深色模式下的绿色 */
             --repost-color: #a6e3a1;
         }
-
+        /* selection 用途：设置用户选择时的字体颜色 */
+        ::selection {
+            background: hsla(355, 100%, 75%, 0.3);
+        }
         /* body 用法：设置页面整体的字体、最大宽度、居中对齐、内外边距及换肤的过渡动画。 */
         body {
             font-family: sans-serif;
@@ -123,7 +124,7 @@
 
         /* .vote-pill.is-liked .like-btn 用法：当帖子被点赞时，使点赞按钮呈现高亮色及光晕阴影。 */
         .vote-pill.is-liked .like-btn {
-            background-color: var(--vote-bg-liked);
+            background-color: var(--brand);
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
         }
 

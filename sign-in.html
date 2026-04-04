@@ -30,6 +30,11 @@
             --error-text: #df585a;
         }
 
+        /* selection 用途：设置用户选择时的字体颜色 */
+        ::selection {
+            background: hsla(355, 100%, 75%, 0.3);
+        }
+
         /* body 用途：设置页面整体的字体、居中布局和背景过渡效果。 */
         body {
             font-family: sans-serif;
@@ -230,7 +235,7 @@
             const user = document.getElementById('u').value.trim();
             const pass = document.getElementById('p').value.trim();
             const pwdError = document.getElementById('pwd-error');
-            
+
             pwdError.style.display = 'none';
 
             if (!user || !pass) return alert(localStorage.getItem('lang') === 'zh' ? "填完整再点！" : "Please fill in all fields!");
@@ -318,7 +323,7 @@
                 const capBtn = document.getElementById('btn-captcha');
                 capBtn.classList.add('success');
                 capBtn.innerText = (localStorage.getItem('lang') === 'zh') ? "✅ 验证通过" : "✅ Verified";
-                
+
                 // 验证通过，短暂延迟后执行真正的注册或登录逻辑，给用户看一眼变绿的动画
                 setTimeout(executeFinalAuth, 400);
             } else {
@@ -342,7 +347,7 @@
                 } else {
                     alert(lang === 'zh' ? "注册成功！去登录吧" : "Registered! Please log in");
                     document.getElementById('p').value = ""; // 清空密码框
-                    toggle(); 
+                    toggle();
                 }
             } else if (pendingAuthData.action === 'login') {
                 const data = pendingAuthData.data;
