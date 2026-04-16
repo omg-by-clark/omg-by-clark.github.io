@@ -18,7 +18,8 @@ can go [here](https://omg-by-clark.github.io).
 - 📢 **Advice**: Have advice? Send your advice to `omg-clarkzhang[-a-t-]outlook.com` (`[-a-t-]` means `@`), you also can open an issue.
 ---
 ### Updates
-Now version is **🥤 Bubble Tea 6.14**. We...
-> 📝 Changed `README.md` (just this file).
+Now version is **Bubble Tea 6.15**. We have these changes:
+- 🏷️️ **New:** Integrated a sleek version badge in the header, meticulously styled with the signature brand color and rounded corners for a polished UI.
+- 🔍️ **Fixed:** Revamped the keyword search dropdown into a refined selection list with increased line-height and enhanced hover states for a more intuitive UX.
 
 🧨 That's all. Hope you enjoy our website!

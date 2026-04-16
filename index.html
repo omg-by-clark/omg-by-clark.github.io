@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- index.html -->
 <html lang="zh-CN">
 
 <head>
@@ -12,9 +11,12 @@
 
 <body>
     <div class="header-container">
-        <h1
-            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
-            omg-by-Clark.github.io</h1>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h1
+                onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+                omg-by-Clark.github.io</h1>
+            <span class="version-tag">Bubble Tea 6.15</span>
+        </div>
 
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="搜索帖子或输入 # 选择关键词" autocomplete="off">

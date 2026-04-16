@@ -79,6 +79,7 @@ body {
 ::selection {
     background: hsla(355, 100%, 75%, 0.3);
 }
+
 /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
 h1 {
     font-family: Consolas, Monaco, monospace;
@@ -87,6 +88,21 @@ h1 {
     margin: 0;
     font-size: 1.6em;
     user-select: none;
+    white-space: nowrap;
+}
+
+/* 用途：大标题旁边的版本号标签，品牌色背景，白字居中，圆角 */
+.version-tag {
+    background-color: var(--brand);
+    color: #ffffff;
+    /* 缩小内边距和字号，使其视觉高度约占大标题的 5/8，显得更精致 */
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.65em;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     white-space: nowrap;
 }
 
@@ -151,17 +167,24 @@ h1 {
     display: block;
 }
 
-/* 用途：下拉列表里每一个标签选项的样式和悬停效果 */
-.keyword-dropdown-item {
-    padding: 8px 15px;
+/* 用途：下拉列表里每一个标签选项的样式，增加行距，变成选择列表 */
+.tag-dropdown-item {
+    padding: 12px 15px;
     cursor: pointer;
-    transition: background 0.2s;
-    font-size: 0.9em;
+    transition: background 0.2s ease;
+    font-size: 0.95em;
     color: var(--text);
+    border-bottom: 1px solid rgba(150, 150, 150, 0.1);
 }
 
-.keyword-dropdown-item:hover {
-    background: rgba(150, 150, 150, 0.1);
+/* 用途：去掉下拉列表最后一项的底部边框，保持 UI 干净 */
+.tag-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+/* 用途：鼠标悬停效果，背景颜色更深 (darker) */
+.tag-dropdown-item:hover {
+    background: rgba(128, 128, 128, 0.15);
 }
 
 /* 用途：搜索框下方用于展示已选中关键词的容器 */
@@ -316,7 +339,9 @@ h1 {
 }
 
 /* 用途：清除列表里最后一个帖子的底部边框，保持视觉整洁 */
-.card:last-child { border-bottom: none; }
+.card:last-child {
+    border-bottom: none;
+}
 
 /* 用途：卡片内帖子主标题的字体大小和颜色渲染 */
 .card b {
