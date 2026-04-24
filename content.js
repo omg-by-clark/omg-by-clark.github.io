@@ -66,6 +66,10 @@ async function loadPostDetails() {
         const { data: post, error } = await _supabase.from('posts').select('*').eq('id', postId).single();
         if (error) throw error;
 
+        // 新增：阅读量 +1 逻辑
+        const newReads = (post.reads || 0) + 1;
+        await _supabase.from('posts').update({ reads: newReads }).eq('id', postId);
+
         // 核心逻辑：拿到帖子数据后，立刻将作者名字存入全局变量
         currentPostAuthor = post.nickname;
 
@@ -78,7 +82,7 @@ async function loadPostDetails() {
         const cContainer = document.getElementById('c');
         cContainer.innerText = post.content;
 
-        document.getElementById('info').innerHTML = `👤 <span style="${nStyle}">${escapeHTML(post.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span> | 📅 ${new Date(post.created_at).toLocaleString()}`;
+        document.getElementById('info').innerHTML = `👤 <span style="${nStyle}">${escapeHTML(post.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span> | 📅 ${new Date(post.created_at).toLocaleString()} | 👀️ ${newReads}`;
 
         const kwRow = document.getElementById('kw-row');
         let hasNSFW = false;
@@ -251,9 +255,18 @@ async function addCmt() {
         return;
     }
 
+    // 锁定按钮，防止重复点击
+    const sendBtn = document.querySelector('.btn-send');
+    const originalText = sendBtn.innerText;
+    sendBtn.disabled = true;
+    sendBtn.innerText = currentLang === 'zh' ? "发送中..." : "Sending...";
+
     const { error } = await _supabase.from('comments').insert([{ post_id: postId, nickname: nick, content: content }]);
     if (error) {
         alert(TRANS.sendFail[currentLang]);
+        // 解除锁定并恢复按钮文字
+        sendBtn.disabled = false;
+        sendBtn.innerText = originalText;
     } else {
         const { data: user } = await _supabase.from('users').select('points').eq('username', nick).maybeSingle();
         const newPoints = (user ? user.points : 0) + 5;
@@ -261,6 +274,10 @@ async function addCmt() {
         localStorage.setItem('userPoints', newPoints);
         document.getElementById('cC').value = "";
         loadComments();
+
+        // 解除锁定并恢复按钮文字
+        sendBtn.disabled = false;
+        sendBtn.innerText = originalText;
     }
 }
 
