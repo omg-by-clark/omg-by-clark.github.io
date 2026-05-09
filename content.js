@@ -1,4 +1,4 @@
-/**** content.js ****/
+/* content.js */
 const currentLang = localStorage.getItem('lang') || 'zh';
 const TRANS = {
     noId: { zh: "未找到帖子 ID", en: "Post ID not found" },
@@ -132,6 +132,10 @@ async function loadPostDetails() {
         if (currentUser && currentUser === currentPostAuthor) {
             document.getElementById('btn-delete-post').style.display = 'block';
         }
+
+        // 帖子和状态完全加载好后，解锁点赞和点踩按钮
+        document.getElementById('btn-like').disabled = false;
+        document.getElementById('btn-dislike').disabled = false;
 
         loadComments();
     } catch (err) {

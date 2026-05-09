@@ -133,6 +133,15 @@
             border-radius: 28px;
         }
 
+        /* .like-btn:disabled, .dislike-btn:disabled 用途：如果没有加载出来，投票按钮变色并且不能点击。 */
+        .like-btn:disabled,
+        .dislike-btn:disabled {
+            background-color: hsl(233deg, 10%, 47%);
+            color: hsl(220deg, 21%, 89%);
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         /* .vote-divider 用途：在点赞和点踩按钮之间绘制一条半透明的垂直分割线。 */
         .vote-divider {
             width: 1px;
@@ -323,6 +332,13 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 1.05rem;
+            display: inline-block;
+            transition: 0.1s;
+        }
+
+        /* .nav-links a:active 用途：返回首页按钮也要像发布评论一样有点击放大的效果。 */
+        .nav-links a:active {
+            transform: scale(1.1);
         }
 
         /* .btn-delete-post 用途：设置删除帖子按钮的红色样式，默认隐藏。 */
@@ -383,11 +399,11 @@
 
 <div class="action-area">
     <div class="vote-pill" id="vote-container">
-        <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')">
+        <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')" disabled>
             👍 <span id="like-count">0</span>
         </button>
         <div class="vote-divider"></div>
-        <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')">
+        <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')" disabled>
             👎 <span id="dislike-count">0</span>
         </button>
     </div>
