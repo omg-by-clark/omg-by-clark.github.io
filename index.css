@@ -91,21 +91,6 @@ h1 {
     white-space: nowrap;
 }
 
-/* 用途：大标题旁边的版本号标签，品牌色背景，白字居中，圆角 */
-.version-tag {
-    background-color: var(--brand);
-    color: #ffffff;
-    /* 缩小内边距和字号，使其视觉高度约占大标题的 5/8，显得更精致 */
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.65em;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
 /* 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
 .header-container {
     display: flex;

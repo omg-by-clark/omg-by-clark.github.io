@@ -18,8 +18,8 @@ can go [here](https://omg-by-clark.github.io).
 - 📢 **Advice**: Have advice? Send your advice to `omg-clarkzhang[-a-t-]outlook.com` (`[-a-t-]` means `@`), you also can open an issue.
 ---
 ### Updates
-Now version is **Bubble Tea 6.16**. We have these changes:
-- **New:** when you readed a post, the `reads` row in Supabase will plus 1.
-- **Change:** changed the keyword of our site.
+Now version is **Bubble Tea 8.0**. We have these changes:
+- **Fixed:** Pre-load votes is no longer wipe data.
+- **Removed:** The version tag is now removed.
 
 🧨 That's all. Hope you enjoy our website!
