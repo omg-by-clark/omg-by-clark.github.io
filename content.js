@@ -42,6 +42,27 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+/* parseCustomCommands
+用途：解析帖子正文中的自定义排版指令。
+用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
+原理：按顺序匹配 \link[], \extrab[], \b[], \code[], \subt[]，使用捕获组获取内容并替换。
+*/
+function parseCustomCommands(text) {
+    if (!text) return '';
+    let parsed = text;
+    // 匹配 \link[text](url)，变成 <a>，href是小括号内容，颜色绑定 var(--repost-color)
+    parsed = parsed.replace(/\\link\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--repost-color); text-decoration: none;">$1</a>');
+    // 匹配 \extrab[text]，字体加粗到 bolder
+    parsed = parsed.replace(/\\extrab\[(.*?)\]/g, '<span style="font-weight: bolder;">$1</span>');
+    // 匹配 \b[text]，字体加粗到 bold
+    parsed = parsed.replace(/\\b\[(.*?)\]/g, '<span style="font-weight: bold;">$1</span>');
+    // 匹配 \code[text]，使用指定的等宽 fallback 字体族
+    parsed = parsed.replace(/\\code\[(.*?)\]/g, '<span style="font-family: \'Google Sans Code\', Consolas, monospace;">$1</span>');
+    // 匹配 \subt[text]，强制换行独立成块，且字体大小对齐默认的 h4 尺寸 (1.17em)
+    parsed = parsed.replace(/\\subt\[(.*?)\]/g, '<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">$1</span>');
+    return parsed;
+}
+
 /* toggleNSFW 用法：在用户点击特定的 NSFW 关键词时，切换正文容器(#c)的模糊和解模状态类名。 */
 function toggleNSFW(event, element) {
     event.stopPropagation();
@@ -80,7 +101,8 @@ async function loadPostDetails() {
         document.getElementById('t').innerText = post.title;
 
         const cContainer = document.getElementById('c');
-        cContainer.innerText = post.content;
+        // 修改这里：经过 escapeHTML 安全转义后，再解析自定义指令，并使用 innerHTML 渲染
+        cContainer.innerHTML = parseCustomCommands(escapeHTML(post.content));
 
         document.getElementById('info').innerHTML = `👤 <span style="${nStyle}">${escapeHTML(post.nickname)}</span> <span class="lv-badge ${lv.class}">${lv.name}</span> | 📅 ${new Date(post.created_at).toLocaleString()} | 👀️ ${newReads}`;
 
@@ -228,7 +250,8 @@ async function loadComments() {
             const opBadgeHtml = isOP ? `<span class="op-badge">[OP]</span>` : '';
 
             // 在等级标签 ${clv.name} 的左侧插入 ${opBadgeHtml}
-            return `<div class="cmt-item"><div class="cmt-content"><b><span style="${cnStyle}">${escapeHTML(c.nickname)}</span>${opBadgeHtml} <span class="lv-badge ${clv.class}">${clv.name}</span>:</b> ${escapeHTML(c.content)}</div></div>`;
+            // 修改这里：给评论内容也加上解析功能
+            return `<div class="cmt-item"><div class="cmt-content"><b><span style="${cnStyle}">${escapeHTML(c.nickname)}</span>${opBadgeHtml} <span class="lv-badge ${clv.class}">${clv.name}</span>:</b> ${parseCustomCommands(escapeHTML(c.content))}</div></div>`;
         }).join('') || `<p style="color:#888">${TRANS.noComments[currentLang]}</p>`;
     } catch (err) {
         console.error("加载失败", err);

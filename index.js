@@ -148,6 +148,27 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+/* parseCustomCommands
+用途：解析帖子正文中的自定义排版指令。
+用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
+原理：按顺序匹配 \link[], \extrab[], \b[], \code[], \subt[]，使用捕获组获取内容并替换。
+*/
+function parseCustomCommands(text) {
+    if (!text) return '';
+    let parsed = text;
+    // 匹配 \link[text](url)，变成 <a>，href是小括号内容，颜色绑定 var(--repost-color)
+    parsed = parsed.replace(/\\link\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--repost-color); text-decoration: none;">$1</a>');
+    // 匹配 \extrab[text]，字体加粗到 bolder
+    parsed = parsed.replace(/\\extrab\[(.*?)\]/g, '<span style="font-weight: bolder;">$1</span>');
+    // 匹配 \b[text]，字体加粗到 bold
+    parsed = parsed.replace(/\\b\[(.*?)\]/g, '<span style="font-weight: bold;">$1</span>');
+    // 匹配 \code[text]，使用指定的等宽 fallback 字体族
+    parsed = parsed.replace(/\\code\[(.*?)\]/g, '<span style="font-family: \'Google Sans Code\', Consolas, monospace;">$1</span>');
+    // 匹配 \subt[text]，强制换行独立成块，且字体大小对齐默认的 h4 尺寸 (1.17em)
+    parsed = parsed.replace(/\\subt\[(.*?)\]/g, '<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">$1</span>');
+    return parsed;
+}
+
 /* getNicknameStyle
 用途：个性化用户名展示。
 用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
@@ -327,12 +348,16 @@ function createCardHTML(postData, userMap) {
     const safeContent = postData.content || '';
     let displayContent = '';
 
-    // 截取字数按原样计算，只在最后将换行符 \n 替换为两个不换行空格 &nbsp;&nbsp; 供前端显示
+    // 截取字数按原样计算，为了支持特殊指令渲染，我们在 escapeHTML 和解析指令后再处理换行符
     if (safeContent.length > 200) {
-        displayContent = escapeHTML(safeContent.substring(0, 200)).replace(/\n/g, '&nbsp;&nbsp;') +
+        let truncated = escapeHTML(safeContent.substring(0, 200));
+        let parsed = parseCustomCommands(truncated);
+        displayContent = parsed.replace(/\n/g, '&nbsp;&nbsp;') +
             `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
     } else {
-        displayContent = escapeHTML(safeContent).replace(/\n/g, '&nbsp;&nbsp;');
+        let escaped = escapeHTML(safeContent);
+        let parsed = parseCustomCommands(escaped);
+        displayContent = parsed.replace(/\n/g, '&nbsp;&nbsp;');
     }
 
     let dateStr = '';
