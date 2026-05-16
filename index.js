@@ -151,21 +151,39 @@ function escapeHTML(str) {
 /* parseCustomCommands
 用途：解析帖子正文中的自定义排版指令。
 用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
-原理：按顺序匹配 \link[], \extrab[], \b[], \code[], \subt[]，使用捕获组获取内容并替换。
+原理：使用合并的正则表达式和单个 replace 回调进行一次性解析，保证指令“只能接一层”，也就是不会二次处理已匹配的内部文本。
 */
 function parseCustomCommands(text) {
     if (!text) return '';
     let parsed = text;
-    // 匹配 \link[text](url)，变成 <a>，href是小括号内容，颜色绑定 var(--repost-color)
-    parsed = parsed.replace(/\\link\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: var(--repost-color); text-decoration: none;">$1</a>');
-    // 匹配 \extrab[text]，字体加粗到 bolder
-    parsed = parsed.replace(/\\extrab\[(.*?)\]/g, '<span style="font-weight: bolder;">$1</span>');
-    // 匹配 \b[text]，字体加粗到 bold
-    parsed = parsed.replace(/\\b\[(.*?)\]/g, '<span style="font-weight: bold;">$1</span>');
-    // 匹配 \code[text]，使用指定的等宽 fallback 字体族
-    parsed = parsed.replace(/\\code\[(.*?)\]/g, '<span style="font-family: \'Google Sans Code\', Consolas, monospace;">$1</span>');
-    // 匹配 \subt[text]，强制换行独立成块，且字体大小对齐默认的 h4 尺寸 (1.17em)
-    parsed = parsed.replace(/\\subt\[(.*?)\]/g, '<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">$1</span>');
+
+    // 合并所有特殊指令为一个正则。利用 replace() 方法的单次遍历特性。
+    // 这样一来，当外层指令被匹配和替换后，其内部包含的其它指令（例如 \code[\b[text]] 中的 \b）
+    // 将直接作为普通文本被返回，而不会被当作嵌套指令继续执行解析。
+    const regex = /\\(link|extrab|b|code|subt)\[(.*?)\](?:\((.*?)\))?/g;
+
+    parsed = parsed.replace(regex, function(match, command, innerText, url) {
+        if (command === 'link') {
+            // 处理链接指令：\link[text](url) -> <a>
+            const safeUrl = url ? url : '';
+            return `<a href="${safeUrl}" style="color: var(--repost-color); text-decoration: none;">${innerText}</a>`;
+        } else if (command === 'extrab') {
+            // 处理加极粗指令：\extrab[text] -> <span> bolder
+            return `<span style="font-weight: bolder;">${innerText}</span>`;
+        } else if (command === 'b') {
+            // 处理加粗指令：\b[text] -> <span> bold
+            return `<span style="font-weight: bold;">${innerText}</span>`;
+        } else if (command === 'code') {
+            // 处理代码指令：\code[text] -> <span> monospace fallback
+            return `<span style="font-family: 'Google Sans Code', Consolas, monospace;">${innerText}</span>`;
+        } else if (command === 'subt') {
+            // 处理小标题指令：\subt[text] -> <span> block h4 size
+            return `<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">${innerText}</span>`;
+        }
+        // 理论上不会走到这里，但为了代码健壮性返回原匹配
+        return match;
+    });
+
     return parsed;
 }
 
