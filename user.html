@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <!-- user.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
 
 <head>
@@ -19,26 +33,16 @@
             --hot-border: #ff6b81;
             --button-grad: linear-gradient(45deg, #e64553, #fe640b);
             --kw-text: #5c5f77;
-
-            /* 投票胶囊颜色变量 - 浅色模式 */
             --vote-bg-neutral: hsl(233deg, 10%, 47%);
             --vote-bg-disliked: #7287fd;
-
-            /* 浅色模式下查看全文的蓝字 */
             --read-more: #1e66f5;
-
-            /* NSFW 警示色 */
             --nsfw-color: #fe640b;
-
-            /* 新增：疑似搬运 浅色模式下的绿色 */
             --repost-color: #40a02b;
-
-            /* 正文和标题颜色变量 */
             --body-text: #4c4f69;
             --title-text: #121212;
         }
 
-        /* [body.dark] 用途：定义深色模式下的CSS变量覆盖，当body带有dark类时自动生效，实现黑夜模式适配 */
+        /* [body.dark] 用途：定义深色模式下的 CSS 变量覆盖，当 body 带有 dark 类时自动生效，实现黑夜模式适配 */
         body.dark {
             --bg: #1a1a1a;
             --text: #f0f0f0;
@@ -47,15 +51,9 @@
             --unliked: hsl(233deg, 10%, 47%);
             --disliked: #a4b0be;
             --hot-border: #ff6b81;
-
-            /* 投票胶囊颜色变量 - 深色模式 */
             --vote-bg-neutral: #333;
             --vote-bg-disliked: #7287fd;
-
-            /* 深色模式下查看全文的蓝字 */
             --read-more: #89dceb;
-
-            /* 新增：疑似搬运 深色模式下的绿色 */
             --repost-color: #a6e3a1;
 
             /* 深色模式下的文字颜色适配 */
@@ -63,10 +61,12 @@
             --title-text: hsl(40, 87%, 91%);
             --kw-text: #838ba7;
         }
+
         /* selection 用途：设置用户选择时的字体颜色 */
         ::selection {
             background: hsla(355, 100%, 75%, 0.3);
         }
+
         /* [body] 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
         body {
             font-family: sans-serif;
@@ -95,7 +95,7 @@
             margin-bottom: 10px;
         }
 
-        /* [.header-container] 用途：顶部导航区域的Flexbox布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
+        /* [.header-container] 用途：顶部导航区域的 Flexbox 布局，控制标题、搜索框和按钮组的水平排列及底部边框 */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -293,7 +293,8 @@
             background-color: var(--vote-bg-disliked);
         }
 
-        /* [.vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider] 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
+        /* [.vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider]
+           用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
         .vote-pill.is-liked .vote-divider,
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
@@ -504,7 +505,7 @@
 <body>
     <div class="header-container">
         <h1
-            onclick="alert(document.localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
+            onclick="alert(localStorage.getItem('lang') === 'zh' ? '恭喜你看到了这个隐藏彩蛋！' : 'Congratulations on finding this hidden Easter egg!')">
             omg-by-Clark.github.io</h1>
 
         <div class="header-actions">
@@ -565,10 +566,77 @@
             return div.innerHTML;
         }
 
-        /* getSafeFileName
-        用法：将用户名进行 Base64 编码，并移除等号，以匹配 Supabase 存储桶的安全路径要求。
-        原理：使用 encodeURIComponent 处理中文字符，再用 btoa 转为 Base64，最后用 replace 删去末尾的等号，与 info.html 保持一致。
+        /* formatRelativeTime
+        用法：把用户主页帖子列表中的发布时间转换成相对时间。
+        返回：中文示例为“刚刚 / 1 分钟前 / 昨天 / 2 天前 / 1 个月前 / 1 年前”，英文模式返回对应英文。
+        原理：计算目标时间到当前时间的差值，并按分钟、小时、天、月、年逐级展示；只负责显示，不参与帖子查询排序。
         */
+        function formatRelativeTime(dateInput) {
+            const date = new Date(dateInput);
+            if (Number.isNaN(date.getTime())) return '';
+
+            const diffMs = Date.now() - date.getTime();
+            const seconds = Math.max(0, Math.floor(diffMs / 1000));
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(days / 365);
+
+            if ((localStorage.getItem('lang') || 'zh') === 'en') {
+                if (seconds < 60) return 'just now';
+                if (minutes < 60) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+                if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+                if (days === 1) return 'yesterday';
+                if (days < 30) return `${days} days ago`;
+                if (months < 12) return months === 1 ? '1 month ago' : `${months} months ago`;
+                return years === 1 ? '1 year ago' : `${years} years ago`;
+            }
+
+            if (seconds < 60) return '刚刚';
+            if (minutes < 60) return `${minutes} 分钟前`;
+            if (hours < 24) return `${hours} 小时前`;
+            if (days === 1) return '昨天';
+            if (days < 30) return `${days} 天前`;
+            if (months < 12) return `${months} 个月前`;
+            return `${years} 年前`;
+        }
+
+        /* parseCustomCommands
+        用途：解析帖子正文中的自定义排版指令。
+        用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
+        原理：匹配 \ / . 符号，支持双符号转义，并采用单层括号非贪婪匹配以完美支持如 .code[.b[]] 的嵌套场景。
+        */
+        function parseCustomCommands(text) {
+            if (!text) return '';
+            let parsed = text;
+
+            const regex = /([\\/\.])(\1)?(link|b|code|subt)\[((?:[^\[\]]|\[[^\]]*\])*?)\](?:\((.*?)\))?/g;
+
+            parsed = parsed.replace(regex, function (match, p1, p2, command, innerText, url) {
+                // 如果存在两个连续的指令符号，说明是转义，直接取消指令解析，返回单符号普通文本
+                if (p2) {
+                    const safeUrl = url ? `(${url})` : '';
+                    return `${p1}${command}[${innerText}]${safeUrl}`;
+                }
+
+                if (command === 'link') {
+                    if (innerText === '' && !url) return match;
+                    const safeUrl = url ? url : '';
+                    return `<a href="${safeUrl}" style="color: var(--repost-color); text-decoration: none;">${innerText}</a>`;
+                } else if (command === 'b') {
+                    return `<span style="font-weight: bold;">${innerText}</span>`;
+                } else if (command === 'code') {
+                    return `<span style="font-family: 'Google Sans Code', Consolas, monospace;">${innerText}</span>`;
+                } else if (command === 'subt') {
+                    return `<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">${innerText}</span>`;
+                }
+                return match;
+            });
+
+            return parsed;
+        }
+
         /* getSafeFileName
         用法：将用户名转换为与存储桶中一致的 Base64 文件名。
         原理：直接对 encodeURIComponent 处理后的原始百分号字符串进行 Base64 编码，不移除任何字符。
@@ -689,7 +757,7 @@
 
         /* createCardHTML
         用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-        原理：根据数据拼接包含标题、关键词、作者、时间和操作按钮的模板字符串，并针对 XSS 安全进行 HTML 实体转义处理。
+        原理：根据数据拼接包含标题、关键词、作者、时间和操作按钮的模板字符串，支持基于特殊端点命令强制截断逻辑。
         */
         function createCardHTML(postData, userMap) {
             const author = userMap ? userMap[postData.nickname] : null;
@@ -721,18 +789,23 @@
             const safeContent = postData.content || '';
             let displayContent = '';
 
+            // 全局解析正文；user.html 与 index.html 一样，只按字数规则截断预览内容
+            let escaped = escapeHTML(safeContent);
+            let fullParsed = parseCustomCommands(escaped);
+
+            // 字数限制截断（截取后再解析，保障标签安全）
             if (safeContent.length > 200) {
-                displayContent = escapeHTML(safeContent.substring(0, 200)) +
+                let truncated = escapeHTML(safeContent.substring(0, 200));
+                let parsedTrunc = parseCustomCommands(truncated);
+                displayContent = parsedTrunc.replace(/\n/g, '&nbsp;&nbsp;') +
                     `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
             } else {
-                displayContent = escapeHTML(safeContent);
+                displayContent = fullParsed.replace(/\n/g, '&nbsp;&nbsp;');
             }
 
             let dateStr = '';
             if (postData.created_at) {
-                const d = new Date(postData.created_at);
-                const pad = n => n.toString().padStart(2, '0');
-                dateStr = d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+                dateStr = formatRelativeTime(postData.created_at);
             }
 
             return `

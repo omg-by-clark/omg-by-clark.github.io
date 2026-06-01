@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <!-- 404.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
+
 <head>
     <link rel="icon" href="logo.svg" type="image/svg+xml">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>找不到网址 404 • omg-by-Clark</title>
+    <title>找不到网址 • omg-by-Clark</title>
     <style>
         :root {
             --bg: #fffdf5;
@@ -27,7 +42,7 @@
         }
 
         h1 {
-            font-family: Consolas, Monaco, monospace;
+            font-family: 'Google Sans Code', Consolas, Monaco, monospace;
             color: var(--brand);
             padding: 15px;
             border: 4px solid var(--brand);
@@ -39,23 +54,43 @@
         }
 
         h2 {
-            font-family: sans-serif, "PingFang SC";
+            font-family: 'Noto Sans SC', 'Source Han Sans', 'PingFang SC',  sans-serif;
             color: var(--text);
-            user-select: none;
+        }
+
+        a {
+            color: var(--brand);
+            font-weight: bold;
+            border: none;
         }
     </style>
 </head>
+
 <body>
-<h1>omg-by-Clark.github.io</h1>
-<h2 data-zh="😕 哎呀，内容被外星人抓走了！"
-    data-en="😕 Oops! The content was abducted by aliens!">
-    😕 哎呀，内容被外星人抓走了！
-</h2>
-<p data-zh="😑 建议你检查一下网址有没有输对，是 omg-by-clark.github.io"
-   data-en="😑 You might want to double-check that URL. It's omg-by-clark.github.io">
-    😑 建议你检查一下网址有没有输对，是 omg-by-clark.github.io
-</p>
-<h3>👉 直接跳转到<a href="index.html">登录界面</a></h3>
-<h3>👉 Go directly to <a href="index.html">Login Page</a></h3>
+    <h1>omg-by-Clark.github.io</h1>
+    <h2 data-zh="😕 哎呀，内容被外星人抓走了！" data-en="😕 Oops! The content was abducted by aliens!">
+        😕 哎呀，内容被外星人抓走了！
+    </h2>
+    <p data-zh="😑 建议你检查一下网址有没有输对，是 omg-by-clark.github.io"
+        data-en="😑 You might want to double-check that URL. It's omg-by-clark.github.io">
+        😑 建议你检查一下网址有没有输对，是 omg-by-clark.github.io
+    </p>
+    <a href="index.html" data-zh="➡️ 首页链接" data-en="➡️ Link to Home Page">➡️ 首页链接</a>
+    <script>
+        // [init] 用于实现颜色和语言适配
+        function init() {
+            const language = localStorage.getItem('lang');
+            const displayMode = localStorage.getItem('theme');
+            if (displayMode == 'dark') {
+                document.body.classList.add('dark');
+            }
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                const zhText = el.getAttribute('data-zh');
+                const enText = el.getAttribute('data-en');
+                el.innerText = (language === 'zh' ? zhText : enText);
+            });
+        }
+    </script>
 </body>
+
 </html>

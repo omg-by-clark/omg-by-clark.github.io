@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <!-- info.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
 
 <head>
@@ -357,6 +371,42 @@
             return div.innerHTML;
         }
 
+        /* formatRelativeTime
+        用法：把最后签到时间转换成用户更容易理解的相对时间。
+        返回：中文示例为“刚刚 / 1 分钟前 / 昨天 / 2 天前 / 1 个月前 / 1 年前”，英文模式返回对应英文。
+        原理：用当前时间减去最后签到时间，再按分钟、小时、天、月、年分段取整；这里只影响展示，不影响今日是否已签到和连签逻辑。
+        */
+        function formatRelativeTime(dateInput) {
+            const date = new Date(dateInput);
+            if (Number.isNaN(date.getTime())) return '';
+
+            const diffMs = Date.now() - date.getTime();
+            const seconds = Math.max(0, Math.floor(diffMs / 1000));
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(days / 365);
+
+            if (lang === 'en') {
+                if (seconds < 60) return 'just now';
+                if (minutes < 60) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+                if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+                if (days === 1) return 'yesterday';
+                if (days < 30) return `${days} days ago`;
+                if (months < 12) return months === 1 ? '1 month ago' : `${months} months ago`;
+                return years === 1 ? '1 year ago' : `${years} years ago`;
+            }
+
+            if (seconds < 60) return '刚刚';
+            if (minutes < 60) return `${minutes} 分钟前`;
+            if (hours < 24) return `${hours} 小时前`;
+            if (days === 1) return '昨天';
+            if (days < 30) return `${days} 天前`;
+            if (months < 12) return `${months} 个月前`;
+            return `${years} 年前`;
+        }
+
         // getSafeFileName 函数将用户名进行 Base64 编码，解决 Supabase 存储桶不支持中文字符路径的问题
         function getSafeFileName(username) {
             return btoa(encodeURIComponent(username)).replace(/=/g, "");
@@ -491,7 +541,7 @@
 
                 if (data.last_check_in) {
                     lastCheckInDate = new Date(data.last_check_in);
-                    const readableDate = lastCheckInDate.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US');
+                    const readableDate = formatRelativeTime(data.last_check_in);
                     document.getElementById('u-last-check').innerText = (lang === 'zh' ? "📅 最后签到: " : "📅 Last Check-in: ") + readableDate;
 
                     // 检查今天是否已经签到

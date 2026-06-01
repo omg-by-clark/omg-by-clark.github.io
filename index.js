@@ -1,4 +1,18 @@
 /* index.js */
+/*
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+*/
 let currentPage = 0;
 const PAGE_SIZE = 15;
 let globalUserMap = {};
@@ -148,28 +162,67 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+/* formatRelativeTime
+用途：把数据库里的绝对时间转换成更容易理解的相对时间。
+用法：传入 created_at 等时间字符串，返回“刚刚 / 1 分钟前 / 昨天 / 2 天前 / 1 个月前 / 1 年前”等文案。
+原理：先计算目标时间和当前时间的毫秒差，再按分钟、小时、天、月、年逐级取整；页面语言为英文时返回对应英文文案。
+注意：这个函数只用于展示时间，不影响热榜排序、库存过期判断等需要精确 Date 的业务逻辑。
+*/
+function formatRelativeTime(dateInput) {
+    const date = new Date(dateInput);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const lang = localStorage.getItem('lang') || 'zh';
+    const diffMs = Date.now() - date.getTime();
+    const seconds = Math.max(0, Math.floor(diffMs / 1000));
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (lang === 'en') {
+        if (seconds < 60) return 'just now';
+        if (minutes < 60) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+        if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+        if (days === 1) return 'yesterday';
+        if (days < 30) return `${days} days ago`;
+        if (months < 12) return months === 1 ? '1 month ago' : `${months} months ago`;
+        return years === 1 ? '1 year ago' : `${years} years ago`;
+    }
+
+    if (seconds < 60) return '刚刚';
+    if (minutes < 60) return `${minutes} 分钟前`;
+    if (hours < 24) return `${hours} 小时前`;
+    if (days === 1) return '昨天';
+    if (days < 30) return `${days} 天前`;
+    if (months < 12) return `${months} 个月前`;
+    return `${years} 年前`;
+}
+
 /* parseCustomCommands
 用途：解析帖子正文中的自定义排版指令。
 用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
-原理：使用合并的正则表达式和单个 replace 回调进行一次性解析，保证指令“只能接一层”，也就是不会二次处理已匹配的内部文本。
+原理：匹配 \ / . 符号，支持双符号转义，并采用单层括号非贪婪匹配以完美支持如 .code[.b[]] 的嵌套场景。
 */
 function parseCustomCommands(text) {
     if (!text) return '';
     let parsed = text;
 
-    // 合并所有特殊指令为一个正则。利用 replace() 方法的单次遍历特性。
-    // 这样一来，当外层指令被匹配和替换后，其内部包含的其它指令（例如 \code[\b[text]] 中的 \b）
-    // 将直接作为普通文本被返回，而不会被当作嵌套指令继续执行解析。
-    const regex = /\\(link|extrab|b|code|subt)\[(.*?)\](?:\((.*?)\))?/g;
+    const regex = /([\\/\.])(\1)?(link|b|code|subt)\[((?:[^\[\]]|\[[^\]]*\])*?)\](?:\((.*?)\))?/g;
 
-    parsed = parsed.replace(regex, function(match, command, innerText, url) {
+    parsed = parsed.replace(regex, function (match, p1, p2, command, innerText, url) {
+        // 如果存在两个连续的指令符号（如 //b[] 或 ..code[]），说明是转义，直接取消指令解析，返回单符号普通文本
+        if (p2) {
+            const safeUrl = url ? `(${url})` : '';
+            return `${p1}${command}[${innerText}]${safeUrl}`;
+        }
+
         if (command === 'link') {
             // 处理链接指令：\link[text](url) -> <a>
+            if (innerText === '' && !url) return match;
             const safeUrl = url ? url : '';
             return `<a href="${safeUrl}" style="color: var(--repost-color); text-decoration: none;">${innerText}</a>`;
-        } else if (command === 'extrab') {
-            // 处理加极粗指令：\extrab[text] -> <span> bolder
-            return `<span style="font-weight: bolder;">${innerText}</span>`;
         } else if (command === 'b') {
             // 处理加粗指令：\b[text] -> <span> bold
             return `<span style="font-weight: bold;">${innerText}</span>`;
@@ -250,63 +303,73 @@ async function goRandom() {
 */
 async function handleVote(event, postId, type) {
     event.stopPropagation();
-    const card = event.currentTarget.closest('.card');
-    const votePill = card.querySelector('.vote-pill');
-    const likeBtn = card.querySelector('.like-btn');
-    const dislikeBtn = card.querySelector('.dislike-btn');
-    const likeSpan = likeBtn.querySelector('.count');
-    const dislikeSpan = dislikeBtn.querySelector('.count');
+    const postIdStr = String(postId);
 
     let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
     let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
+    const hasLiked = likedPosts.some(id => String(id) === postIdStr);
+    const hasDisliked = dislikedPosts.some(id => String(id) === postIdStr);
+    const card = event.currentTarget.closest('.card');
+    const likeSpan = card.querySelector('.like-btn .count');
+    const dislikeSpan = card.querySelector('.dislike-btn .count');
 
-    let likes = parseInt(likeSpan.innerText);
-    let dislike = parseInt(dislikeSpan.innerText);
+    let likes = parseInt(likeSpan.innerText, 10) || 0;
+    let dislike = parseInt(dislikeSpan.innerText, 10) || 0;
 
     if (type === 'like') {
-        if (likedPosts.includes(postId)) {
+        if (hasLiked) {
             likes--;
-            likedPosts = likedPosts.filter(id => id !== postId);
-            votePill.classList.remove('is-liked');
+            likedPosts = likedPosts.filter(id => String(id) !== postIdStr);
         } else {
             likes++;
             likedPosts.push(postId);
-            votePill.classList.add('is-liked');
-            if (dislikedPosts.includes(postId)) {
+            if (hasDisliked) {
                 dislike--;
-                dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                votePill.classList.remove('is-disliked');
-                dislikeSpan.innerText = dislike;
+                dislikedPosts = dislikedPosts.filter(id => String(id) !== postIdStr);
             }
         }
-        likeSpan.innerText = likes;
     } else {
-        if (dislikedPosts.includes(postId)) {
+        if (hasDisliked) {
             dislike--;
-            dislikedPosts = dislikedPosts.filter(id => id !== postId);
-            votePill.classList.remove('is-disliked');
+            dislikedPosts = dislikedPosts.filter(id => String(id) !== postIdStr);
         } else {
             dislike++;
             dislikedPosts.push(postId);
-            votePill.classList.add('is-disliked');
-            if (likedPosts.includes(postId)) {
+            if (hasLiked) {
                 likes--;
-                likedPosts = likedPosts.filter(id => id !== postId);
-                votePill.classList.remove('is-liked');
-                likeSpan.innerText = likes;
+                likedPosts = likedPosts.filter(id => String(id) !== postIdStr);
             }
         }
-        dislikeSpan.innerText = dislike;
     }
 
     localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
     localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
+    syncVoteCards(postId, likes, dislike, likedPosts, dislikedPosts);
 
     try {
         await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
     } catch (err) {
         console.error("同步失败", err);
     }
+}
+
+function syncVoteCards(postId, likes, dislike, likedPosts, dislikedPosts) {
+    const postIdStr = String(postId);
+    const isLiked = likedPosts.some(id => String(id) === postIdStr);
+    const isDisliked = dislikedPosts.some(id => String(id) === postIdStr);
+
+    document.querySelectorAll(`.card[data-post-id="${postIdStr}"]`).forEach(card => {
+        const votePill = card.querySelector('.vote-pill');
+        const likeSpan = card.querySelector('.like-btn .count');
+        const dislikeSpan = card.querySelector('.dislike-btn .count');
+
+        if (likeSpan) likeSpan.innerText = likes;
+        if (dislikeSpan) dislikeSpan.innerText = dislike;
+        if (votePill) {
+            votePill.classList.toggle('is-liked', isLiked);
+            votePill.classList.toggle('is-disliked', isDisliked);
+        }
+    });
 }
 
 /* toggleNSFW
@@ -334,7 +397,7 @@ function toggleNSFW(event, element) {
 /* createCardHTML
 用途：帖子卡片组件渲染。
 用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
-原理：拼接作者信息、点赞状态、关键词标签和正文的 HTML 字符串，并包含跳转至对应 user.html 详情页的点击事件。
+原理：拼接作者信息、点赞状态、关键词标签和正文的 HTML 字符串，支持基于特殊端点命令强制截断逻辑。
 */
 function createCardHTML(postData, userMap) {
     const author = userMap ? userMap[postData.nickname] : null;
@@ -360,33 +423,33 @@ function createCardHTML(postData, userMap) {
     }
 
     let pillClass = 'vote-pill';
-    if (likedPosts.includes(postData.id)) pillClass += ' is-liked';
-    if (dislikedPosts.includes(postData.id)) pillClass += ' is-disliked';
+    if (likedPosts.some(id => String(id) === String(postData.id))) pillClass += ' is-liked';
+    if (dislikedPosts.some(id => String(id) === String(postData.id))) pillClass += ' is-disliked';
 
     const safeContent = postData.content || '';
     let displayContent = '';
 
-    // 截取字数按原样计算，为了支持特殊指令渲染，我们在 escapeHTML 和解析指令后再处理换行符
+    // 全局解析正文；预览截断只按字数处理，和 user.html 保持一致
+    let escaped = escapeHTML(safeContent);
+    let fullParsed = parseCustomCommands(escaped);
+
+    // 字数限制截断（截取后再解析，保障标签安全）
     if (safeContent.length > 200) {
         let truncated = escapeHTML(safeContent.substring(0, 200));
-        let parsed = parseCustomCommands(truncated);
-        displayContent = parsed.replace(/\n/g, '&nbsp;&nbsp;') +
+        let parsedTrunc = parseCustomCommands(truncated);
+        displayContent = parsedTrunc.replace(/\n/g, '&nbsp;&nbsp;') +
             `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
     } else {
-        let escaped = escapeHTML(safeContent);
-        let parsed = parseCustomCommands(escaped);
-        displayContent = parsed.replace(/\n/g, '&nbsp;&nbsp;');
+        displayContent = fullParsed.replace(/\n/g, '&nbsp;&nbsp;');
     }
 
     let dateStr = '';
     if (postData.created_at) {
-        const d = new Date(postData.created_at);
-        const pad = n => n.toString().padStart(2, '0');
-        dateStr = d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+        dateStr = formatRelativeTime(postData.created_at);
     }
 
     return `
-            <div class="card" onclick="location.href='content.html?id=${postData.id}'">
+            <div class="card" data-post-id="${postData.id}" onclick="location.href='content.html?id=${postData.id}'">
                 <div style="width: 100%;">
                     <b>${escapeHTML(postData.title)}</b>
                     ${kwHtml}

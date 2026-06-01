@@ -1,4 +1,18 @@
 /* index.css */
+/*
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+*/
 /* 用途：定义网页根元素的全局 CSS 变量（主要针对浅色模式），集中管理颜色以便后续维护 */
 :root {
     --bg: #fffdf5;
@@ -10,24 +24,12 @@
     --hot-border: #ff6b81;
     --button-grad: linear-gradient(45deg, #e64553, #fe640b);
     --kw-text: #5c5f77;
-
-    /* 问候语框背景色 */
     --greeting-bg: #7c7f93;
-
-    /* 投票胶囊颜色变量 */
     --vote-bg-neutral: hsl(233deg, 10%, 47%);
     --vote-bg-disliked: #7287fd;
-
-    /* 查看全文的蓝字 */
     --read-more: #1e66f5;
-
-    /* NSFW 警示色 */
     --nsfw-color: #fe640b;
-
-    /* 疑似搬运的绿色 */
     --repost-color: #40a02b;
-
-    /* 正文和标题颜色变量 */
     --body-text: #4c4f69;
     --title-text: #121212;
 }
@@ -41,21 +43,11 @@ body.dark {
     --unliked: hsl(233deg, 10%, 47%);
     --disliked: #a4b0be;
     --hot-border: #ff6b81;
-
-    /* 问候语框背景色 */
     --greeting-bg: #626880;
-
-    /* 投票胶囊颜色变量 */
     --vote-bg-neutral: #333;
     --vote-bg-disliked: #7287fd;
-
-    /* 查看全文的蓝字 */
     --read-more: #89dceb;
-
-    /* 疑似搬运的绿色 */
     --repost-color: #a6e3a1;
-
-    /* 深色模式下的文字颜色适配 */
     --body-text: #c6d0f5;
     --title-text: hsl(40, 87%, 94%);
     --kw-text: #838ba7;
@@ -69,8 +61,7 @@ body {
     padding: 20px;
     background: var(--bg);
     color: var(--text);
-    transition: 0.3s;
-    /* 新增：防止全局超长单词撑破网页容器，强制在其越界时打破单词边界换行 */
+    transition: 0.3s; /* 防止全局超长单词撑破网页容器，强制在其越界时打破单词边界换行 */
     overflow-wrap: break-word;
     word-break: break-word;
 }

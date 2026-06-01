@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <!-- credits.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
 
 <head>
@@ -11,7 +25,7 @@
         :root {
             --bg: #fffdf5;
             --text: #4c4f69;
-            --brand: #d20f39;
+            --brand: #ff4757;
             --card: #ffffff;
             --subtext: #6c6f85;
             --license-bg: rgba(210, 15, 57, 0.05);
@@ -20,7 +34,7 @@
         body.dark {
             --bg: #121212;
             --text: #cdd6f4;
-            --brand: #f38ba8;
+            --brand: #ff6b81;
             --card: #1e1e1e;
             --subtext: #a6adc8;
             --license-bg: rgba(243, 139, 168, 0.08);
@@ -87,6 +101,7 @@
             border-radius: 12px;
             display: flex;
             flex-direction: column;
+            cursor: pointer;
             transition: transform 0.2s;
         }
 
@@ -159,20 +174,24 @@
         </p>
 
         <ul id="credits-list">
-            <li>
+            <li ondblclick="window.location.href='https://github.com/Error-502-bad-gateway'">
                 <span class="name">小鱼儿 (Clark)</span>
                 <span class="role" data-zh="核心开发、架构设计与最初思路"
                     data-en="Core Developer & Original Idea">核心开发、架构设计与最初思路</span>
             </li>
-            <li>
+            <li ondblclick="window.location.href='https://github.com/zhangpsz'">
                 <span class="name">Peter</span>
                 <span class="role" data-zh="技术顾问、更新思路与代码建议"
                     data-en="Technical Advisor & Code Suggestions">技术顾问、更新思路与代码建议</span>
             </li>
-            <li>
+            <li ondblclick="window.location.href='https://catppuccin.com'">
                 <span class="name">Catppuccin（catppuccin.com）</span>
                 <span class="role" data-zh="全站配色规范与主题灵感"
                     data-en="Color Palette & Design Inspiration">全站配色规范与主题灵感</span>
+            </li>
+            <li ondblclick="window.location.href='https://github.com/hilvert'">
+                <span class="name">GitHub @Hilvert</span>
+                <span class="role" data-zh="帮忙宣传网站" data-en="Helped promote the website">帮忙宣传网站</span>
             </li>
         </ul>
 

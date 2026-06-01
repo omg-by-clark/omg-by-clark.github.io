@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <!-- post-now.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
 
 <head>
@@ -82,12 +96,72 @@
             font-size: 1em;
         }
 
+        /* .post-content-wrap 用途：给正文输入框和图片上传按钮提供同一个定位容器，让按钮固定在输入框左下角。 */
+        .post-content-wrap {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        /* .post-content-wrap textarea 用途：为左下角上传按钮预留空间，避免正文文字和按钮互相覆盖。 */
+        .post-content-wrap textarea {
+            margin-bottom: 0;
+            padding-bottom: 58px;
+            resize: vertical;
+        }
+
         body.dark input,
         body.dark textarea {
             font-family: sans-serif, "PingFang SC";
             background: #1e1e1e;
             border-color: #444;
             color: #fff;
+        }
+
+        /* .btn-upload-image 用途：设置图片上传入口，使用 --brand 主题色并贴在正文输入框左下角。 */
+        .btn-upload-image {
+            position: absolute;
+            left: 12px;
+            bottom: 14px;
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.1s;
+        }
+
+        /* .btn-upload-image:active 用途：保持页面现有按钮按下时轻微放大的反馈。 */
+        .btn-upload-image:active {
+            transform: scale(1.06);
+        }
+
+        /* .image-status 用途：展示当前图片选择 / 转换状态，文字保持轻量，不打断发帖流程。 */
+        .image-status {
+            min-height: 1.2em;
+            margin-bottom: 12px;
+            color: var(--subtext);
+            font-size: 0.85em;
+            overflow-wrap: break-word;
+        }
+
+        /* .image-preview-wrap 用途：显示用户已选择图片的小预览，确认图片来源，不占太多发帖空间。 */
+        .image-preview-wrap {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        /* .image-preview 用途：把预览图限制成小缩略图，使用 object-fit 保持图片比例。 */
+        .image-preview {
+            width: 96px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(128, 128, 128, 0.35);
+            background: var(--bg);
         }
 
         /* 关键词区域样式 */
@@ -206,8 +280,17 @@
         <form id="pForm">
             <input type="text" id="t" data-zh-ph="起个标题……" data-en-ph="Rant Title..."
             placeholder="起个标题……" required>
-            <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
-                required></textarea>
+            <div class="post-content-wrap" id="post-content-wrap">
+                <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
+                    required></textarea>
+                <button type="button" id="btn-upload-image" class="btn-upload-image" data-zh="🖼 上传图片"
+                    data-en="🖼 Upload Image" onclick="openPhotoPicker()">🖼 上传图片</button>
+                <input type="file" id="photo-input" accept="image/*" hidden>
+            </div>
+            <div id="image-status" class="image-status"></div>
+            <div id="image-preview-wrap" class="image-preview-wrap">
+                <img id="image-preview" class="image-preview" alt="">
+            </div>
 
             <div class="kw-container">
                 <span class="kw-label" data-zh="添加关键词（可选）：" data-en="Add Keywords (Optional):">添加关键词（可选）：</span>
@@ -231,6 +314,13 @@
 
         // 全局状态锁，防止重复提交
         let isSubmitting = false;
+
+        // 保存用户选择、粘贴或拖拽进来的图片。真正上传前会先转成 WebP Blob。
+        let selectedPhotoBlob = null;
+        let selectedPhotoName = '';
+        let photoConversionPromise = null;
+        let photoSelectionToken = 0;
+        let photoPreviewUrl = '';
 
         const KEYWORDS_LIST = ['#学校 School',
             '#老师 Teachers', '#作业 Homework',
@@ -289,15 +379,209 @@
         init();
 
         /*
+          setImageStatus()
+          用法：更新图片上传入口下面的状态文字。
+          原理：图片选择、转换成功、转换失败都只需要改同一个 DOM 节点；这里集中处理语言切换后的中英文文案。
+         */
+        function setImageStatus(zhText, enText) {
+            document.getElementById('image-status').innerText = lang === 'zh' ? zhText : enText;
+        }
+
+        /*
+          clearPhotoPreview()
+          用法：清空图片预览，并释放之前创建的 object URL。
+          原理：浏览器会为 URL.createObjectURL 占用内存；换图或转换失败时主动 revoke，避免页面停留久了积累资源。
+         */
+        function clearPhotoPreview() {
+            const previewWrap = document.getElementById('image-preview-wrap');
+            const previewImg = document.getElementById('image-preview');
+
+            if (photoPreviewUrl) {
+                URL.revokeObjectURL(photoPreviewUrl);
+                photoPreviewUrl = '';
+            }
+
+            previewImg.removeAttribute('src');
+            previewImg.alt = '';
+            previewWrap.style.display = 'none';
+        }
+
+        /*
+          showPhotoPreview()
+          用法：图片成功转换成 WebP 后，显示一个小缩略图给用户确认。
+          原理：直接预览最终要上传的 WebP Blob，保证用户看到的内容和实际存进 photos 桶的内容一致。
+         */
+        function showPhotoPreview(webpBlob, sourceName) {
+            const previewWrap = document.getElementById('image-preview-wrap');
+            const previewImg = document.getElementById('image-preview');
+
+            clearPhotoPreview();
+            photoPreviewUrl = URL.createObjectURL(webpBlob);
+            previewImg.src = photoPreviewUrl;
+            previewImg.alt = lang === 'zh' ? `图片预览：${sourceName}` : `Image preview: ${sourceName}`;
+            previewWrap.style.display = 'flex';
+        }
+
+        /*
+          openPhotoPicker()
+          用法：点击“上传图片”按钮时打开系统文件选择器。
+          原理：真正的 file input 被隐藏，按钮只负责触发 click，这样 UI 可以保持当前页面的品牌色样式。
+         */
+        function openPhotoPicker() {
+            document.getElementById('photo-input').click();
+        }
+
+        /*
+          drawFileToCanvas()
+          用法：把浏览器能解码的图片文件绘制到 canvas 上。
+          原理：优先使用 createImageBitmap，它对本地 File 支持好；如果浏览器不支持或解码失败，再回退到 Image + object URL。
+         */
+        async function drawFileToCanvas(file) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const bitmap = await createImageBitmap(file);
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                ctx.drawImage(bitmap, 0, 0);
+                bitmap.close();
+                return canvas;
+            } catch (err) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const objectUrl = URL.createObjectURL(file);
+
+                    img.onload = () => {
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        URL.revokeObjectURL(objectUrl);
+                        resolve(canvas);
+                    };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(new Error(lang === 'zh' ? '无法读取这张图片' : 'Could not read this image'));
+                    };
+                    img.src = objectUrl;
+                });
+            }
+        }
+
+        /*
+          convertImageFileToWebp()
+          用法：把用户提供的图片文件转换成 image/webp Blob。
+          原理：先把图片画进 canvas，再用 canvas.toBlob('image/webp') 导出。Supabase Storage 最终只接收这个 WebP 文件。
+         */
+        async function convertImageFileToWebp(file) {
+            const canvas = await drawFileToCanvas(file);
+
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(blob => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error(lang === 'zh' ? '图片转换失败' : 'Image conversion failed'));
+                    }
+                }, 'image/webp', 0.9);
+            });
+        }
+
+        /*
+          handlePhotoFile()
+          用法：处理按钮选择、Ctrl+V 粘贴、拖拽放入输入框得到的图片文件。
+          原理：这里只保存一张图，后选择的图片会覆盖前一张；转换过程保存成 Promise，提交时会等待它完成。
+         */
+        function handlePhotoFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            const selectionToken = ++photoSelectionToken;
+            const sourceName = file.name || 'pasted-image';
+            selectedPhotoBlob = null;
+            selectedPhotoName = sourceName;
+            clearPhotoPreview();
+            setImageStatus(`正在转换图片：${sourceName}`, `Converting image: ${sourceName}`);
+
+            photoConversionPromise = convertImageFileToWebp(file)
+                .then(blob => {
+                    if (selectionToken !== photoSelectionToken) return null;
+                    selectedPhotoBlob = blob;
+                    showPhotoPreview(blob, sourceName);
+                    setImageStatus(`已选择图片：${sourceName}`, `Image selected: ${sourceName}`);
+                    return blob;
+                })
+                .catch(err => {
+                    if (selectionToken !== photoSelectionToken) return null;
+                    selectedPhotoBlob = null;
+                    selectedPhotoName = '';
+                    clearPhotoPreview();
+                    setImageStatus('图片读取或转换失败', 'Could not read or convert the image');
+                    alert(err.message);
+                    return null;
+                });
+        }
+
+        /*
+          bindPhotoInputEvents()
+          用法：为发帖输入框绑定文件选择、粘贴和拖拽图片事件。
+          原理：三种入口最终都拿到 File 对象，再交给 handlePhotoFile 统一转换，避免多处维护重复逻辑。
+         */
+        function bindPhotoInputEvents() {
+            const textarea = document.getElementById('c');
+            const dropArea = document.getElementById('post-content-wrap');
+            const fileInput = document.getElementById('photo-input');
+
+            fileInput.addEventListener('change', () => {
+                handlePhotoFile(fileInput.files[0]);
+                fileInput.value = '';
+            });
+
+            textarea.addEventListener('paste', event => {
+                const item = Array.from(event.clipboardData?.items || [])
+                    .find(clipItem => clipItem.type.startsWith('image/'));
+                if (item) handlePhotoFile(item.getAsFile());
+            });
+
+            dropArea.addEventListener('dragover', event => {
+                event.preventDefault();
+            });
+
+            dropArea.addEventListener('drop', event => {
+                event.preventDefault();
+                const file = Array.from(event.dataTransfer?.files || [])
+                    .find(droppedFile => droppedFile.type.startsWith('image/'));
+                if (file) handlePhotoFile(file);
+            });
+        }
+        bindPhotoInputEvents();
+
+        /*
+          uploadPostPhoto()
+          用法：帖子成功创建并拿到 id 后，把 WebP 图片上传到 photos 桶。
+          原理：Storage 路径固定为 “帖子id.webp”，详情页只要用当前 postId 拼出同一路径即可查到图片。
+         */
+        async function uploadPostPhoto(postId, webpBlob) {
+            const { error } = await _supabase.storage
+                .from('photos')
+                .upload(`${postId}.webp`, webpBlob, {
+                    contentType: 'image/webp',
+                    upsert: false
+                });
+
+            if (error) throw error;
+        }
+
+        /*
           表单 submit 事件监听
            用法：处理点击“立即发布”后的异步上传逻辑。
            原理：
            1. 阻止表单默认刷新行为，并通过 isSubmitting 变量加锁，防止用户连点造成网络拥堵和数据重复。
            2. 改变提交按钮的文本和禁用状态，提供即时的 UI 反馈。
            3. 收集输入框的值，并查找所有带有 active 类的关键词按钮，提取出纯文本数组存入 selectedKws。
-           4. 调用 Supabase API，向 posts 表插入包含昵称、标题、内容和关键词数组的新记录。
-           5. 发帖成功后，查询并在 users 表中给当前用户的积分加上 10 分，更新本地存储。
-           6. 处理完毕则弹窗并跳转回首页。如果过程中发生任何错误，catch 会捕获异常，解除提交锁并恢复按钮原始状态。
+           4. 调用 Supabase API，向 posts 表插入新记录并用 select('id') 取回新帖子 id。
+           5. 如果用户附带图片，等待图片转换完成后上传到 photos/{帖子id}.webp。
+           6. 发帖成功后，查询并在 users 表中给当前用户的积分加上 10 分，更新本地存储。
+           7. 处理完毕则弹窗并跳转回首页。如果过程中发生任何错误，catch 会捕获异常，解除提交锁并恢复按钮原始状态。
          */
         document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -323,16 +607,36 @@
                 .map(btn => btn.innerText);
 
             try {
-                // 发帖
-                const { error: postErr } = await _supabase.from('posts').insert([{
+                // 如果用户刚刚粘贴/拖拽了图片，等待转换结束，保证上传到 Storage 的一定是 WebP。
+                if (photoConversionPromise) {
+                    await photoConversionPromise;
+                }
+
+                // 发帖，并取回数据库生成的 id，后续图片文件名会使用这个 id。
+                const { data: postData, error: postErr } = await _supabase.from('posts').insert([{
                     nickname: user,
                     title: title,
                     content: content,
                     likes: 0,
                     keywords: selectedKws
-                }]);
+                }]).select('id').single();
 
                 if (postErr) throw postErr;
+
+                // 图片不是必填项；有图片时才上传到 photos 桶，文件名固定为 “帖子id.webp”。
+                let photoWarning = '';
+                if (selectedPhotoBlob) {
+                    try {
+                        submitBtn.innerText = lang === 'zh' ? "上传图片中..." : "Uploading image...";
+                        await uploadPostPhoto(postData.id, selectedPhotoBlob);
+                    } catch (photoErr) {
+                        console.error("[图片上传失败]", photoErr);
+                        const reason = photoErr.message ? `：${photoErr.message}` : '';
+                        photoWarning = lang === 'zh'
+                            ? `\n但图片上传失败了${reason}。请检查 photos 桶的 Storage policy 是否允许上传。`
+                            : `\nBut the image upload failed${reason}. Please check whether the photos bucket Storage policy allows uploads.`;
+                    }
+                }
 
                 // 自动加 10 分
                 const { data: userData } = await _supabase.from('users').select('points').eq('username', user).single();
@@ -341,7 +645,7 @@
                 await _supabase.from('users').update({ points: newPts }).eq('username', user);
                 localStorage.setItem('userPoints', newPts);
 
-                alert(lang === 'zh' ? "发布成功！积分+10" : "Success! Points +10");
+                alert((lang === 'zh' ? "发布成功！积分+10" : "Success! Points +10") + photoWarning);
                 window.location.href = 'index.html';
 
             } catch (err) {

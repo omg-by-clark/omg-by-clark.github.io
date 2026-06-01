@@ -1,5 +1,19 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!-- content.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
 <html lang="zh-CN">
 
 <head>
@@ -71,9 +85,8 @@
             display: block;
         }
 
-        /* #c 用途：设置帖子正文内容区域的背景卡片、圆角、阴影、预格式化换行及字号。 */
+        /* #c 用途：设置帖子正文卡片的背景、圆角和阴影；换行规则放到文字层，避免图片前后的 HTML 空白被显示出来。 */
         #c {
-            white-space: pre-wrap;
             font-size: 1.1em;
             background: var(--card);
             padding: 25px;
@@ -81,9 +94,13 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             min-height: 120px;
             margin-bottom: 30px;
-            /* 新增：配合 pre-wrap 使用，允许无空格的长字符串强行打断，不至于撑破卡片 */
             overflow-wrap: break-word;
             word-break: break-word;
+        }
+
+        /* #post-content-text 用途：只让正文文字保留用户输入的换行，图片区域不再被正文末尾空行撑开。 */
+        #post-content-text {
+            white-space: pre-wrap;
         }
 
         /* .action-area 用途：使用 Flexbox 居中排列详情页的交互操作按钮区域。 */
@@ -309,7 +326,7 @@
             padding-right: 18px;
         }
 
-        /* .lv-epic::after 用途：利用伪元素在史诗徽章右侧添加斜体字母 V 装饰。 */
+        /* .lv-epic::after 使用 :after 设置后面的 “V” */
         .lv-epic::after {
             content: "V";
             position: absolute;
@@ -386,6 +403,24 @@
             color: var(--repost-color) !important;
             font-weight: bold !important;
         }
+
+        /* .post-photo-box 用途：正文卡片内部的帖子图片区域；默认隐藏，只有成功加载到对应图片时才显示。 */
+        .post-photo-box {
+            display: none;
+            width: 60%;
+            margin: 4px auto 0;
+        }
+
+        /* .post-photo-img 用途：让上传图片占帖子卡片宽度的 60%，居中显示并保留圆角。 */
+        .post-photo-img {
+            display: block;
+            width: 100%;
+            max-height: 45vh;
+            object-fit: contain;
+            border-radius: 12px;
+            background: var(--card);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
     </style>
 </head>
 
@@ -395,7 +430,12 @@
      style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
 </div>
 <div class="kw-row" id="kw-row"></div>
-<div id="c">Loading...</div>
+<div id="c">
+    <div id="post-content-text">Loading...</div>
+    <div id="post-photo-box" class="post-photo-box">
+        <img id="post-photo" class="post-photo-img" alt="">
+    </div>
+</div>
 
 <div class="action-area">
     <div class="vote-pill" id="vote-container">
