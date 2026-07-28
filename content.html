@@ -252,6 +252,21 @@
             pointer-events: none;
         }
 
+        /* .cmt-children > .cmt-thread:last-child::after
+        用途：去掉最后一个回复下面多余的竖线尾巴，只保留拐入评论卡片的连接线。
+        原理：父级 .cmt-children::before 会把整列竖线画满；当当前节点是最后一个子回复时，用与页面背景同色的细条覆盖掉连接线下方那一段。
+        */
+        .cmt-children > .cmt-thread:last-child::after {
+            content: "";
+            position: absolute;
+            left: calc(var(--comment-indent-negative) - 1px);
+            top: 22px;
+            bottom: 0;
+            width: 4px;
+            background: var(--bg);
+            pointer-events: none;
+        }
+
         /* .cmt-item 用途：单条评论的卡片样式，包含灰色半透明背景、圆角及 Flex 排版。 */
         .cmt-item {
             background: rgba(128, 128, 128, 0.08);

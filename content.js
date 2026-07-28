@@ -44,6 +44,47 @@ let postPhotoObjectUrl = '';
 // 全局变量：用于记录当前帖子的作者名字，供评论区判断 OP 和显示删除按钮使用
 let currentPostAuthor = '';
 
+function unwrapCompatRpcRow(data) {
+    if (Array.isArray(data)) return data[0] || null;
+    return data || null;
+}
+
+function unwrapCompatRpcRows(data) {
+    if (Array.isArray(data)) return data;
+    return data ? [data] : [];
+}
+
+async function fetchPublicUserProfileCompat(username) {
+    if (typeof fetchPublicUserProfileWithRpc === 'function') {
+        return fetchPublicUserProfileWithRpc(username);
+    }
+    const { data, error } = await _supabase.rpc('get_public_user_profile', {
+        p_username: username
+    });
+    return { data: unwrapCompatRpcRow(data), error };
+}
+
+async function fetchPublicUserProfilesCompat() {
+    if (typeof fetchPublicUserProfilesWithRpc === 'function') {
+        return fetchPublicUserProfilesWithRpc();
+    }
+    const { data, error } = await _supabase.rpc('list_public_user_profiles');
+    return { data: unwrapCompatRpcRows(data), error };
+}
+
+async function createCommentCompat(postIdValue, nickname, content, replyTo) {
+    if (typeof createCommentWithRpc === 'function') {
+        return createCommentWithRpc(postIdValue, nickname, content, replyTo);
+    }
+    const { data, error } = await _supabase.rpc('create_comment', {
+        p_post_id: postIdValue,
+        p_nickname: nickname,
+        p_content: content,
+        p_reply_to: replyTo ?? null
+    });
+    return { data: unwrapCompatRpcRow(data), error };
+}
+
 /* pageshow
 用途：处理 iOS/Safari 用浏览器前进/后退恢复详情页时的旧投票状态。
 原理：严格浏览器遇到 BFCache 恢复就直接重载详情页；其它浏览器只刷新当前帖子的投票计数，防止用户基于旧 DOM 继续刷票。
@@ -143,7 +184,7 @@ async function loadPostDetails() {
         // 核心逻辑：拿到帖子数据后，立刻将作者名字存入全局变量
         currentPostAuthor = post.nickname;
 
-        const { data: author } = await fetchPublicUserProfileWithRpc(post.nickname);
+        const { data: author } = await fetchPublicUserProfileCompat(post.nickname);
         const lv = getLevelInfo(author ? author.points : 0);
         const nStyle = getNickStyle(author ? author.inventory : null);
 
@@ -443,7 +484,7 @@ function renderCommentTree(comments, userMap) {
 async function loadComments() {
     try {
         const { data: cmts } = await _supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-        const { data: users } = await fetchPublicUserProfilesWithRpc();
+        const { data: users } = await fetchPublicUserProfilesCompat();
         const userMap = (users || []).reduce((acc, u) => {
             acc[u.username] = u;
             return acc;
@@ -488,7 +529,7 @@ async function addCmt() {
     sendBtn.disabled = true;
     sendBtn.innerText = currentLang === 'zh' ? "发送中..." : "Sending...";
 
-    const { data: commentResult, error } = await createCommentWithRpc(postId, nick, content, replyingToComment);
+    const { data: commentResult, error } = await createCommentCompat(postId, nick, content, replyingToComment);
     if (error) {
         alert(TRANS.sendFail[currentLang]);
         // 解除锁定并恢复按钮文字

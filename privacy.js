@@ -137,7 +137,7 @@
                     padding: 20px;
                     box-sizing: border-box;
                     background: rgba(0, 0, 0, 0.58);
-                    font-family: sans-serif, "PingFang SC";
+                    font-family: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
                 }
                 html[data-theme="catppuccin"] .local-data-consent-overlay {
                     --local-data-accent: #a6da95;

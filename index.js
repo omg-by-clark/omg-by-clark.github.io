@@ -20,6 +20,19 @@ let isFetching = false;
 let hasMore = true;
 let observer;
 
+function unwrapCompatRpcRows(data) {
+    if (Array.isArray(data)) return data;
+    return data ? [data] : [];
+}
+
+async function fetchPublicUserProfilesCompat() {
+    if (typeof fetchPublicUserProfilesWithRpc === 'function') {
+        return fetchPublicUserProfilesWithRpc();
+    }
+    const { data, error } = await _supabase.rpc('list_public_user_profiles');
+    return { data: unwrapCompatRpcRows(data), error };
+}
+
 // 新增的搜索全局变量
 const keywords = [
     '#学校 School',
@@ -74,15 +87,12 @@ function initSearch() {
 
     searchInput.addEventListener('input', (e) => {
         const val = e.target.value;
-        const command = getSearchCommand(val);
-        if (command) {
+        if (val.trimStart().startsWith('/')) {
             clearTimeout(searchTimeout);
-            keywordDropdown.classList.remove('visible');
-            showSearchCommandPopover(command);
+            renderCommandDropdown(getCommandSuggestions(val));
             return;
         }
 
-        hideSearchCommandPopover();
         if (val.startsWith('#')) {
             const filterText = val.toLowerCase();
             const matcheds = keywords.filter(t => t.toLowerCase().includes(filterText));
@@ -99,9 +109,10 @@ function initSearch() {
 
     // 输入完整隐藏指令后按 Enter，效果与点击确认框中的“是”完全一致。
     searchInput.addEventListener('keydown', event => {
-        if (event.key === 'Enter' && getSearchCommand(searchInput.value)) {
+        const exactCommand = getSearchCommand(searchInput.value);
+        if (event.key === 'Enter' && exactCommand) {
             event.preventDefault();
-            executePendingSearchCommand();
+            executePendingSearchCommand(exactCommand);
         }
     });
 
@@ -109,12 +120,12 @@ function initSearch() {
     document.addEventListener('click', (e) => {
         if (!document.querySelector('.search-container').contains(e.target)) {
             keywordDropdown.classList.remove('visible');
-            hideSearchCommandPopover();
         }
     });
 }
 
-let pendingSearchCommand = null;
+const RENDERING_COMMAND_OPTIONS = ['link', 'b', 'italic', 'code', 'subt'];
+const DISPLAY_MODE_OPTIONS = ['cpm', 'dark', 'light'];
 
 /* getSearchCommand
 用途：识别搜索框隐藏指令，并解析冒号后的参数。
@@ -131,8 +142,6 @@ function getSearchCommand(value) {
     if (lower === '/toggle_localstorage_using_mode' || lower === '/tlum') return { type: 'localStorageUsing' };
     if (renderingCommandMatch) return { type: 'renderingCommand', command: renderingCommandMatch[1].toLowerCase() };
     if (displayModeMatch) return { type: 'displayMode', mode: normalizeDisplayMode(displayModeMatch[1]) };
-    if (lower === '/offline_test_mode' || lower === '/otm') return { type: 'offlineMode', offline: true };
-    if (lower === '/normal_mode' || lower === '/nm') return { type: 'offlineMode', offline: false };
     return null;
 }
 
@@ -159,107 +168,145 @@ function setLocalDataModeCookie(mode) {
     document.cookie = `omg_local_data_mode=${encodeURIComponent(mode)}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
-function getCommandMessage(command) {
+function getCurrentDisplayMode() {
+    return normalizeDisplayMode(localStorage.getItem('theme')) || 'light';
+}
+
+function getDisplayModeLabel(mode, lang) {
+    if (mode === 'catppuccin') return lang === 'zh' ? 'Catppuccin Macchiato' : 'Catppuccin Macchiato';
+    if (mode === 'dark') return lang === 'zh' ? '深色' : 'Dark';
+    return lang === 'zh' ? '浅色' : 'Light';
+}
+
+function getCommandDescription(command) {
     const lang = localStorage.getItem('lang') || 'zh';
     const disabledCommands = typeof getDisabledRenderingCommands === 'function' ? getDisabledRenderingCommands() : [];
 
     if (command.type === 'verification') {
         const isFullVerification = localStorage.getItem('verificationMode100') === 'true';
-        return isFullVerification
-            ? (lang === 'zh'
-                ? '/tvm 会把此浏览器中登录和注册的数学验证概率从 100% 恢复为默认的 5%。确定继续吗？'
-                : '/tvm will restore the login and sign-up math verification chance in this browser from 100% to the default 5%. Continue?')
-            : (lang === 'zh'
-                ? '/tvm 会把此浏览器中登录和注册的数学验证概率从默认的 5% 提高到 100%。确定继续吗？'
-                : '/tvm will raise the login and sign-up math verification chance in this browser from the default 5% to 100%. Continue?');
+        return lang === 'zh'
+            ? `设置登录和注册的数学验证概率（当前为：${isFullVerification ? '100%' : '5%'}）`
+            : `Set the math verification chance for sign-in and sign-up (Current: ${isFullVerification ? '100%' : '5%'})`;
     }
 
     if (command.type === 'textRendering') {
-        const nextRaw = localStorage.getItem('textRenderingMode') !== 'raw';
-        return nextRaw
-            ? (lang === 'zh' ? '/ttrm 会让帖子和评论显示原始文本，不解析 \\link、\\b 等渲染指令。确定继续吗？' : '/ttrm will show raw post and comment text instead of rendering commands like \\link or \\b. Continue?')
-            : (lang === 'zh' ? '/ttrm 会恢复帖子和评论的渲染指令解析。确定继续吗？' : '/ttrm will restore rendering commands in posts and comments. Continue?');
+        const rawEnabled = localStorage.getItem('textRenderingMode') === 'raw';
+        return lang === 'zh'
+            ? `设置是否关闭帖子、评论和 Markdown 渲染（当前为：${rawEnabled ? '已关闭' : '已开启'}）`
+            : `Toggle post, comment, and Markdown rendering (Current: ${rawEnabled ? 'Off' : 'On'})`;
     }
 
     if (command.type === 'localStorageUsing') {
-        const nextMode = getLocalDataModeCookie() === 'all' ? 'necessary' : 'all';
-        return nextMode === 'all'
-            ? (lang === 'zh' ? '/tlum 会切换为允许全部本地数据访问，并刷新页面。确定继续吗？' : '/tlum will switch to allowing all local data access and reload the page. Continue?')
-            : (lang === 'zh' ? '/tlum 会切换为仅访问必要本地数据，并刷新页面。确定继续吗？' : '/tlum will switch to necessary-only local data access and reload the page. Continue?');
+        const currentMode = getLocalDataModeCookie();
+        return lang === 'zh'
+            ? `设置本地数据访问范围（当前为：${currentMode === 'all' ? '全部允许' : '仅必要'}）`
+            : `Set local data access scope (Current: ${currentMode === 'all' ? 'Allow all' : 'Necessary only'})`;
     }
 
     if (command.type === 'renderingCommand') {
-        const valid = ['link', 'b', 'italic', 'code', 'subt'].includes(command.command);
+        const valid = RENDERING_COMMAND_OPTIONS.includes(command.command);
         if (!valid) {
             return lang === 'zh'
-                ? `/trc: ${command.command} 不是可切换的渲染指令。可用：link、b、italic、code、subt。`
-                : `/trc: ${command.command} is not a toggleable rendering command. Available: link, b, italic, code, subt.`;
+                ? `/trc: ${command.command} 不在可切换列表中`
+                : `/trc: ${command.command} is not toggleable`;
         }
-        const willDisable = !disabledCommands.includes(command.command);
-        return willDisable
-            ? (lang === 'zh' ? `/trc: ${command.command} 会禁用 ${command.command} 渲染指令。确定继续吗？` : `/trc: ${command.command} will disable the ${command.command} rendering command. Continue?`)
-            : (lang === 'zh' ? `/trc: ${command.command} 会重新启用 ${command.command} 渲染指令。确定继续吗？` : `/trc: ${command.command} will re-enable the ${command.command} rendering command. Continue?`);
+        const disabled = disabledCommands.includes(command.command);
+        return lang === 'zh'
+            ? `设置 ${command.command} 渲染指令开关（当前为：${disabled ? '已关闭' : '已开启'}）`
+            : `Toggle the ${command.command} rendering command (Current: ${disabled ? 'Off' : 'On'})`;
     }
 
     if (command.type === 'displayMode') {
         if (!command.mode) {
             return lang === 'zh'
-                ? '/dm 后面的模式不认识。可用：cpm、dark、light。'
-                : 'Unknown /dm mode. Available: cpm, dark, light.';
+                ? '/dm 模式不可用'
+                : 'Unknown /dm mode.';
         }
-        const modeName = command.mode === 'catppuccin' ? 'Catppuccin Macchiato' : command.mode;
+        const targetModeLabel = getDisplayModeLabel(command.mode, lang);
         return lang === 'zh'
-            ? `/dm 会把显示模式切换为 ${modeName}。确定继续吗？`
-            : `/dm will switch the display mode to ${modeName}. Continue?`;
-    }
-
-    if (command.type === 'offlineMode') {
-        return command.offline
-            ? (lang === 'zh' ? '/otm 会进入离线测试模式，不连接 Supabase 数据库，并刷新页面。确定继续吗？' : '/otm will enter offline test mode without connecting to the Supabase database, then reload. Continue?')
-            : (lang === 'zh' ? '/nm 会回到普通数据库连接模式，并刷新页面。确定继续吗？' : '/nm will return to normal database mode and reload. Continue?');
+            ? `切换到 ${targetModeLabel} 显示模式（当前为：${getDisplayModeLabel(getCurrentDisplayMode(), lang)}）`
+            : `Switch to ${targetModeLabel} mode (Current: ${getDisplayModeLabel(getCurrentDisplayMode(), lang)})`;
     }
 
     return '';
 }
 
-/* showSearchCommandPopover
-用途：在搜索框下方显示双语确认浮层，并说明本次隐藏指令会执行什么。
-原理：把解析后的命令暂存到 pendingSearchCommand；Enter 或“是”都会执行同一个对象，避免输入框变化导致误操作。
-*/
-function showSearchCommandPopover(command) {
-    const popover = document.getElementById('verification-command-popover');
-    const message = document.getElementById('verification-command-message');
-    pendingSearchCommand = command;
-    message.innerText = getCommandMessage(command);
-    popover.hidden = false;
-    popover.classList.add('visible');
+function getCommandSuggestions(value) {
+    const query = String(value || '').trim().toLowerCase();
+    if (!query.startsWith('/')) return [];
+    const lang = localStorage.getItem('lang') || 'zh';
+    const catalog = [
+        {
+            command: '/ttrm',
+            aliases: ['/toggle_text_rendering_mode'],
+            meta: { type: 'textRendering' }
+        },
+        {
+            command: '/tvm',
+            aliases: ['/toggle_verification_mode'],
+            meta: { type: 'verification' }
+        },
+        {
+            command: '/tlum',
+            aliases: ['/toggle_localstorage_using_mode'],
+            meta: { type: 'localStorageUsing' }
+        },
+        ...RENDERING_COMMAND_OPTIONS.map(commandName => ({
+            command: `/trc: ${commandName}`,
+            aliases: [`/toggle_rendering_command: ${commandName}`],
+            meta: { type: 'renderingCommand', command: commandName }
+        })),
+        ...DISPLAY_MODE_OPTIONS.map(mode => ({
+            command: `/dm: ${mode}`,
+            aliases: [`/display_mode: ${mode}`],
+            meta: { type: 'displayMode', mode: normalizeDisplayMode(mode) }
+        }))
+    ];
+
+    return catalog
+        .map(item => ({
+            ...item,
+            description: getCommandDescription(item.meta),
+            searchText: [item.command, ...item.aliases, getCommandDescription(item.meta)].join(' ').toLowerCase()
+        }))
+        .filter(item =>
+            item.command.toLowerCase().startsWith(query) ||
+            item.aliases.some(alias => alias.toLowerCase().startsWith(query)) ||
+            item.searchText.includes(query)
+        )
+        .sort((a, b) => a.command.localeCompare(b.command, lang));
 }
 
-/* hideSearchCommandPopover 用途：隐藏搜索框隐藏命令确认框。 */
-function hideSearchCommandPopover() {
-    const popover = document.getElementById('verification-command-popover');
-    popover.classList.remove('visible');
-    popover.hidden = true;
-    pendingSearchCommand = null;
+function renderCommandDropdown(commands) {
+    const keywordDropdown = document.getElementById('keywordDropdown');
+    if (!commands.length) {
+        keywordDropdown.classList.remove('visible');
+        return;
+    }
+
+    keywordDropdown.innerHTML = commands.map(item =>
+        `<div class="tag-dropdown-item" onclick="selectSearchCommand('${escapeHTML(item.command)}')">
+            <div class="command-dropdown-item">
+                <strong>${escapeHTML(item.command)}</strong>
+                <span>${escapeHTML(item.description)}</span>
+            </div>
+        </div>`
+    ).join('');
+    keywordDropdown.classList.add('visible');
 }
 
-/* cancelSearchCommand
-用途：处理确认框中的高亮“否”，安全退出并清除可能误输入的命令。
-原理：不修改 localStorage，只清空搜索框、关闭浮层并把焦点还给搜索框。
-*/
-function cancelSearchCommand() {
+function selectSearchCommand(commandText) {
     const searchInput = document.getElementById('searchInput');
-    searchInput.value = '';
-    hideSearchCommandPopover();
-    searchInput.focus();
+    searchInput.value = commandText;
+    executePendingSearchCommand(getSearchCommand(commandText));
 }
 
 /* executePendingSearchCommand
-用途：执行搜索框中已经确认的隐藏指令。
-原理：根据命令类型写入 localStorage 或 Cookie；需要重建数据客户端的模式会刷新页面，其它模式直接刷新当前列表。
+用途：执行搜索框中已经输入或点选的隐藏指令。
+原理：根据命令类型写入 localStorage 或 Cookie；需要重建本地数据访问范围的模式会刷新页面，其它模式直接刷新当前列表。
 */
-function executePendingSearchCommand() {
-    const command = pendingSearchCommand || getSearchCommand(document.getElementById('searchInput').value);
+function executePendingSearchCommand(explicitCommand) {
+    const command = explicitCommand || getSearchCommand(document.getElementById('searchInput').value);
     if (!command) return;
 
     const lang = localStorage.getItem('lang') || 'zh';
@@ -303,7 +350,7 @@ function executePendingSearchCommand() {
     }
 
     if (command.type === 'renderingCommand') {
-        if (!['link', 'b', 'italic', 'code', 'subt'].includes(command.command)) {
+        if (!RENDERING_COMMAND_OPTIONS.includes(command.command)) {
             alert(lang === 'zh' ? '未知渲染指令。可用：link、b、italic、code、subt。' : 'Unknown rendering command. Available: link, b, italic, code, subt.');
             return;
         }
@@ -331,20 +378,9 @@ function executePendingSearchCommand() {
         message = lang === 'zh' ? '显示模式已切换。' : 'Display mode switched.';
     }
 
-    if (command.type === 'offlineMode') {
-        if (command.offline) {
-            localStorage.setItem('offlineTestMode', 'true');
-            message = lang === 'zh' ? '已进入离线测试模式。' : 'Offline test mode enabled.';
-        } else {
-            localStorage.removeItem('offlineTestMode');
-            message = lang === 'zh' ? '已回到普通数据库连接模式。' : 'Normal database mode enabled.';
-        }
-        shouldReload = true;
-    }
-
     searchInput.value = '';
     currentSearchText = '';
-    hideSearchCommandPopover();
+    document.getElementById('keywordDropdown').classList.remove('visible');
     if (shouldRefreshList) triggerSearch();
     alert(message);
 
@@ -790,7 +826,7 @@ async function init() {
     try {
         const [postsRes, usersRes] = await Promise.all([
             _supabase.from('posts').select('*'),
-            fetchPublicUserProfilesWithRpc()
+            fetchPublicUserProfilesCompat()
         ]);
         if (usersRes.data) globalUserMap = usersRes.data.reduce((acc, user) => {
             acc[user.username] = user;
@@ -861,6 +897,7 @@ async function init() {
 
         setupIntersectionObserver();
     } catch (err) {
+        console.error("首页数据加载失败", err);
         listHotEl.innerHTML = "<p>数据加载失败</p>";
     }
     updateLanguage(); // 这里会自动将前面设置的 data-zh 或 data-en 渲染到按钮文字上

@@ -73,7 +73,7 @@
 
         /* [body] 用途：设置网页主体的基础字体、自适应内外边距以及平滑的过渡动画。个人主页限制为 768px 单列宽度 */
         body {
-            font-family: sans-serif;
+            font-family: 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
@@ -580,6 +580,21 @@
         let hasMore = true;
         let observer;
 
+        function unwrapCompatRpcRow(data) {
+            if (Array.isArray(data)) return data[0] || null;
+            return data || null;
+        }
+
+        async function fetchPublicUserProfileCompat(username) {
+            if (typeof fetchPublicUserProfileWithRpc === 'function') {
+                return fetchPublicUserProfileWithRpc(username);
+            }
+            const { data, error } = await _supabase.rpc('get_public_user_profile', {
+                p_username: username
+            });
+            return { data: unwrapCompatRpcRow(data), error };
+        }
+
         /* pageshow
         用途：处理 iOS/Safari 用浏览器前进/后退恢复用户主页时的旧投票状态。
         原理：严格浏览器遇到 BFCache 恢复直接重载；其它浏览器刷新当前列表投票计数，避免冻结 DOM 继续参与投票。
@@ -897,7 +912,7 @@
 
             try {
                 // 1. 获取目标用户的积分和库存信息
-                const { data: userData, error: userErr } = await fetchPublicUserProfileWithRpc(targetUser);
+                const { data: userData, error: userErr } = await fetchPublicUserProfileCompat(targetUser);
 
                 if (userData) {
                     globalUserMap[userData.username] = userData;

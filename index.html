@@ -43,17 +43,10 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="搜索帖子或输入 # 选择关键词" autocomplete="off">
+            <input type="text" id="searchInput" data-zh-ph="搜索帖子，或输入 # / 选择关键词和指令"
+                data-en-ph="Search posts, or type # / for keywords and commands"
+                placeholder="搜索帖子，或输入 # / 选择关键词和指令" autocomplete="off">
             <div id="keywordDropdown" class="keyword-dropdown"></div>
-            <div id="verification-command-popover" class="verification-command-popover" role="dialog" aria-live="polite" hidden>
-                <div id="verification-command-message"></div>
-                <div class="verification-command-actions">
-                    <button type="button" class="verification-command-yes" onclick="executePendingSearchCommand()"
-                        data-zh="是" data-en="Yes">是</button>
-                    <button type="button" class="verification-command-no" onclick="cancelSearchCommand()"
-                        data-zh="否" data-en="No">否</button>
-                </div>
-            </div>
             <div id="selectedKeywords" class="selected-keywords"></div>
         </div>
 
