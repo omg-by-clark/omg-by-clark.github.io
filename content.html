@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!-- content.html -->
 <!--
     omg-by-clark.github.io: A website for sharing daily stories.
@@ -17,6 +17,7 @@
 <html lang="zh-CN">
 
 <head>
+    <script src="privacy.js"></script>
     <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -36,7 +37,9 @@
             --delete-btn: #d20f14;
             --nsfw-color: #fe640b;
             --repost-color: #40a02b;
+            --post-list-marker: #1e66f5;
         }
+
         /* body.dark 用途：定义深色模式下的颜色变量覆盖，实现页面的暗黑模式自适应。 */
         body.dark {
             --bg: #1a1a1a;
@@ -50,14 +53,17 @@
             --vote-bg-disliked: #7287fd;
             --delete-btn: #f02832;
             --repost-color: #a6e3a1;
+            --post-list-marker: hsl(217deg, 92%, 82%);
         }
+
         /* selection 用途：设置用户选择时的字体颜色 */
         ::selection {
             background: hsla(355, 100%, 75%, 0.3);
         }
-        /* body 途：设置页面整体的字体、最大宽度、居中对齐、内外边距及换肤的过渡动画。 */
+
+        /* body 用途：设置页面整体的字体、最大宽度、居中对齐、内外边距及换肤的过渡动画。 */
         body {
-            font-family: sans-serif;
+            font-family: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', sans-serif;
             max-width: 600px;
             margin: 0 auto;
             padding: 30px 20px;
@@ -101,6 +107,13 @@
         /* #post-content-text 用途：只让正文文字保留用户输入的换行，图片区域不再被正文末尾空行撑开。 */
         #post-content-text {
             white-space: pre-wrap;
+        }
+
+        /* .post-list-marker, #post-content-text ol::marker 用途：让帖子详情里的 1. 这类序号使用指定蓝色并加粗。 */
+        .post-list-marker,
+        #post-content-text ol::marker {
+            color: var(--post-list-marker);
+            font-weight: bold;
         }
 
         /* .action-area 用途：使用 Flexbox 居中排列详情页的交互操作按钮区域。 */
@@ -187,17 +200,80 @@
             padding-top: 25px;
         }
 
+        /* .cmt-thread 用途：承载一条评论以及它下面的所有回复，形成 Reddit 风格的评论树节点。 */
+        .cmt-thread {
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        /* .cmt-children
+        用途：显示当前评论的子回复区域，并在左侧画出 Reddit 风格的层级竖线。
+        原理：容器自己不再使用普通 border-left，而是用 ::before 画整条竖线；每个子 .cmt-thread 再用自己的 ::before 画一段带圆角的 L 型连接线，避免所有回复只是一条生硬直线。
+        */
+        .cmt-children {
+            --comment-line: rgba(128, 128, 128, 0.42);
+            --comment-indent: clamp(18px, 2vw, 26px);
+            --comment-indent-negative: clamp(-26px, -2vw, -18px);
+            margin-left: clamp(18px, 3vw, 34px);
+            padding-left: var(--comment-indent);
+            position: relative;
+        }
+
+        .cmt-children::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            border-left: 2px solid var(--comment-line);
+            border-radius: 999px;
+        }
+
+        /* .cmt-children .cmt-thread 用途：让嵌套回复之间保持紧凑，避免无限层级时空白过大。 */
+        .cmt-children .cmt-thread {
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        /* .cmt-children > .cmt-thread::before
+        用途：给每条回复画从左侧竖线拐进评论卡片的圆角连接线。
+        原理：伪元素从父级竖线位置开始，先向下再向右，以 border-bottom-left-radius 做出 Reddit 截图里的圆角。
+        */
+        .cmt-children > .cmt-thread::before {
+            content: "";
+            position: absolute;
+            left: var(--comment-indent-negative);
+            top: 0;
+            width: var(--comment-indent);
+            height: 22px;
+            border-left: 2px solid var(--comment-line);
+            border-bottom: 2px solid var(--comment-line);
+            border-bottom-left-radius: 12px;
+            pointer-events: none;
+        }
+
         /* .cmt-item 用途：单条评论的卡片样式，包含灰色半透明背景、圆角及 Flex 排版。 */
         .cmt-item {
             background: rgba(128, 128, 128, 0.08);
             padding: 15px;
             border-radius: 12px;
-            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             overflow-wrap: break-word;
             word-break: break-word;
+            cursor: pointer;
+            transition: background-color 0.18s, transform 0.1s;
+        }
+
+        /* .cmt-item:active 用途：按下评论卡片时轻微放大，保持站点原本的点击反馈。 */
+        .cmt-item:active {
+            transform: scale(1.01);
+        }
+
+        /* .cmt-item:hover 用途：鼠标经过评论时给出轻量反馈，提示双击可以回复。 */
+        .cmt-item:hover {
+            background: rgba(128, 128, 128, 0.12);
         }
 
         /* .cmt-content 用途：确保评论文本区在 Flex 容器中可以被正确压缩并允许长文本换行，防止挤出屏幕外。 */
@@ -211,6 +287,7 @@
             padding: 12px;
             border-radius: 10px;
             border: 1px solid #ddd;
+            font-family: 'Noto Sans SC', 'Source Han Sans', 'PingFang SC', monospace !important;
             background: var(--card);
             color: var(--text);
             flex: 1;
@@ -265,6 +342,19 @@
             margin-left: 5px;
             display: inline-block;
             position: relative;
+        }
+
+        .mod-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 5px;
+            display: inline-block;
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.28);
+            vertical-align: middle;
         }
 
         /* .lv-log 用途：定义等级“原木”的背景和字体配色。 */
@@ -422,68 +512,74 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="theme.js"></script>
 </head>
 
 <body>
-<h1 id="t">...</h1>
-<div id="info"
-     style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
-</div>
-<div class="kw-row" id="kw-row"></div>
-<div id="c">
-    <div id="post-content-text">Loading...</div>
-    <div id="post-photo-box" class="post-photo-box">
-        <img id="post-photo" class="post-photo-img" alt="">
+    <h1 id="t">...</h1>
+    <div id="info"
+        style="color:#888; font-size:0.9em; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
     </div>
-</div>
-
-<div class="action-area">
-    <div class="vote-pill" id="vote-container">
-        <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')" disabled>
-            👍 <span id="like-count">0</span>
-        </button>
-        <div class="vote-divider"></div>
-        <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')" disabled>
-            👎 <span id="dislike-count">0</span>
-        </button>
+    <div class="kw-row" id="kw-row"></div>
+    <div id="c">
+        <div id="post-content-text">Loading...</div>
+        <div id="post-photo-box" class="post-photo-box">
+            <img id="post-photo" class="post-photo-img" alt="">
+        </div>
     </div>
-</div>
 
-<div class="cmt-box">
-    <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
-        评论区</h3>
-    <div id="cmt-list"></div>
-    <div style="margin-top:25px; display:flex; gap:12px;">
-        <input data-en-ph="Write a cool comment..." data-zh-ph="神评由此诞生..." id="cC" style="flex:1" type="text">
-        <button class="btn-send" data-en="Send" data-zh="发送" onclick="addCmt()">发送
-        </button>
+    <div class="action-area">
+        <div class="vote-pill" id="vote-container">
+            <button class="like-btn" id="btn-like" onclick="toggleDetailVote('like')" disabled>
+                👍 <span id="like-count">0</span>
+            </button>
+            <div class="vote-divider"></div>
+            <button class="dislike-btn" id="btn-dislike" onclick="toggleDetailVote('dislike')" disabled>
+                👎 <span id="dislike-count">0</span>
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="nav-links">
-    <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场" href="index.html" style="color:var(--brand);">
-        ⬅️ 返回广场
-    </a>
+    <div class="cmt-box">
+        <h3 data-en="💬 Comments" data-zh="💬 评论区">💬
+            评论区</h3>
+        <div id="cmt-list"></div>
+        <div style="margin-top:25px; display:flex; gap:12px;">
+            <input data-en-ph="Write a cool comment..." data-zh-ph="神评由此诞生..." id="cC" style="flex:1" type="text">
+            <button class="btn-send" data-en="Send" data-zh="发送" onclick="addCmt()">发送
+            </button>
+        </div>
+    </div>
 
-    <button id="btn-delete-post" class="btn-delete-post" onclick="deletePost()" data-en="🗑️ Delete"
+    <div class="nav-links">
+        <a data-en="⬅️ Back to Plaza" data-zh="⬅️ 返回广场" href="index.html" style="color:var(--brand);">
+            ⬅️ 返回广场
+        </a>
+
+        <button id="btn-delete-post" class="btn-delete-post" onclick="deletePost()" data-en="🗑️ Delete"
             data-zh="🗑️ 删除帖子">
-        🗑️ 删除帖子
-    </button>
-</div>
+            🗑️ 删除帖子
+        </button>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js"></script>
-<script>
-    const lang = localStorage.getItem('lang') || 'zh';
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-    document.querySelectorAll('[data-zh]').forEach(el => {
-        el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
-    });
-    document.querySelectorAll('[data-zh-ph]').forEach(el => {
-        el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
-    });
-</script>
-<script src="content.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script src="omg-render.js?v=20260715-preview-blocks"></script>
+    <script src="omg-vote.js"></script>
+    <script>
+        const lang = localStorage.getItem('lang') || 'zh';
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        document.querySelectorAll('[data-zh]').forEach(el => {
+            el.innerText = (lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en'));
+        });
+        document.querySelectorAll('[data-zh-ph]').forEach(el => {
+            el.placeholder = (lang === 'zh' ? el.getAttribute('data-zh-ph') : el.getAttribute('data-en-ph'));
+        });
+    </script>
+    <script src="content.js"></script>
 </body>
 
 </html>

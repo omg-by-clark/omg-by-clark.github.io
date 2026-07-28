@@ -17,6 +17,8 @@
 <html lang="zh-CN">
 
 <head>
+    <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="privacy.js"></script>
     <link href="logo.svg" rel="icon" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -36,6 +38,7 @@
             --vote-bg-neutral: hsl(233deg, 10%, 47%);
             --vote-bg-disliked: #7287fd;
             --read-more: #1e66f5;
+            --post-list-marker: #1e66f5;
             --nsfw-color: #fe640b;
             --repost-color: #40a02b;
             --body-text: #4c4f69;
@@ -54,9 +57,10 @@
             --vote-bg-neutral: #333;
             --vote-bg-disliked: #7287fd;
             --read-more: #89dceb;
+            --post-list-marker: hsl(217deg, 92%, 82%);
             --repost-color: #a6e3a1;
 
-            /* 深色模式下的文字颜色适配 */
+        /* 深色模式下的文字颜色适配 */
             --body-text: #c6d0f5;
             --title-text: hsl(40, 87%, 91%);
             --kw-text: #838ba7;
@@ -139,9 +143,9 @@
             box-shadow: 0 6px 15px rgba(230, 69, 83, 0.4);
         }
 
-        /* [.btn-common:active] 用途：鼠标点击按下通用按钮时的轻微缩小动画，提供物理按压感 */
+        /* [.btn-common:active] 用途：鼠标点击按下通用按钮时放大 1.1 倍，沿用旧版直接反馈。 */
         .btn-common:active {
-            transform: scale(0.95);
+            transform: scale(1.1);
         }
 
         /* [.section-title] 用途：各个帖子列表上方的区块标题文字排版 */
@@ -190,6 +194,13 @@
             color: var(--read-more);
             font-weight: bold;
             margin-left: 5px;
+        }
+
+        /* [.post-list-marker, .post-body ol::marker] 用途：让用户主页帖子里的 1. 这类序号使用指定蓝色并加粗 */
+        .post-list-marker,
+        .post-body ol::marker {
+            color: var(--post-list-marker);
+            font-weight: bold;
         }
 
         /* [.blur-content] 用途：给 NSFW 内容的文本施加高斯模糊滤镜，防止路人偷窥 */
@@ -277,10 +288,10 @@
             transition: opacity 0.2s;
         }
 
-        /* [.like-btn:active, .dislike-btn:active] 用途：点击赞或踩时的按钮瞬间回弹微缩动画 */
+        /* [.like-btn:active, .dislike-btn:active] 用途：点击赞或踩时放大 1.1 倍，恢复旧版点击反馈。 */
         .like-btn:active,
         .dislike-btn:active {
-            transform: scale(0.9);
+            transform: scale(1.1);
         }
 
         /* [.vote-pill.is-liked .like-btn] 用途：用户点赞后，顶按钮区域背景变红的交互反馈 */
@@ -293,8 +304,7 @@
             background-color: var(--vote-bg-disliked);
         }
 
-        /* [.vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider]
-           用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
+        /* [.vote-pill.is-liked .vote-divider, .vote-pill.is-disliked .vote-divider] 用途：当用户点赞或踩后，降低中间分割线的可见度，让色块更融合 */
         .vote-pill.is-liked .vote-divider,
         .vote-pill.is-disliked .vote-divider {
             opacity: 0.2;
@@ -324,6 +334,19 @@
             color: white;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             position: relative;
+            display: inline-block;
+        }
+
+        .mod-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 5px;
+            vertical-align: middle;
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.28);
             display: inline-block;
         }
 
@@ -500,6 +523,10 @@
             object-fit: cover;
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="theme.js"></script>
 </head>
 
 <body>
@@ -542,6 +569,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
+    <script src="omg-render.js?v=20260715-preview-blocks"></script>
+    <script src="omg-vote.js"></script>
 
     <script>
         let currentPage = 0;
@@ -551,12 +580,25 @@
         let hasMore = true;
         let observer;
 
+        /* pageshow
+        用途：处理 iOS/Safari 用浏览器前进/后退恢复用户主页时的旧投票状态。
+        原理：严格浏览器遇到 BFCache 恢复直接重载；其它浏览器刷新当前列表投票计数，避免冻结 DOM 继续参与投票。
+        */
+        window.addEventListener('pageshow', event => {
+            if (!event.persisted) return;
+            if (window.omgVote && window.omgVote.isStrictBrowser()) {
+                window.location.reload();
+                return;
+            }
+            refreshVisibleVotes();
+        });
+
         // 获取 URL 里的用户名参数
         const urlParams = new URLSearchParams(window.location.search);
         const targetUser = urlParams.get('user');
 
         /* escapeHTML
-        用法：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
+        用途：将用户输入的字符串转换为安全的 HTML 代码，避免网页执行恶意代码。
         原理：创建一个虚拟的 div 元素，将文本作为 textContent 插入，再取出 innerHTML 实现安全转义。
         */
         function escapeHTML(str) {
@@ -567,7 +609,7 @@
         }
 
         /* formatRelativeTime
-        用法：把用户主页帖子列表中的发布时间转换成相对时间。
+        用途：把用户主页帖子列表中的发布时间转换成相对时间。
         返回：中文示例为“刚刚 / 1 分钟前 / 昨天 / 2 天前 / 1 个月前 / 1 年前”，英文模式返回对应英文。
         原理：计算目标时间到当前时间的差值，并按分钟、小时、天、月、年逐级展示；只负责显示，不参与帖子查询排序。
         */
@@ -602,43 +644,8 @@
             return `${years} 年前`;
         }
 
-        /* parseCustomCommands
-        用途：解析帖子正文中的自定义排版指令。
-        用法：传入经过转义的 HTML 字符串，使用正则表达式将特定的指令替换为对应的 HTML 标签。
-        原理：匹配 \ / . 符号，支持双符号转义，并采用单层括号非贪婪匹配以完美支持如 .code[.b[]] 的嵌套场景。
-        */
-        function parseCustomCommands(text) {
-            if (!text) return '';
-            let parsed = text;
-
-            const regex = /([\\/\.])(\1)?(link|b|code|subt)\[((?:[^\[\]]|\[[^\]]*\])*?)\](?:\((.*?)\))?/g;
-
-            parsed = parsed.replace(regex, function (match, p1, p2, command, innerText, url) {
-                // 如果存在两个连续的指令符号，说明是转义，直接取消指令解析，返回单符号普通文本
-                if (p2) {
-                    const safeUrl = url ? `(${url})` : '';
-                    return `${p1}${command}[${innerText}]${safeUrl}`;
-                }
-
-                if (command === 'link') {
-                    if (innerText === '' && !url) return match;
-                    const safeUrl = url ? url : '';
-                    return `<a href="${safeUrl}" style="color: var(--repost-color); text-decoration: none;">${innerText}</a>`;
-                } else if (command === 'b') {
-                    return `<span style="font-weight: bold;">${innerText}</span>`;
-                } else if (command === 'code') {
-                    return `<span style="font-family: 'Google Sans Code', Consolas, monospace;">${innerText}</span>`;
-                } else if (command === 'subt') {
-                    return `<span style="display: block; font-size: 1.17em; font-weight: bold; margin: 1em 0;">${innerText}</span>`;
-                }
-                return match;
-            });
-
-            return parsed;
-        }
-
         /* getSafeFileName
-        用法：将用户名转换为与存储桶中一致的 Base64 文件名。
+        用途：将用户名转换为与存储桶中一致的 Base64 文件名。
         原理：直接对 encodeURIComponent 处理后的原始百分号字符串进行 Base64 编码，不移除任何字符。
         */
         function getSafeFileName(username) {
@@ -646,7 +653,7 @@
         }
 
         /* getNicknameStyle
-        用法：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
+        用途：根据数据库中用户的库存物品（inventory）返回对应的专属昵称 CSS 样式。
         原理：读取 inventory 对象，检查特定 ID（如 100, 101, 102）的物品过期时间，若在有效期内则返回对应内联 CSS。
         */
         function getNicknameStyle(inventory) {
@@ -659,7 +666,7 @@
         }
 
         /* updateLanguage
-        用法：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
+        用途：根据本地浏览器存储（localStorage）中的语言偏好动态切换网页显示语言。
         原理：遍历带有 data-zh 和 data-en 属性的 DOM 元素，根据当前 lang 变量的值替换匹配的 innerText。
         */
         function updateLanguage() {
@@ -670,72 +677,61 @@
         }
 
         /* handleVote
-        用法：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
-        原理：根据本地 localStorage 缓存判断用户是否已投票，切换选中状态并更新计数，最后通过 supabase 客户端 API 异步更新至数据库。
+        用途：处理用户在前端界面点击帖子的“赞”或“踩”按钮的具体逻辑。
+        原理：调用 omgVote 先读取数据库最新票数，再结合本机投票状态计算结果，避免浏览器历史缓存恢复旧数字后继续刷票。
         */
         async function handleVote(event, postId, type) {
+            if (window.requireLocalDataConsent && !window.requireLocalDataConsent()) return;
             event.stopPropagation();
             const card = event.currentTarget.closest('.card');
-            const votePill = card.querySelector('.vote-pill');
-            const likeBtn = card.querySelector('.like-btn');
-            const dislikeBtn = card.querySelector('.dislike-btn');
-            const likeSpan = likeBtn.querySelector('.count');
-            const dislikeSpan = dislikeBtn.querySelector('.count');
-
-            let likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-            let dislikedPosts = JSON.parse(localStorage.getItem('dislikedPosts') || '[]');
-
-            let likes = parseInt(likeSpan.innerText);
-            let dislike = parseInt(dislikeSpan.innerText);
-
-            if (type === 'like') {
-                if (likedPosts.includes(postId)) {
-                    likes--;
-                    likedPosts = likedPosts.filter(id => id !== postId);
-                    votePill.classList.remove('is-liked');
-                } else {
-                    likes++;
-                    likedPosts.push(postId);
-                    votePill.classList.add('is-liked');
-                    if (dislikedPosts.includes(postId)) {
-                        dislike--;
-                        dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                        votePill.classList.remove('is-disliked');
-                        dislikeSpan.innerText = dislike;
-                    }
-                }
-                likeSpan.innerText = likes;
-            } else {
-                if (dislikedPosts.includes(postId)) {
-                    dislike--;
-                    dislikedPosts = dislikedPosts.filter(id => id !== postId);
-                    votePill.classList.remove('is-disliked');
-                } else {
-                    dislike++;
-                    dislikedPosts.push(postId);
-                    votePill.classList.add('is-disliked');
-                    if (likedPosts.includes(postId)) {
-                        likes--;
-                        likedPosts = likedPosts.filter(id => id !== postId);
-                        votePill.classList.remove('is-liked');
-                        likeSpan.innerText = likes;
-                    }
-                }
-                dislikeSpan.innerText = dislike;
-            }
-
-            localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-            localStorage.setItem('dislikedPosts', JSON.stringify(dislikedPosts));
+            const voteButtons = card ? card.querySelectorAll('.like-btn, .dislike-btn') : [];
+            voteButtons.forEach(button => { button.disabled = true; });
 
             try {
-                await _supabase.from('posts').update({ likes, dislike }).eq('id', postId);
+                const result = await window.omgVote.applyPostVote(postId, type);
+                if (result) syncVoteCards(postId, result.likes, result.dislike, result.hasLiked, result.hasDisliked);
             } catch (err) {
                 console.error("同步失败", err);
+            } finally {
+                voteButtons.forEach(button => { button.disabled = false; });
             }
         }
 
+        function syncVoteCards(postId, likes, dislike, hasLiked, hasDisliked) {
+            const postIdStr = String(postId);
+
+            document.querySelectorAll(`.card[data-post-id="${postIdStr}"]`).forEach(card => {
+                const votePill = card.querySelector('.vote-pill');
+                const likeSpan = card.querySelector('.like-btn .count');
+                const dislikeSpan = card.querySelector('.dislike-btn .count');
+
+                if (likeSpan) likeSpan.innerText = likes;
+                if (dislikeSpan) dislikeSpan.innerText = dislike;
+                if (votePill) {
+                    votePill.classList.toggle('is-liked', hasLiked);
+                    votePill.classList.toggle('is-disliked', hasDisliked);
+                }
+            });
+        }
+
+        /* refreshVisibleVotes
+        用途：刷新用户主页已显示帖子的投票计数。
+        原理：浏览器从历史缓存恢复时重新读取数据库计数，避免旧 DOM 票数参与下一次投票计算。
+        */
+        async function refreshVisibleVotes() {
+            const ids = [...new Set([...document.querySelectorAll('.card[data-post-id]')].map(card => card.dataset.postId).filter(Boolean))];
+            await Promise.all(ids.map(async postId => {
+                try {
+                    const result = await window.omgVote.refreshPostVote(postId);
+                    syncVoteCards(postId, result.likes, result.dislike, result.hasLiked, result.hasDisliked);
+                } catch (error) {
+                    console.warn('刷新投票状态失败：', error);
+                }
+            }));
+        }
+
         /* toggleNSFW
-        用法：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
+        用途：在用户点击特定的 NSFW 关键词时，切换对应帖子的模糊显示状态。
         原理：通过 classList.contains 判断是否有 blur-content 类名，并在其与 revealed-content 之间进行互相切换。
         */
         function toggleNSFW(event, element) {
@@ -756,7 +752,7 @@
         }
 
         /* createCardHTML
-        用法：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
+        用途：将从数据库抓取的单条帖子 JSON 数据，转换成可在页面上直接渲染的 HTML 结构。
         原理：根据数据拼接包含标题、关键词、作者、时间和操作按钮的模板字符串，支持基于特殊端点命令强制截断逻辑。
         */
         function createCardHTML(postData, userMap) {
@@ -783,21 +779,22 @@
             }
 
             let pillClass = 'vote-pill';
-            if (likedPosts.includes(postData.id)) pillClass += ' is-liked';
-            if (dislikedPosts.includes(postData.id)) pillClass += ' is-disliked';
+            if (likedPosts.some(id => String(id) === String(postData.id))) pillClass += ' is-liked';
+            if (dislikedPosts.some(id => String(id) === String(postData.id))) pillClass += ' is-disliked';
 
-            const safeContent = postData.content || '';
+            const renderedPost = window.omgRender.renderPost(postData.content || '');
             let displayContent = '';
 
-            // 全局解析正文；user.html 与 index.html 一样，只按字数规则截断预览内容
-            let escaped = escapeHTML(safeContent);
-            let fullParsed = parseCustomCommands(escaped);
+            // 全局解析正文；个人页预览和首页一样，遇到 Markdown 标题或代码块时停在块前。
+            let fullParsed = renderedPost.html;
+            let previewParsed = window.omgRender.renderPost(postData.content || '', {
+                previewLength: 200,
+                stopPreviewAtBlocks: true
+            });
 
-            // 字数限制截断（截取后再解析，保障标签安全）
-            if (safeContent.length > 200) {
-                let truncated = escapeHTML(safeContent.substring(0, 200));
-                let parsedTrunc = parseCustomCommands(truncated);
-                displayContent = parsedTrunc.replace(/\n/g, '&nbsp;&nbsp;') +
+            // 预览可能因为字数、标题或代码块而截断，统一由 previewTruncated 判断是否显示阅读全文入口。
+            if (previewParsed.previewTruncated) {
+                displayContent = previewParsed.html.replace(/\n/g, '&nbsp;&nbsp;') +
                     `...<span class="read-more" data-zh="点击以查看全文" data-en="Click to read more">点击以查看全文</span>`;
             } else {
                 displayContent = fullParsed.replace(/\n/g, '&nbsp;&nbsp;');
@@ -809,7 +806,7 @@
             }
 
             return `
-            <div class="card" onclick="location.href='content.html?id=${postData.id}'">
+            <div class="card" data-post-id="${postData.id}" onclick="location.href='content.html?id=${postData.id}'">
                 <div style="width: 100%;">
                     <b>${escapeHTML(postData.title)}</b>
                     ${kwHtml}
@@ -826,7 +823,7 @@
                             </button>
                         </div>
                         <div class="post-meta">
-                            👤 <span class="author-link" style="${nickStyle}; margin-left: 4px;" onclick="event.stopPropagation(); location.href='user.html?user=${encodeURIComponent(postData.nickname)}'">${escapeHTML(postData.nickname)}</span> <span class="lv-badge ${userLevel.class}">${userLevel.name}</span> &nbsp;|&nbsp; 📅 ${dateStr}
+                            👤 <span class="author-link" style="${nickStyle}; margin-left: 4px;" onclick="event.stopPropagation(); location.href='user.html?user=${encodeURIComponent(postData.nickname)}'">${escapeHTML(postData.nickname)}</span> <span class="lv-badge ${userLevel.class}">${userLevel.name}</span>${getModeratorBadgeHTML(postData.nickname)} &nbsp;|&nbsp; 📅 ${dateStr}
                         </div>
                     </div>
                 </div>
@@ -834,7 +831,7 @@
         }
 
         /* loadNextPage
-        用法：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），仅加载指定用户的帖子。
+        用途：执行触底后的自动加载动作（实现无限下拉滚动列表的核心业务逻辑），仅加载指定用户的帖子。
         原理：利用分页变量 currentPage 和 PAGE_SIZE，向 Supabase 发起指定范围的 range 请求获取该用户的帖子，拼接进 DOM 并控制触底状态。
         */
         async function loadNextPage() {
@@ -875,7 +872,7 @@
         }
 
         /* setupIntersectionObserver
-        用法：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
+        用途：设置滚动监听器，以便在用户刷到页面底端时触发下翻页。
         原理：使用 IntersectionObserver API 监听 #scroll-sentinel 元素，当其进入视口区域时触发 loadNextPage 实现懒加载。
         */
         function setupIntersectionObserver() {
@@ -886,7 +883,7 @@
         }
 
         /* init
-        用法：初始化个人主页数据，首先校验用户是否存在，然后获取该用户积分、头像和历史帖子流。
+        用途：初始化个人主页数据，首先校验用户是否存在，然后获取该用户积分、头像和历史帖子流。
         原理：根据 URL 参数读取 targetUser，调用 Supabase 查询用户基础信息，计算并拼装含有 fallback 回退机制的头像，随后挂载下拉加载监听。
         */
         async function init() {
@@ -900,7 +897,7 @@
 
             try {
                 // 1. 获取目标用户的积分和库存信息
-                const { data: userData, error: userErr } = await _supabase.from('users').select('username, points, inventory').eq('username', targetUser).maybeSingle();
+                const { data: userData, error: userErr } = await fetchPublicUserProfileWithRpc(targetUser);
 
                 if (userData) {
                     globalUserMap[userData.username] = userData;
