@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../../../privacy.js"></script>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Time Test</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --fg: #f7f7f7;
+            --muted: rgba(247, 247, 247, 0.7);
+            --line: rgba(255, 255, 255, 0.18);
+            --p1: #89dceb;
+            --p2: #fab387;
+            --danger: #ff5c7a;
+            --ok: #ffffff;
+            font-family: 'Noto Sans SC', 'Source Han Sans', 'PingFang SC', system-ui, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        .game {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            transition: background 0.08s linear, color 0.08s linear;
+        }
+
+        .game.single {
+            grid-template-columns: 1fr;
+        }
+
+        .game.ready {
+            background: #fff;
+            color: #111;
+        }
+
+        .half {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            padding: clamp(18px, 4vw, 54px);
+            border-right: 1px solid var(--line);
+            text-align: center;
+        }
+
+        .half:last-child {
+            border-right: 0;
+        }
+
+        .game.single .p2 {
+            display: none;
+        }
+
+        .game.single .p1 {
+            border-right: 0;
+        }
+
+        .mode-bar {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            z-index: 3;
+            display: flex;
+            gap: 8px;
+            transform: translateX(-50%);
+        }
+
+        .mode-button {
+            min-height: 34px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--fg);
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.86rem;
+            font-weight: 900;
+            transition: transform 0.1s ease, background 0.2s ease;
+        }
+
+        .game.ready .mode-button {
+            border-color: rgba(0, 0, 0, 0.18);
+            background: rgba(0, 0, 0, 0.08);
+            color: #111;
+        }
+
+        .mode-button.active {
+            background: var(--fg);
+            color: #050505;
+        }
+
+        .game.ready .mode-button.active {
+            background: #111;
+            color: #fff;
+        }
+
+        .mode-button:active {
+            transform: scale(1.1);
+        }
+
+        .switch-hint {
+            min-height: 1.3em;
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.86rem;
+            font-weight: 800;
+        }
+
+        .game.ready .switch-hint {
+            color: #333;
+        }
+
+
+        .panel {
+            display: grid;
+            gap: 16px;
+            max-width: 520px;
+        }
+
+        .player {
+            margin: 0;
+            font-size: clamp(1.45rem, 4vw, 4rem);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .p1 .player {
+            color: var(--p1);
+        }
+
+        .p2 .player {
+            color: var(--p2);
+        }
+
+        .game.ready .player {
+            color: #111;
+        }
+
+        .status {
+            min-height: 2.8em;
+            margin: 0;
+            color: var(--muted);
+            font-size: clamp(1rem, 2.2vw, 2rem);
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .game.ready .status {
+            color: #222;
+        }
+
+        .keys {
+            margin: 0;
+            color: var(--muted);
+            font-size: clamp(0.82rem, 1.35vw, 1.1rem);
+            font-weight: 700;
+            line-height: 1.55;
+        }
+
+        .result {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 5.2rem);
+            font-weight: 950;
+            line-height: 1;
+        }
+
+        .false-start {
+            color: var(--danger);
+        }
+
+        .center {
+            position: absolute;
+            inset: auto 50% 28px auto;
+            width: min(520px, calc(100% - 36px));
+            transform: translateX(50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .leaderboard {
+            display: grid;
+            gap: 10px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.62);
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+        }
+
+        .leaderboard.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .leaderboard h2 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .leaderboard ol {
+            display: grid;
+            gap: 6px;
+            margin: 0;
+            padding-left: 24px;
+            text-align: left;
+        }
+
+        .leaderboard li {
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .hint {
+            margin: 4px 0 0;
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .settings-backdrop {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            display: none;
+            place-items: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.42);
+            backdrop-filter: blur(8px);
+        }
+
+        .settings-backdrop.show {
+            display: grid;
+        }
+
+        .settings-dialog {
+            width: min(420px, 100%);
+            padding: 20px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: rgba(15, 15, 18, 0.94);
+            color: var(--fg);
+            box-shadow: 0 22px 70px rgba(0, 0, 0, 0.36);
+        }
+
+        .settings-dialog h2 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+        }
+
+        .settings-dialog p {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .delay-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--fg);
+            font: inherit;
+            font-weight: 850;
+            outline: none;
+        }
+
+        .delay-input:focus {
+            border-color: var(--p1);
+            box-shadow: 0 0 0 3px rgba(137, 220, 235, 0.2);
+        }
+
+        .settings-error {
+            min-height: 1.3em;
+            margin-top: 8px;
+            color: var(--danger);
+            font-size: 0.84rem;
+            font-weight: 850;
+        }
+
+        .settings-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .settings-button {
+            min-height: 36px;
+            padding: 7px 13px;
+            border: 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--fg);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 900;
+            transition: transform 0.1s ease;
+        }
+
+        .settings-button.primary {
+            background: var(--p1);
+            color: #071013;
+        }
+
+        .settings-button:active {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <main id="game" class="game" aria-live="polite">
+        <nav class="mode-bar" aria-label="mode">
+            <button id="single-mode" class="mode-button" type="button" data-zh="单人" data-en="Solo">单人</button>
+            <button id="multi-mode" class="mode-button" type="button" data-zh="多人" data-en="Duo">多人</button>
+        </nav>
+        <section class="half p1">
+            <div class="panel">
+                <h1 class="player" data-zh="玩家 1" data-en="Player 1">玩家 1</h1>
+                <p id="p1-status" class="status"></p>
+                <p id="p1-keys" class="keys"></p>
+                <p id="p1-switch" class="switch-hint"></p>
+                <p id="p1-result" class="result"></p>
+            </div>
+        </section>
+        <section class="half p2">
+            <div class="panel">
+                <h1 class="player" data-zh="玩家 2" data-en="Player 2">玩家 2</h1>
+                <p id="p2-status" class="status"></p>
+                <p id="p2-keys" class="keys"></p>
+                <p id="p2-switch" class="switch-hint"></p>
+                <p id="p2-result" class="result"></p>
+            </div>
+        </section>
+        <aside class="center">
+            <div id="leaderboard" class="leaderboard">
+                <h2 data-zh="排行榜 Top 5" data-en="Leaderboard Top 5">排行榜 Top 5</h2>
+                <ol id="leaderboard-list"></ol>
+                <p id="restart-hint" class="hint"></p>
+            </div>
+        </aside>
+        <div id="settings-backdrop" class="settings-backdrop" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <div class="settings-dialog">
+                <h2 id="settings-title" data-zh="下一局延迟" data-en="Next round delay">下一局延迟</h2>
+                <p id="settings-desc"></p>
+                <input id="delay-input" class="delay-input" type="text" inputmode="text" autocomplete="off" spellcheck="false">
+                <div id="settings-error" class="settings-error"></div>
+                <div class="settings-actions">
+                    <button id="delay-cancel" class="settings-button" type="button" data-zh="取消" data-en="Cancel">取消</button>
+                    <button id="delay-save" class="settings-button primary" type="button" data-zh="保存" data-en="Save">保存</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const lang = localStorage.getItem('lang') === 'en' ? 'en' : 'zh';
+        const p1Keys = new Set(['1', '2', '3', '4', '5', 'q', 'w', 'e', 'a', 's', 'd', 'z']);
+        const p2Keys = new Set(['6', '7', '8', '9', '0', 'p', '[', ']', 'l', ';', "'", ',', '.', '/']);
+        const game = document.getElementById('game');
+        const seenKey = 'omg-reaction-time-seen-keys';
+        const modeKey = 'omg-reaction-time-mode';
+        const restartDelayKey = 'omg-reaction-time-restart-delay-ms';
+        let mode = localStorage.getItem(modeKey) === 'single' ? 'single' : 'multi';
+        let phase = 'waiting';
+        let readyAt = 0;
+        let finishedAt = 0;
+        let restartDelayMs = readRestartDelay();
+        let timerId = 0;
+        let leaderboardTimer = 0;
+        const pressedKeys = new Set();
+
+        const text = {
+            soloTitle: ['反应力测试', 'Reaction Time Test'],
+            p1Title: ['玩家 1', 'Player 1'],
+            p2Title: ['玩家 2', 'Player 2'],
+            wait: ['等待屏幕变白...', 'Wait for the screen to turn white...'],
+            press: ['赶紧按下按键', 'Press a key now'],
+            early: ['按早了！', 'Too early!'],
+            p1Keys: ['可按：1-5 或 Q W E A S D Z', 'Keys: 1-5 or Q W E A S D Z'],
+            p2Keys: ['可按：6-0 或 P [ ] L ; \' , . /', 'Keys: 6-0 or P [ ] L ; \' , . /'],
+            singleHint: ['按 M 或 Enter 切回多人模式', 'Press M or Enter while waiting to switch to multiplayer mode'],
+            multiHint: ['按 S 或 Enter 切到单人模式', 'Press S or Enter while waiting to switch to solo mode'],
+            won: ['获胜', 'wins'],
+            time: ['用时', 'Time'],
+            loading: ['正在读取排行榜...', 'Loading leaderboard...'],
+            empty: ['还没有排行榜记录。', 'No leaderboard entries yet.'],
+            restart: ['按任意键重新开始', 'Press any key to restart'],
+            savedFail: ['排行榜暂时写入失败。', 'Could not save the leaderboard yet.'],
+            delayDesc: ['输入结束后进入下一局前的延迟，例如 3s、1 s、800ms。', 'Enter the delay before the next round, for example 3s, 1 s, or 800ms.'],
+            delayError: ['格式不对，请输入类似 3s 或 800ms。', 'Invalid format. Try something like 3s or 800ms.']
+        };
+
+        function t(key) {
+            return text[key][lang === 'en' ? 1 : 0];
+        }
+
+        function applyI18n() {
+            document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+            document.querySelectorAll('[data-zh][data-en]').forEach(element => {
+                element.textContent = element.dataset[lang];
+            });
+        }
+
+        function formatMs(ms) {
+            return `${Math.round(ms).toLocaleString('en-US')} ms`;
+        }
+
+        function formatDelay(ms) {
+            return ms % 1000 === 0 ? `${ms / 1000}s` : `${ms}ms`;
+        }
+
+        function readRestartDelay() {
+            const value = Number(localStorage.getItem(restartDelayKey));
+            return Number.isFinite(value) && value > 0 ? value : 3000;
+        }
+
+        function parseDelayInput(value) {
+            const match = String(value || '').trim().match(/^(\d+(?:\.\d+)?)\s*(ms|s)$/i);
+            if (!match) return null;
+            const amount = Number(match[1]);
+            if (!Number.isFinite(amount) || amount <= 0) return null;
+            const ms = match[2].toLowerCase() === 's' ? amount * 1000 : amount;
+            return Math.round(Math.min(ms, 60000));
+        }
+
+        function setStatus(message, className = '') {
+            ['p1', 'p2'].forEach(player => {
+                const status = document.getElementById(`${player}-status`);
+                status.textContent = message;
+                status.className = `status ${className}`.trim();
+            });
+        }
+
+        function showKeyHints() {
+            const firstTime = localStorage.getItem(seenKey) !== 'true';
+            document.getElementById('p1-keys').textContent = firstTime ? t('p1Keys') : '';
+            document.getElementById('p2-keys').textContent = firstTime && mode === 'multi' ? t('p2Keys') : '';
+            localStorage.setItem(seenKey, 'true');
+        }
+
+        function renderMode() {
+            game.classList.toggle('single', mode === 'single');
+            document.getElementById('single-mode').classList.toggle('active', mode === 'single');
+            document.getElementById('multi-mode').classList.toggle('active', mode === 'multi');
+            document.querySelector('.p1 .player').textContent = mode === 'single' ? t('soloTitle') : t('p1Title');
+            document.querySelector('.p2 .player').textContent = t('p2Title');
+            document.getElementById('p1-switch').textContent = mode === 'single' ? t('singleHint') : t('multiHint');
+            document.getElementById('p2-switch').textContent = mode === 'multi' ? t('multiHint') : '';
+            if (mode === 'single') {
+                document.getElementById('p2-status').textContent = '';
+                document.getElementById('p2-keys').textContent = '';
+                document.getElementById('p2-result').textContent = '';
+            }
+        }
+
+        function setMode(nextMode) {
+            mode = nextMode === 'single' ? 'single' : 'multi';
+            localStorage.setItem(modeKey, mode);
+            startRound();
+        }
+
+        function clearResults() {
+            document.getElementById('p1-result').textContent = '';
+            document.getElementById('p2-result').textContent = '';
+            document.getElementById('leaderboard').classList.remove('show');
+            document.getElementById('leaderboard-list').innerHTML = '';
+            document.getElementById('restart-hint').textContent = '';
+        }
+
+        function openDelaySettings() {
+            const backdrop = document.getElementById('settings-backdrop');
+            const input = document.getElementById('delay-input');
+            document.getElementById('settings-desc').textContent = t('delayDesc');
+            document.getElementById('settings-error').textContent = '';
+            input.value = formatDelay(restartDelayMs);
+            backdrop.classList.add('show');
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 0);
+        }
+
+        function closeDelaySettings() {
+            document.getElementById('settings-backdrop').classList.remove('show');
+            document.getElementById('settings-error').textContent = '';
+        }
+
+        function saveDelaySettings() {
+            const input = document.getElementById('delay-input');
+            const ms = parseDelayInput(input.value);
+            if (ms == null) {
+                document.getElementById('settings-error').textContent = t('delayError');
+                input.focus();
+                input.select();
+                return;
+            }
+            restartDelayMs = ms;
+            localStorage.setItem(restartDelayKey, String(restartDelayMs));
+            closeDelaySettings();
+        }
+
+        function startRound() {
+            clearTimeout(timerId);
+            clearTimeout(leaderboardTimer);
+            phase = 'waiting';
+            readyAt = 0;
+            finishedAt = 0;
+            pressedKeys.clear();
+            game.classList.remove('ready');
+            clearResults();
+            renderMode();
+            showKeyHints();
+            setStatus(t('wait'));
+            if (mode === 'single') document.getElementById('p2-status').textContent = '';
+            const delay = (Math.floor(Math.random() * 31) + 20) / 10;
+            timerId = setTimeout(() => {
+                phase = 'ready';
+                readyAt = performance.now();
+                game.classList.add('ready');
+                setStatus(t('press'));
+                if (mode === 'single') document.getElementById('p2-status').textContent = '';
+            }, delay * 1000);
+        }
+
+        function getPlayerForKey(key) {
+            const normalized = key.length === 1 ? key.toLowerCase() : key;
+            if (mode === 'single') return 'p1';
+            if (p1Keys.has(normalized)) return 'p1';
+            if (mode === 'multi' && p2Keys.has(normalized)) return 'p2';
+            return '';
+        }
+
+        function showFalseStart(player) {
+            phase = 'finished';
+            clearTimeout(timerId);
+            game.classList.remove('ready');
+            const target = document.getElementById(`${player}-status`);
+            target.textContent = t('early');
+            target.className = 'status false-start';
+            setTimeout(startRound, 1500);
+        }
+
+        async function getLeaderboardOnly() {
+            try {
+                if (window.parent?.omgGameStats?.getReactionLeaderboard) {
+                    return await window.parent.omgGameStats.getReactionLeaderboard();
+                }
+            } catch (error) {
+                console.warn(error);
+            }
+            return JSON.parse(localStorage.getItem('omg-reaction-leaderboard') || '[]');
+        }
+
+        async function submitLeaderboard(ms) {
+            const name = localStorage.getItem('username') || 'Anonymous';
+            try {
+                if (window.parent?.omgGameStats?.submitReactionTime) {
+                    const result = await window.parent.omgGameStats.submitReactionTime(ms, name);
+                    return result.entries || [];
+                }
+            } catch (error) {
+                console.warn(error);
+            }
+
+            const local = await getLeaderboardOnly();
+            const next = [...local, { name, time_ms: Math.round(ms), played_at: new Date().toISOString() }]
+                .sort((a, b) => a.time_ms - b.time_ms)
+                .slice(0, 5);
+            localStorage.setItem('omg-reaction-leaderboard', JSON.stringify(next));
+            return next;
+        }
+
+        function renderLeaderboard(entries, fallbackText = '') {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            if (!entries.length) {
+                const item = document.createElement('li');
+                item.textContent = fallbackText || t('empty');
+                list.appendChild(item);
+                return;
+            }
+            entries.forEach(entry => {
+                const item = document.createElement('li');
+                item.textContent = `${entry.name} - ${formatMs(entry.time_ms)}`;
+                list.appendChild(item);
+            });
+        }
+
+        function postFinish(ms, player) {
+            try {
+                window.parent?.postMessage({
+                    type: 'omg-game-event',
+                    event: 'finish',
+                    score: Math.round(ms),
+                    won: true,
+                    winner: player
+                }, '*');
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+
+        async function finish(player) {
+            if (phase !== 'ready') return;
+            phase = 'finished';
+            finishedAt = performance.now();
+            const elapsed = performance.now() - readyAt;
+            const other = player === 'p1' ? 'p2' : 'p1';
+            const winnerName = mode === 'single'
+                ? t('soloTitle')
+                : (player === 'p1' ? t('p1Title') : t('p2Title'));
+            document.getElementById(`${player}-status`).textContent = `${winnerName} ${t('won')}`;
+            if (mode === 'multi') document.getElementById(`${other}-status`).textContent = '';
+            document.getElementById(`${player}-result`).textContent = formatMs(elapsed);
+            if (mode === 'multi') document.getElementById(`${other}-result`).textContent = '';
+            postFinish(elapsed, player);
+
+            const leaderboard = document.getElementById('leaderboard');
+            renderLeaderboard([], t('loading'));
+            document.getElementById('restart-hint').textContent = '';
+            leaderboardTimer = setTimeout(() => {
+                leaderboard.classList.add('show');
+                document.getElementById('restart-hint').textContent = t('restart');
+            }, 5000);
+
+            try {
+                const entries = await submitLeaderboard(elapsed);
+                renderLeaderboard(entries);
+            } catch (error) {
+                console.warn(error);
+                renderLeaderboard([], t('savedFail'));
+            }
+        }
+
+        function hasModeCombo() {
+            return pressedKeys.has('c') && pressedKeys.has('m');
+        }
+
+        function handleFinishedKey(event) {
+            const key = event.key.toLowerCase();
+            if (key === 'c' || key === 'm') {
+                if (hasModeCombo()) {
+                    event.preventDefault();
+                    setMode(mode === 'single' ? 'multi' : 'single');
+                }
+                return;
+            }
+
+            if (performance.now() - finishedAt >= restartDelayMs) {
+                event.preventDefault();
+                startRound();
+            }
+        }
+
+        window.addEventListener('keydown', event => {
+            pressedKeys.add(event.key.toLowerCase());
+
+            if (event.ctrlKey && event.key === '1') {
+                event.preventDefault();
+                openDelaySettings();
+                return;
+            }
+
+            if (document.getElementById('settings-backdrop').classList.contains('show')) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closeDelaySettings();
+                }
+                return;
+            }
+
+            if (phase === 'finished') {
+                handleFinishedKey(event);
+                return;
+            }
+            if (phase === 'waiting') {
+                const key = event.key.toLowerCase();
+                if (mode === 'multi' && (key === 's' || event.key === 'Enter')) {
+                    event.preventDefault();
+                    setMode('single');
+                    return;
+                }
+                if (mode === 'single' && (key === 'm' || event.key === 'Enter')) {
+                    event.preventDefault();
+                    setMode('multi');
+                    return;
+                }
+            }
+            const player = getPlayerForKey(event.key);
+            if (!player) return;
+            event.preventDefault();
+            if (phase === 'waiting') {
+                showFalseStart(player);
+                return;
+            }
+            finish(player);
+        });
+
+        window.addEventListener('keyup', event => {
+            pressedKeys.delete(event.key.toLowerCase());
+        });
+
+        document.getElementById('single-mode').addEventListener('click', () => setMode('single'));
+        document.getElementById('multi-mode').addEventListener('click', () => setMode('multi'));
+        document.getElementById('delay-cancel').addEventListener('click', closeDelaySettings);
+        document.getElementById('delay-save').addEventListener('click', saveDelaySettings);
+        document.getElementById('delay-input').addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveDelaySettings();
+            }
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeDelaySettings();
+            }
+        });
+
+        applyI18n();
+        try {
+            window.parent?.postMessage({ type: 'omg-game-event', event: 'start' }, '*');
+        } catch (error) {
+            console.warn(error);
+        }
+        startRound();
+    </script>
+</body>
+
+</html>

@@ -17,7 +17,9 @@
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="privacy.js"></script>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>编写吐槽 • omg-by-Clark</title>
@@ -27,11 +29,11 @@
             --text: #333;
             --subtext: #6c6f85;
             --brand: #ff4757;
-            /* ^红色 */
+        /* ^红色 */
             --green: #6fcf2f;
-            /* ^使用 Catppuccin Frappe 绿色的改版 */
+        /* ^使用 Catppuccin Frappe 绿色的改版 */
 
-            /* 关键词按钮颜色配置 */
+        /* 关键词按钮颜色配置 */
             --kw-default: #ccc;
             --kw-dark-default: hsl(227deg, 12%, 60%);
             --kw-active: #49b530; /* 修改：普通选中关键词的颜色 */
@@ -96,17 +98,23 @@
             font-size: 1em;
         }
 
-        /* .post-content-wrap 用途：给正文输入框和图片上传按钮提供同一个定位容器，让按钮固定在输入框左下角。 */
+        /* .post-content-wrap 用途：作为正文输入框的拖拽图片区域，用户可以把图片直接拖到正文框中。 */
         .post-content-wrap {
-            position: relative;
             margin-bottom: 8px;
         }
 
-        /* .post-content-wrap textarea 用途：为左下角上传按钮预留空间，避免正文文字和按钮互相覆盖。 */
+        /* .post-content-wrap textarea 用途：保持正文输入框与下方图片按钮紧凑排列，不再为输入框内部按钮预留空间。 */
         .post-content-wrap textarea {
             margin-bottom: 0;
-            padding-bottom: 58px;
             resize: vertical;
+        }
+
+        /* .image-upload-row 用途：为上传图片按钮提供独立的输入框下方操作行，避免按钮进入或覆盖正文输入区域。 */
+        .image-upload-row {
+            display: flex;
+            justify-content: flex-start;
+            width: 100%;
+            margin: 0 0 8px;
         }
 
         body.dark input,
@@ -117,11 +125,12 @@
             color: #fff;
         }
 
-        /* .btn-upload-image 用途：设置图片上传入口，使用 --brand 主题色并贴在正文输入框左下角。 */
+        /* .btn-upload-image 用途：设置正文输入框下方的图片上传入口，使用 --brand 主题色突出操作。 */
         .btn-upload-image {
-            position: absolute;
-            left: 12px;
-            bottom: 14px;
+            position: static !important;
+            display: inline-flex;
+            align-items: center;
+            margin: 0;
             background: var(--brand);
             color: white;
             border: none;
@@ -132,9 +141,9 @@
             transition: 0.1s;
         }
 
-        /* .btn-upload-image:active 用途：保持页面现有按钮按下时轻微放大的反馈。 */
+        /* .btn-upload-image:active 用途：点击上传图片按钮时放大 1.1 倍。 */
         .btn-upload-image:active {
-            transform: scale(1.06);
+            transform: scale(1.1);
         }
 
         /* .image-status 用途：展示当前图片选择 / 转换状态，文字保持轻量，不打断发帖流程。 */
@@ -180,7 +189,7 @@
         .kw-btn {
             border: none;
             border-radius: 20px;
-            /* 圆角按钮 */
+        /* 圆角按钮 */
             padding: 8px 16px;
             margin-right: 8px;
             margin-bottom: 8px;
@@ -266,6 +275,8 @@
             transform: scale(1.1);
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
 </head>
 
 <body>
@@ -283,10 +294,12 @@
             <div class="post-content-wrap" id="post-content-wrap">
                 <textarea id="c" rows="10" data-zh-ph="请开始你的表演……" data-en-ph="Start your story..." placeholder="请开始你的表演……"
                     required></textarea>
+            </div>
+            <div class="image-upload-row">
                 <button type="button" id="btn-upload-image" class="btn-upload-image" data-zh="🖼 上传图片"
                     data-en="🖼 Upload Image" onclick="openPhotoPicker()">🖼 上传图片</button>
-                <input type="file" id="photo-input" accept="image/*" hidden>
             </div>
+            <input type="file" id="photo-input" accept="image/*" hidden>
             <div id="image-status" class="image-status"></div>
             <div id="image-preview-wrap" class="image-preview-wrap">
                 <img id="image-preview" class="image-preview" alt="">
@@ -297,7 +310,7 @@
                 <div id="kw-area"></div>
             </div>
             <div class="advice" data-zh="💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。"
-                 data-en="💡 NSFW means 'Not Safe For Work'.">
+                data-en="💡 NSFW means 'Not Safe For Work'.">
                 💡 NSFW 代表不建议在工作/学校场合阅读（全称：Not Safe For Work）。
             </div>
             <button type="submit" id="submit-btn" class="btn-post" data-zh="立即发布" data-en="Publish Now">立即发布</button>
@@ -333,14 +346,14 @@
             '#其他 Others', '#NSFW', '#搬运 Reposted'];
 
         /*
-          init()
-          用法：页面加载时执行的基础初始化操作。
-          原理：
-          1. 根据 localStorage 判断是否需给 body 添加 dark 模式类。
-          2. 检查用户登录状态，拦截未登录访问并踢回首页。
-          3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
-          4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
-         */
+            init()
+            用途：页面加载时执行的基础初始化操作。
+            原理：
+            1. 根据 localStorage 判断是否需给 body 添加 dark 模式类。
+            2. 检查用户登录状态，拦截未登录访问并踢回首页。
+            3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
+            4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
+        */
         function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
@@ -366,9 +379,12 @@
                 btn.type = 'button';
                 btn.className = 'kw-btn';
 
-                // 专门给 NSFW 按钮加上标识类名
-                if (kw === '#NSFW' || kw === '#搬运 Reposted') {
+                // NSFW 和搬运使用不同标识，Catppuccin 主题才能分别应用 Peach 与 Green。
+                if (kw === '#NSFW') {
                     btn.classList.add('nsfw-btn');
+                }
+                if (kw === '#搬运 Reposted') {
+                    btn.classList.add('repost-btn');
                 }
 
                 btn.innerText = kw;
@@ -378,20 +394,18 @@
         }
         init();
 
-        /*
-          setImageStatus()
-          用法：更新图片上传入口下面的状态文字。
-          原理：图片选择、转换成功、转换失败都只需要改同一个 DOM 节点；这里集中处理语言切换后的中英文文案。
-         */
+        /* setImageStatus()
+        用途：更新图片上传入口下面的状态文字。
+        原理：图片选择、转换成功、转换失败都只需要改同一个 DOM 节点；这里集中处理语言切换后的中英文文案。
+        */
         function setImageStatus(zhText, enText) {
             document.getElementById('image-status').innerText = lang === 'zh' ? zhText : enText;
         }
 
-        /*
-          clearPhotoPreview()
-          用法：清空图片预览，并释放之前创建的 object URL。
-          原理：浏览器会为 URL.createObjectURL 占用内存；换图或转换失败时主动 revoke，避免页面停留久了积累资源。
-         */
+        /* clearPhotoPreview()
+        用途：清空图片预览，并释放之前创建的 object URL。
+        原理：浏览器会为 URL.createObjectURL 占用内存；换图或转换失败时主动 revoke，避免页面停留久了积累资源。
+        */
         function clearPhotoPreview() {
             const previewWrap = document.getElementById('image-preview-wrap');
             const previewImg = document.getElementById('image-preview');
@@ -406,11 +420,10 @@
             previewWrap.style.display = 'none';
         }
 
-        /*
-          showPhotoPreview()
-          用法：图片成功转换成 WebP 后，显示一个小缩略图给用户确认。
-          原理：直接预览最终要上传的 WebP Blob，保证用户看到的内容和实际存进 photos 桶的内容一致。
-         */
+        /* showPhotoPreview()
+        用途：图片成功转换成 WebP 后，显示一个小缩略图给用户确认。
+        原理：直接预览最终要上传的 WebP Blob，保证用户看到的内容和实际存进 photos 桶的内容一致。
+        */
         function showPhotoPreview(webpBlob, sourceName) {
             const previewWrap = document.getElementById('image-preview-wrap');
             const previewImg = document.getElementById('image-preview');
@@ -422,20 +435,18 @@
             previewWrap.style.display = 'flex';
         }
 
-        /*
-          openPhotoPicker()
-          用法：点击“上传图片”按钮时打开系统文件选择器。
-          原理：真正的 file input 被隐藏，按钮只负责触发 click，这样 UI 可以保持当前页面的品牌色样式。
-         */
+        /* openPhotoPicker()
+        用途：点击“上传图片”按钮时打开系统文件选择器。
+        原理：真正的 file input 被隐藏，按钮只负责触发 click，这样 UI 可以保持当前页面的品牌色样式。
+        */
         function openPhotoPicker() {
             document.getElementById('photo-input').click();
         }
 
-        /*
-          drawFileToCanvas()
-          用法：把浏览器能解码的图片文件绘制到 canvas 上。
-          原理：优先使用 createImageBitmap，它对本地 File 支持好；如果浏览器不支持或解码失败，再回退到 Image + object URL。
-         */
+        /* drawFileToCanvas()
+        用途：把浏览器能解码的图片文件绘制到 canvas 上。
+        原理：优先使用 createImageBitmap，它对本地 File 支持好；如果浏览器不支持或解码失败，再回退到 Image + object URL。
+        */
         async function drawFileToCanvas(file) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -468,11 +479,10 @@
             }
         }
 
-        /*
-          convertImageFileToWebp()
-          用法：把用户提供的图片文件转换成 image/webp Blob。
-          原理：先把图片画进 canvas，再用 canvas.toBlob('image/webp') 导出。Supabase Storage 最终只接收这个 WebP 文件。
-         */
+        /* convertImageFileToWebp()
+        用途：把用户提供的图片文件转换成 image/webp Blob。
+        原理：先把图片画进 canvas，再用 canvas.toBlob('image/webp') 导出。Supabase Storage 最终只接收这个 WebP 文件。
+        */
         async function convertImageFileToWebp(file) {
             const canvas = await drawFileToCanvas(file);
 
@@ -487,11 +497,10 @@
             });
         }
 
-        /*
-          handlePhotoFile()
-          用法：处理按钮选择、Ctrl+V 粘贴、拖拽放入输入框得到的图片文件。
-          原理：这里只保存一张图，后选择的图片会覆盖前一张；转换过程保存成 Promise，提交时会等待它完成。
-         */
+        /* handlePhotoFile()
+        用途：处理按钮选择、Ctrl+V 粘贴、拖拽放入输入框得到的图片文件。
+        原理：这里只保存一张图，后选择的图片会覆盖前一张；转换过程保存成 Promise，提交时会等待它完成。
+        */
         function handlePhotoFile(file) {
             if (!file || !file.type.startsWith('image/')) return;
 
@@ -521,11 +530,10 @@
                 });
         }
 
-        /*
-          bindPhotoInputEvents()
-          用法：为发帖输入框绑定文件选择、粘贴和拖拽图片事件。
-          原理：三种入口最终都拿到 File 对象，再交给 handlePhotoFile 统一转换，避免多处维护重复逻辑。
-         */
+        /* bindPhotoInputEvents()
+        用途：为发帖输入框绑定文件选择、粘贴和拖拽图片事件。
+        原理：三种入口最终都拿到 File 对象，再交给 handlePhotoFile 统一转换，避免多处维护重复逻辑。
+        */
         function bindPhotoInputEvents() {
             const textarea = document.getElementById('c');
             const dropArea = document.getElementById('post-content-wrap');
@@ -555,11 +563,10 @@
         }
         bindPhotoInputEvents();
 
-        /*
-          uploadPostPhoto()
-          用法：帖子成功创建并拿到 id 后，把 WebP 图片上传到 photos 桶。
-          原理：Storage 路径固定为 “帖子id.webp”，详情页只要用当前 postId 拼出同一路径即可查到图片。
-         */
+        /* uploadPostPhoto()
+        用途：帖子成功创建并拿到 id 后，把 WebP 图片上传到 photos 桶。
+        原理：Storage 路径固定为 “帖子id.webp”，详情页只要用当前 postId 拼出同一路径即可查到图片。
+        */
         async function uploadPostPhoto(postId, webpBlob) {
             const { error } = await _supabase.storage
                 .from('photos')
@@ -571,18 +578,17 @@
             if (error) throw error;
         }
 
-        /*
-          表单 submit 事件监听
-           用法：处理点击“立即发布”后的异步上传逻辑。
-           原理：
-           1. 阻止表单默认刷新行为，并通过 isSubmitting 变量加锁，防止用户连点造成网络拥堵和数据重复。
-           2. 改变提交按钮的文本和禁用状态，提供即时的 UI 反馈。
-           3. 收集输入框的值，并查找所有带有 active 类的关键词按钮，提取出纯文本数组存入 selectedKws。
-           4. 调用 Supabase API，向 posts 表插入新记录并用 select('id') 取回新帖子 id。
-           5. 如果用户附带图片，等待图片转换完成后上传到 photos/{帖子id}.webp。
-           6. 发帖成功后，查询并在 users 表中给当前用户的积分加上 10 分，更新本地存储。
-           7. 处理完毕则弹窗并跳转回首页。如果过程中发生任何错误，catch 会捕获异常，解除提交锁并恢复按钮原始状态。
-         */
+        /* 表单 submit 事件监听
+        用途：处理点击“立即发布”后的异步上传逻辑。
+        原理：
+        1. 阻止表单默认刷新行为，并通过 isSubmitting 变量加锁，防止用户连点造成网络拥堵和数据重复。
+        2. 改变提交按钮的文本和禁用状态，提供即时的 UI 反馈。
+        3. 收集输入框的值，并查找所有带有 active 类的关键词按钮，提取出纯文本数组存入 selectedKws。
+        4. 调用 Supabase API，向 posts 表插入新记录并用 select('id') 取回新帖子 id。
+        5. 如果用户附带图片，等待图片转换完成后上传到 photos/{帖子id}.webp。
+        6. 发帖成功后，查询并在 users 表中给当前用户的积分加上 10 分，更新本地存储。
+        7. 处理完毕则弹窗并跳转回首页。如果过程中发生任何错误，catch 会捕获异常，解除提交锁并恢复按钮原始状态。
+        */
         document.getElementById('pForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 

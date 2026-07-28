@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../../../privacy.js"></script>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文明之岛</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main id="game-shell">
+        <canvas id="world" aria-label="文明之岛 3D 世界"></canvas>
+
+        <header class="top-hud"><div class="identity">
+                <span class="sun-mark">☀</span>
+                <div>
+                    <strong data-zh="文明之岛" data-en="Civilization Island">文明之岛</strong>
+                    <span id="clock">第 1 天 · 06:00</span>
+                </div>
+            </div>
+            <div id="resources" class="resources"></div>
+            <div class="time-controls" aria-label="时间速度">
+                <button class="icon-button" id="pause" type="button" title="暂停">Ⅱ</button>
+                <button class="speed-button active" data-speed="1" type="button">1×</button>
+                <button class="speed-button" data-speed="4" type="button">4×</button>
+                <button class="speed-button" data-speed="12" type="button">12×</button>
+            </div>
+        </header>
+
+        <aside class="build-panel">
+            <div class="panel-title">
+                <strong data-zh="建设" data-en="Build">建设</strong>
+                <button id="cancel-build" class="icon-button small" type="button" title="取消建造">×</button>
+            </div>
+            <div class="tool-tabs" role="tablist">
+                <button class="tool-tab active" data-tab="buildings" type="button" data-zh="建筑" data-en="Buildings">建筑</button>
+                <button class="tool-tab" data-tab="land" type="button" data-zh="土地" data-en="Land">土地</button>
+            </div>
+            <div id="build-list" class="build-list"></div>
+            <p id="build-hint" class="build-hint" data-zh="选择建筑，再点击岛上的空地。" data-en="Choose a building, then click an empty tile.">选择建筑，再点击岛上的空地。</p>
+        </aside>
+
+        <aside class="status-panel">
+            <section class="population-section">
+                <div class="section-heading">
+                    <strong data-zh="居民" data-en="People">居民</strong>
+                    <span id="population-count">4</span>
+                </div>
+                <div id="happiness" class="happiness"></div>
+            </section>
+            <section id="selection" class="selection">
+                <strong id="selection-title" data-zh="岛屿概况" data-en="Island overview">岛屿概况</strong>
+                <p id="selection-desc"></p>
+                <div id="selection-actions" class="selection-actions"></div>
+            </section>
+            <section class="event-section">
+                <strong data-zh="消息" data-en="News">消息</strong>
+                <div id="events" class="events"></div>
+            </section>
+        </aside>
+
+        <div id="tooltip" class="tooltip" role="status"></div>
+        <div id="notice" class="notice"></div>
+
+        <div id="game-over" class="game-over hidden">
+            <div class="game-over-dialog">
+                <span class="game-over-mark">☁</span>
+                <h1 data-zh="居民离开了小岛" data-en="The settlers left the island">居民离开了小岛</h1>
+                <p data-zh="平均幸福度低于 20%。重新规划住房、食物和工作，再试一次。" data-en="Average happiness fell below 20%. Rebalance homes, food, and jobs, then try again.">平均幸福度低于 20%。重新规划住房、食物和工作，再试一次。</p>
+                <button id="restart" type="button" data-zh="重新开始" data-en="Start again">重新开始</button>
+            </div>
+        </div>
+    </main>
+    <script type="module" src="game.js?v=4"></script>
+</body>
+</html>

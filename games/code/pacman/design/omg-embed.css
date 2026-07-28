@@ -1,0 +1,9 @@
+html,
+body {
+    overflow: hidden;
+}
+
+#container {
+    transform: scale(0.84);
+    transform-origin: center center;
+}

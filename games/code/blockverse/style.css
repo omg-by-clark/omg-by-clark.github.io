@@ -1,0 +1,115 @@
+:root {
+    --panel: rgba(19, 29, 27, 0.72);
+    --line: rgba(255, 255, 255, 0.18);
+    --text: #f5f8ef;
+    --accent: #e3d35e;
+    font-family: Inter, "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+#game {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background: #8fcfe2;
+    color: var(--text);
+}
+
+#game { position: relative; }
+
+#world {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    cursor: crosshair;
+}
+
+.coords,
+.hotbar {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.coords {
+    top: 14px;
+    left: 14px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.coords strong {
+    display: block;
+    font-size: 15px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 3;
+    width: 18px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.crosshair::before,
+.crosshair::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.crosshair::before { left: 8px; top: 2px; width: 2px; height: 14px; }
+.crosshair::after { left: 2px; top: 8px; width: 14px; height: 2px; }
+
+.hotbar {
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+}
+
+.slot {
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.24);
+    border-radius: 6px;
+    background: rgba(18, 24, 28, 0.82);
+    color: var(--text);
+    pointer-events: none;
+    position: relative;
+}
+
+.slot.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(227, 211, 94, 0.25);
+}
+
+.slot svg {
+    width: 42px;
+    height: 42px;
+}
+
+@media (max-width: 720px) {
+    .coords { padding: 8px 9px; }
+    .coords strong { font-size: 13px; }
+    .slot { width: 56px; height: 56px; }
+}

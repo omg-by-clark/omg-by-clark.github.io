@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<!-- play.html -->
+<!--
+    omg-by-clark.github.io/games: A website for playing games and have fun.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
+<html lang="zh-CN">
+
+<head>
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../privacy.js"></script>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title data-zh="游玩游戏 • omg-by-Clark" data-en="Playing • omg-by-Clark">游玩游戏 • omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #fff;
+            --brand: #ff4757;
+            --muted: #6b7280;
+            --line: rgba(107, 114, 128, 0.22);
+            --topbar: #e5e7eb;
+            --topbar-text: #1f2937;
+            --shadow: 0 14px 35px rgba(31, 41, 55, 0.12);
+            --button-grad: linear-gradient(45deg, #e64553, #fe640b);
+            --arcade-blue: #1e66f5;
+            --topbar-height: 71px;
+            --page-pad: 10px;
+            --playbar-height: 48px;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --card: #2d2d2d;
+            --brand: #ff6b81;
+            --muted: #c6d0f5;
+            --line: rgba(198, 208, 245, 0.18);
+            --topbar: #333;
+            --topbar-text: #f0f0f0;
+            --shadow: 0 14px 35px rgba(0, 0, 0, 0.28);
+            --button-grad: linear-gradient(45deg, #ff6b81, #fab387);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: 0;
+            background:
+                radial-gradient(circle at 14% 18%, rgba(255, 71, 87, 0.08), transparent 28%),
+                radial-gradient(circle at 82% 20%, rgba(30, 102, 245, 0.08), transparent 25%),
+                var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans SC', 'Source Han Sans', 'Pingfang SC', sans-serif;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: grid;
+            grid-template-columns: minmax(170px, 240px) 1fr auto auto auto;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 12px clamp(14px, 3vw, 34px);
+            background: color-mix(in srgb, var(--topbar) 90%, transparent);
+            color: var(--topbar-text);
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 6px 22px rgba(31, 41, 55, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            display: block;
+            width: min(100%, 230px);
+            height: 42px;
+            object-fit: contain;
+            object-position: left center;
+        }
+
+        .game-title {
+            min-width: 0;
+            overflow: hidden;
+            color: var(--topbar-text);
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-common {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--brand);
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 8px 18px rgba(255, 71, 87, 0.22);
+            transition: transform 0.1s ease;
+        }
+
+        .btn-common:active,
+        .user-chip:active {
+            transform: scale(1.1);
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--line);
+            box-shadow: none;
+        }
+
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            max-width: 220px;
+            gap: 9px;
+            padding: 5px 10px 5px 5px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--topbar-text);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        body.dark .user-chip {
+            background: rgba(45, 45, 45, 0.7);
+        }
+
+        .user-avatar {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            background: var(--button-grad);
+            color: #fff;
+            font-weight: 800;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .page {
+            display: flex;
+            width: min(1360px, calc(100% - 28px));
+            height: calc(100dvh - var(--topbar-height));
+            min-height: 0;
+            margin: 0 auto;
+            padding: var(--page-pad) 0;
+        }
+
+        .play-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .player-card {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-width: 0;
+            height: 100%;
+            min-height: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .player-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .game-info {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            gap: 12px;
+        }
+
+        .game-icon {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 auto;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .game-icon.dino-icon {
+            object-fit: contain;
+            transform: translateY(-4px) scale(0.62);
+        }
+
+        .game-name {
+            margin: 0;
+            overflow: hidden;
+            color: var(--text);
+            font-size: 1.1rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .game-meta {
+            margin: 4px 0 0;
+            overflow: hidden;
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .info-card {
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--card) 84%, transparent);
+        }
+
+        .info-card h2 {
+            margin: 0 0 8px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .info-card h3 {
+            margin: 10px 0 6px;
+            color: var(--text);
+            font-size: 0.92rem;
+        }
+
+        .info-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.45;
+        }
+
+        .source-button {
+            margin-top: 10px;
+            width: fit-content;
+        }
+
+        .detail-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .more-details {
+            margin-top: 12px;
+            border-top: 1px solid var(--line);
+            padding-top: 10px;
+        }
+
+        .more-details summary {
+            width: fit-content;
+            color: #1e66f5;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 800;
+            list-style-position: inside;
+            transition: transform 0.1s ease;
+        }
+
+        body.dark .more-details summary {
+            color: #89dceb;
+        }
+
+        .more-details summary:active {
+            transform: scale(1.1);
+        }
+
+        .info-card.details-expanded .more-details {
+            margin-top: 10px;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .info-card.details-expanded .more-details summary {
+            display: none;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.45;
+        }
+
+        .detail-row strong {
+            flex: 0 0 auto;
+            color: var(--text);
+        }
+
+        .detail-row span {
+            min-width: 0;
+            text-align: right;
+        }
+
+        .frame-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 0;
+            background:
+                linear-gradient(90deg, rgba(255, 71, 87, 0.08), transparent 32%),
+                rgba(128, 128, 128, 0.07);
+        }
+
+        #game-frame {
+            flex: 1 1 auto;
+            width: 100%;
+            min-height: 0;
+            border: 0;
+            border-radius: 0;
+            background: #faf8ef;
+        }
+
+        .player-card.compact-frame #game-frame {
+            min-height: 0;
+        }
+
+        .player-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            height: var(--playbar-height);
+            min-height: var(--playbar-height);
+            padding: 6px 10px;
+            border-top: 1px solid var(--line);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+        }
+
+        .fullscreen-button {
+            min-height: 34px;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        .player-card:fullscreen,
+        .player-card.is-pseudo-fullscreen {
+            width: 100vw;
+            height: 100dvh;
+            max-width: none;
+            border: 0;
+            border-radius: 0;
+            background: var(--card);
+        }
+
+        .player-card:fullscreen .player-head,
+        .player-card.is-pseudo-fullscreen .player-head {
+            display: none;
+        }
+
+        .player-card:fullscreen .frame-wrap,
+        .player-card.is-pseudo-fullscreen .frame-wrap {
+            height: 100%;
+        }
+
+        .player-card.is-pseudo-fullscreen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+        }
+
+        .side-panel {
+            display: flex;
+            flex: 0 0 300px;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .play-next {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--card) 84%, transparent);
+        }
+
+        .play-next {
+            padding: 10px;
+        }
+
+        .play-next h2 {
+            margin: 0 0 8px;
+            color: var(--text);
+            font-size: 0.98rem;
+        }
+
+        .next-empty {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .next-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .next-game {
+            position: relative;
+            display: block;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            overflow: hidden;
+            transition: transform 0.1s ease;
+        }
+
+        .next-game:active {
+            transform: scale(1.1);
+        }
+
+        .next-game img,
+        .next-game .next-fallback {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .next-game img {
+            object-fit: cover;
+        }
+
+        .next-game.dino-next img {
+            object-fit: contain;
+            transform: translateY(-5px) scale(0.62);
+        }
+
+        .next-fallback {
+            display: grid;
+            place-items: center;
+            background: var(--button-grad);
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .next-name {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+        }
+
+        .next-desc {
+            display: none;
+        }
+
+        .message {
+            margin: 0;
+            padding: 42px 18px;
+            color: var(--muted);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 860px) {
+            .topbar {
+                grid-template-columns: 1fr auto;
+            }
+
+            .page {
+                height: auto;
+                min-height: calc(100dvh - var(--topbar-height));
+            }
+
+            .game-title,
+            .btn-secondary,
+            .btn-common,
+            .user-chip {
+                grid-column: 1 / -1;
+            }
+
+            .user-chip {
+                max-width: none;
+            }
+
+            .player-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .play-layout {
+                flex-direction: column;
+            }
+
+            #game-frame {
+                min-height: min(560px, 70dvh);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar"><a class="brand-link" href="home.html" aria-label="omg games">
+            <img class="brand-logo" src="logo-longer.svg" alt="omg-by-Clark Games">
+        </a>
+        <div id="top-game-title" class="game-title" data-zh="读取游戏中..." data-en="Loading game...">读取游戏中...</div>
+        <a class="btn-common btn-secondary" href="home.html" data-zh="🎮 游戏首页" data-en="🎮 Games home">🎮 游戏首页</a>
+        <a class="btn-common" href="../index.html" data-zh="⬅️ 返回主站" data-en="⬅️ Main site">⬅️ 返回主站</a>
+        <div class="user-chip" title="当前登录的 omg 账号" data-title-zh="当前登录的 omg 账号" data-title-en="Current omg account">
+            <div id="user-avatar" class="user-avatar">?</div>
+            <div id="user-name" class="user-name" data-zh="未登录" data-en="Not signed in">未登录</div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div id="play-layout" class="play-layout hidden">
+            <section id="player-card" class="player-card">
+                <div class="player-head">
+                    <div class="game-info">
+                        <img id="game-icon" class="game-icon" src="logo.svg" alt="">
+                        <div>
+                            <h1 id="game-name" class="game-name" data-zh="读取游戏中..." data-en="Loading game...">读取游戏中...</h1>
+                            <p id="game-meta" class="game-meta"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="frame-wrap">
+                    <iframe id="game-frame" title="game" tabindex="0" allow="fullscreen; autoplay; gamepad"></iframe>
+                    <div class="player-bar">
+                        <button id="fullscreen-toggle" class="btn-common fullscreen-button" type="button" data-zh="🖥 全屏" data-en="🖥 Fullscreen">🖥 全屏</button>
+                    </div>
+                </div>
+            </section>
+            <aside class="side-panel" aria-label="side content">
+                <section class="info-card">
+                    <h2 id="info-title" data-zh="游戏介绍" data-en="About">游戏介绍</h2>
+                    <p id="game-desc" data-zh="读取中..." data-en="Loading...">读取中...</p>
+                    <h3 data-zh="操作方法" data-en="Controls">操作方法</h3>
+                    <p id="game-controls" data-zh="读取中..." data-en="Loading...">读取中...</p>
+                    <details id="more-details" class="more-details">
+                        <summary data-zh="更多信息" data-en="More info">更多信息</summary>
+                        <div class="details-content">
+                            <div id="detail-list" class="detail-list"></div>
+                            <a id="source-link" class="btn-common btn-secondary source-button hidden" href="#" target="_blank" rel="noopener noreferrer" data-zh="源代码 ↗" data-en="Source ↗">源代码 ↗</a>
+                        </div>
+                    </details>
+                </section>
+                <section class="play-next">
+                    <h2 data-zh="接着玩" data-en="Play next">Play next</h2>
+                    <div id="next-list" class="next-list"></div>
+                    <p id="next-empty" class="next-empty hidden" data-zh="这个分类暂时没有别的游戏。" data-en="No other games in this category yet.">这个分类暂时没有别的游戏。</p>
+                </section>
+            </aside>
+        </div>
+        <p id="message" class="message" data-zh="读取游戏中..." data-en="Loading game...">读取游戏中...</p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../db.js"></script>
+    <script src="game-db.js"></script>
+    <script>
+        let lang = localStorage.getItem('lang') || 'zh';
+        let currentGame = null;
+        let allGames = [];
+        let currentGameStartedAt = 0;
+        let recommendationPlayInfo = {};
+
+        function enableTestMode() {
+            sessionStorage.setItem('omg-games-test-mode', 'true');
+            window.__omgGamesTestMode = true;
+            console.info('OMG Games test mode is on. This play session will not be saved.');
+            return 'Test mode on: this play session will not be saved.';
+        }
+
+        Object.defineProperty(window, 'testMode', {
+            configurable: true,
+            get() {
+                enableTestMode();
+                return enableTestMode;
+            }
+        });
+
+        function isTestMode() {
+            return window.__omgGamesTestMode || sessionStorage.getItem('omg-games-test-mode') === 'true';
+        }
+
+        function getGameWindow() {
+            const frame = document.getElementById('game-frame');
+            return frame && frame.contentWindow;
+        }
+
+        window.setScore = function(points) {
+            enableTestMode();
+            const gameWindow = getGameWindow();
+            if (gameWindow && typeof gameWindow.setScore === 'function') {
+                return gameWindow.setScore(points);
+            }
+            console.warn('setScore() is only available after Chrome Dino 3D has loaded.');
+            return false;
+        };
+
+        window.win = function() {
+            enableTestMode();
+            const gameWindow = getGameWindow();
+            if (gameWindow && typeof gameWindow.win === 'function') {
+                return gameWindow.win();
+            }
+            console.warn('win() is only available after 2048 has loaded.');
+            return false;
+        };
+
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+        function escapeHTML(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function t(zh, en) {
+            return lang === 'en' ? en : zh;
+        }
+
+        function applyI18n() {
+            document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+            if (!currentGame) document.title = t('游戏运行中 • omg-by-Clark', 'Playing • omg-by-Clark');
+            document.querySelectorAll('[data-zh][data-en]').forEach(element => {
+                element.textContent = element.dataset[lang];
+            });
+            document.querySelectorAll('[data-title-zh][data-title-en]').forEach(element => {
+                element.title = element.dataset[`title${lang === 'en' ? 'En' : 'Zh'}`];
+            });
+            document.querySelectorAll('[data-label-zh][data-label-en]').forEach(element => {
+                element.setAttribute('aria-label', element.dataset[`label${lang === 'en' ? 'En' : 'Zh'}`]);
+            });
+            updateFullscreenButton();
+            renderUser();
+            if (currentGame) renderLoadedGame(currentGame);
+        }
+
+        function stripQuote(value) {
+            const text = String(value || '').trim();
+            if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
+                return text.slice(1, -1);
+            }
+            return text;
+        }
+
+        function parseYamlValue(value) {
+            const text = stripQuote(value);
+            if (text === 'true') return true;
+            if (text === 'false') return false;
+            if (text.startsWith('[') && text.endsWith(']')) {
+                return text.slice(1, -1).split(',').map(item => stripQuote(item.trim())).filter(Boolean);
+            }
+            return text;
+        }
+
+        function parseGameMap(yamlText) {
+            const games = [];
+            let currentGame = null;
+
+            yamlText.split(/\r?\n/).forEach(line => {
+                const trimmed = line.replace(/\t/g, '    ').trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+
+                const itemMatch = trimmed.match(/^-\s*([^:]+)?(?::\s*(.*))?$/);
+                if (itemMatch) {
+                    if (currentGame) games.push(currentGame);
+                    currentGame = {};
+                    if (itemMatch[1]) currentGame[itemMatch[1].trim()] = parseYamlValue(itemMatch[2] || '');
+                    return;
+                }
+
+                const pairMatch = trimmed.match(/^([^:]+):\s*(.*)$/);
+                if (pairMatch && currentGame) currentGame[pairMatch[1].trim()] = parseYamlValue(pairMatch[2] || '');
+            });
+
+            if (currentGame) games.push(currentGame);
+            return games.filter(game => Object.keys(game).length > 0);
+        }
+
+        function getSafeFileName(username) {
+            return btoa(encodeURIComponent(username)).replace(/=/g, "");
+        }
+
+        function getAvatarUrl(username) {
+            const safeName = getSafeFileName(username);
+            const { data } = _supabase.storage.from('avatars').getPublicUrl(`${safeName}.webp`);
+            return data.publicUrl + "?t=" + Date.now();
+        }
+
+        function renderUser() {
+            const username = localStorage.getItem('username');
+            const userNameEl = document.getElementById('user-name');
+            const userAvatarEl = document.getElementById('user-avatar');
+            if (!username) {
+                userNameEl.textContent = t('未登录', 'Not signed in');
+                userNameEl.dataset.zh = '未登录';
+                userNameEl.dataset.en = 'Not signed in';
+                userAvatarEl.textContent = '?';
+                const currentPath = `games/play.html${window.location.search}`;
+                document.querySelector('.user-chip').onclick = () => {
+                    window.location.href = `../sign-in.html?redirect=${encodeURIComponent(currentPath)}`;
+                };
+                return;
+            }
+
+            userNameEl.textContent = username;
+            document.querySelector('.user-chip').onclick = () => {
+                const currentPath = `games/play.html${window.location.search}`;
+                window.location.href = `../info.html?from=games&redirect=${encodeURIComponent(currentPath)}`;
+            };
+            userAvatarEl.textContent = username.charAt(0).toUpperCase();
+            const img = new Image();
+            img.alt = t(`${username} 的头像`, `${username}'s avatar`);
+            img.src = getAvatarUrl(username);
+            img.onload = () => {
+                userAvatarEl.innerHTML = '';
+                userAvatarEl.appendChild(img);
+            };
+        }
+
+        function getGameName(game) {
+            return lang === 'en'
+                ? (game['name-en'] || game.name_en || game.name || game['name-zh'] || game.name_zh || 'Untitled Game')
+                : (game['name-zh'] || game.name_zh || game.name || game['name-en'] || game.name_en || '未命名游戏');
+        }
+
+        function getGameDesc(game) {
+            return lang === 'en'
+                ? (game['desc-en'] || game.desc_en || game.desc || game['desc-zh'] || game.desc_zh || 'No description yet.')
+                : (game['desc-zh'] || game.desc_zh || game.desc || game['desc-en'] || game.desc_en || '这个游戏还没有介绍。');
+        }
+
+        function getGameControls(game) {
+            return lang === 'en'
+                ? (game['controls-en'] || game.controls_en || game.controls || game['controls-zh'] || game.controls_zh || 'No controls yet.')
+                : (game['controls-zh'] || game.controls_zh || game.controls || game['controls-en'] || game.controls_en || '这个游戏还没有操作方法。');
+        }
+
+        function normalizeTags(tags) {
+            if (Array.isArray(tags)) return tags;
+            if (!tags) return [];
+            return String(tags).split(/[，,]/).map(tag => tag.trim()).filter(Boolean);
+        }
+
+        function normalizeCategories(game) {
+            const raw = game.categories || game.category || game.kind || '';
+            if (Array.isArray(raw)) return raw;
+            if (!raw) return [];
+            return String(raw).split(/[，,]/).map(category => category.trim()).filter(Boolean);
+        }
+
+        function isDesktopPlatform() {
+            const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+            return platform.includes('win') || platform.includes('mac') || platform.includes('linux');
+        }
+
+        function isGameSupported(game) {
+            return !(game['desktop-only'] === true || game['desktop-only'] === 'true') || isDesktopPlatform();
+        }
+
+        function getCoverText(name) {
+            const chars = Array.from(name.replace(/\s/g, ''));
+            return chars.slice(0, 2).join('') || '🎮';
+        }
+
+        function isSafeGamePath(path) {
+            return /^code\/[A-Za-z0-9._/-]+\.html$/.test(path || '') && !path.includes('..');
+        }
+
+        function focusGameFrame() {
+            const frame = document.getElementById('game-frame');
+            requestAnimationFrame(() => {
+                frame.focus();
+                try {
+                    frame.contentWindow.focus();
+                } catch (error) {
+                    // Cross-origin games may reject this; same-site games will accept it.
+                }
+            });
+        }
+
+        function isPlayerFullscreen() {
+            const playerCard = document.getElementById('player-card');
+            return document.fullscreenElement === playerCard || playerCard.classList.contains('is-pseudo-fullscreen');
+        }
+
+        function updateFullscreenButton() {
+            const button = document.getElementById('fullscreen-toggle');
+            if (!button) return;
+            const fullscreen = isPlayerFullscreen();
+            button.dataset.zh = fullscreen ? '📱 窗口' : '🖥 全屏';
+            button.dataset.en = fullscreen ? '📱 Window' : '🖥 Fullscreen';
+            button.textContent = t(button.dataset.zh, button.dataset.en);
+        }
+
+        async function togglePlayerFullscreen() {
+            const playerCard = document.getElementById('player-card');
+            const fallbackFullscreen = playerCard.classList.contains('is-pseudo-fullscreen');
+            if (document.fullscreenElement === playerCard || fallbackFullscreen) {
+                if (document.fullscreenElement === playerCard) {
+                    await document.exitFullscreen();
+                }
+                playerCard.classList.remove('is-pseudo-fullscreen');
+                document.body.style.overflow = '';
+            } else {
+                try {
+                    await playerCard.requestFullscreen();
+                } catch (error) {
+                    playerCard.classList.add('is-pseudo-fullscreen');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+            updateFullscreenButton();
+            resizeGameFrameContent();
+            focusGameFrame();
+        }
+
+        function handleFullscreenShortcut(event) {
+            if (!event.ctrlKey || event.key !== 'Enter') return;
+            event.preventDefault();
+            togglePlayerFullscreen();
+        }
+
+        function setupFrameKeyboardShortcuts() {
+            const frame = document.getElementById('game-frame');
+            try {
+                frame.contentWindow.removeEventListener('keydown', handleFullscreenShortcut);
+                frame.contentWindow.addEventListener('keydown', handleFullscreenShortcut);
+            } catch (error) {
+                // Same-site games can receive this shortcut; external frames may not.
+            }
+        }
+
+        function resizeGameFrameContent() {
+            const gameWindow = getGameWindow();
+            if (!gameWindow) return;
+            const notify = () => {
+                try {
+                    gameWindow.dispatchEvent(new Event('resize'));
+                    if (typeof gameWindow.fitEmbedded2048 === 'function') gameWindow.fitEmbedded2048();
+                } catch (error) {
+                    // Same-site games can be resized directly; external frames may reject it.
+                }
+            };
+            requestAnimationFrame(notify);
+            setTimeout(notify, 120);
+        }
+
+        function createDetailRow(labelZh, labelEn, value) {
+            return value
+                ? `<div class="detail-row"><strong data-zh="${labelZh}" data-en="${labelEn}">${t(labelZh, labelEn)}</strong><span>${escapeHTML(value)}</span></div>`
+                : '';
+        }
+
+        function wantsFullDetails() {
+            return localStorage.getItem('omg-games-show-details') === 'true';
+        }
+
+        function getGameKey(game) {
+            return window.omgGameStats?.normalizeGameKey
+                ? window.omgGameStats.normalizeGameKey(game)
+                : String(game.path || game.name || '');
+        }
+
+        function getPlayedEntries(playInfo = recommendationPlayInfo) {
+            return Object.entries(playInfo || {})
+                .map(([gameKey, stats]) => ({
+                    gameKey,
+                    plays: Number(stats?.plays) || 0
+                }))
+                .filter(item => item.plays > 0)
+                .sort((a, b) => b.plays - a.plays);
+        }
+
+        function getRelatedRecommendations(game, playInfo = recommendationPlayInfo) {
+            const currentCategories = normalizeCategories(game);
+            const playedEntries = getPlayedEntries(playInfo);
+            const topPlayed = playedEntries.slice(0, 3);
+            const playedKeys = new Set(playedEntries.map(item => item.gameKey));
+            const sourceByKey = new Map(topPlayed.map(item => [item.gameKey, item]));
+            const sourceCategories = new Map();
+
+            allGames.forEach(item => {
+                const source = sourceByKey.get(getGameKey(item));
+                if (source) sourceCategories.set(source.gameKey, normalizeCategories(item));
+            });
+
+            return allGames
+                .map(item => {
+                    if (item.path === game.path) return null;
+                    const gameKey = getGameKey(item);
+                    if (playedKeys.has(gameKey)) return null;
+                    const categories = normalizeCategories(item);
+                    const currentWeight = currentCategories.some(category => categories.includes(category)) ? 1 : 0;
+                    const historyWeight = topPlayed.reduce((sum, source) => {
+                        const relatedCategories = sourceCategories.get(source.gameKey) || [];
+                        return relatedCategories.some(category => categories.includes(category))
+                            ? sum + source.plays
+                            : sum;
+                    }, 0);
+                    const weight = currentWeight + historyWeight;
+                    return weight > 0 ? { item, weight, randomRank: Math.random() / weight } : null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.randomRank - b.randomRank)
+                .map(entry => entry.item)
+                .concat(
+                    allGames
+                        .filter(item => item.path !== game.path)
+                        .filter(item => !playedKeys.has(getGameKey(item)))
+                        .sort(() => Math.random() - 0.5)
+                )
+                .filter((item, index, list) => list.findIndex(other => other.path === item.path) === index)
+                .slice(0, 6);
+        }
+
+        function renderNextGames(game) {
+            const nextList = document.getElementById('next-list');
+            const nextEmpty = document.getElementById('next-empty');
+            const related = getRelatedRecommendations(game);
+
+            nextList.innerHTML = '';
+            if (!related.length) {
+                nextEmpty.classList.remove('hidden');
+                return;
+            }
+
+            nextEmpty.classList.add('hidden');
+            related.forEach(item => {
+                const name = getGameName(item);
+                const icon = item.icon || item.photo || item.cover || item.image || '';
+                const href = `play.html?path=${encodeURIComponent(item.path)}`;
+                const link = document.createElement('a');
+                link.className = `next-game ${item.path.includes('chrome-dino-3d') ? 'dino-next' : ''}`;
+                link.href = href;
+                link.setAttribute('aria-label', t(`开始 ${name}`, `Play ${name}`));
+                link.title = name;
+                link.innerHTML = `
+                    ${icon ? `<img src="${escapeHTML(icon)}" alt="${escapeHTML(name)}">` : `<div class="next-fallback">${escapeHTML(getCoverText(name))}</div>`}
+                    <div>
+                        <p class="next-name">${escapeHTML(name)}</p>
+                        <p class="next-desc">${escapeHTML(getGameDesc(item))}</p>
+                    </div>
+                `;
+                nextList.appendChild(link);
+            });
+        }
+
+        function renderLoadedGame(game) {
+            const name = getGameName(game);
+            const icon = game.icon || game.photo || game.cover || game.image || 'logo.svg';
+            const categories = normalizeCategories(game);
+            document.title = `${name} • omg-by-Clark Games`;
+            document.getElementById('top-game-title').textContent = name;
+            document.getElementById('game-name').textContent = name;
+            document.getElementById('game-icon').src = icon;
+            document.getElementById('game-icon').alt = name;
+            document.getElementById('game-icon').classList.toggle('dino-icon', game.path.includes('chrome-dino-3d'));
+            document.getElementById('player-card').classList.toggle('compact-frame', game['compact-frame'] === 'true' || game['compact-frame'] === true);
+            document.getElementById('game-meta').textContent = categories[0] || '';
+            document.getElementById('game-desc').textContent = getGameDesc(game);
+            document.getElementById('game-controls').textContent = getGameControls(game);
+            const infoCard = document.querySelector('.info-card');
+            const moreDetails = document.getElementById('more-details');
+            const showAllDetails = wantsFullDetails();
+            infoCard.classList.toggle('details-expanded', showAllDetails);
+            moreDetails.open = showAllDetails;
+            document.getElementById('detail-list').innerHTML = [
+                createDetailRow('分类', 'Category', categories.join(' / ')),
+                createDetailRow('作者', 'Author', game.author || ''),
+                createDetailRow('许可证', 'License', game.license || '')
+            ].filter(Boolean).join('');
+
+            const sourceLink = document.getElementById('source-link');
+            if (game.source) {
+                sourceLink.href = game.source;
+                sourceLink.classList.remove('hidden');
+            } else {
+                sourceLink.classList.add('hidden');
+            }
+            renderNextGames(game);
+        }
+
+        async function refreshPlayRecommendationStats(game = currentGame) {
+            if (!game || !window.omgGameStats) return;
+            try {
+                const stats = await window.omgGameStats.getCurrentUserStats();
+                recommendationPlayInfo = stats?.play_info || {};
+                renderNextGames(game);
+            } catch (error) {
+                console.warn('Could not load play recommendations:', error);
+            }
+        }
+
+        function getCurrentDurationSeconds() {
+            return currentGameStartedAt ? (Date.now() - currentGameStartedAt) / 1000 : 0;
+        }
+
+        async function saveGameStats(event = {}) {
+            if (isTestMode()) return;
+            if (!currentGame || !window.omgGameStats) return;
+            try {
+                await window.omgGameStats.update(currentGame, {
+                    ...event,
+                    durationSeconds: event.durationSeconds ?? getCurrentDurationSeconds()
+                });
+            } catch (error) {
+                console.warn('Could not save game stats:', error);
+            }
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.source !== document.getElementById('game-frame').contentWindow) return;
+            const data = event.data || {};
+            if (data.type !== 'omg-game-event') return;
+
+            if (data.event === 'start') {
+                currentGameStartedAt = Date.now();
+                saveGameStats({ countPlay: false, durationSeconds: 0 });
+            }
+
+            if (data.event === 'finish') {
+                saveGameStats({
+                    score: data.score,
+                    won: data.won,
+                    countPlay: true
+                });
+                currentGameStartedAt = Date.now();
+            }
+        });
+
+        document.getElementById('fullscreen-toggle').addEventListener('click', togglePlayerFullscreen);
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) document.getElementById('player-card').classList.remove('is-pseudo-fullscreen');
+            if (!document.fullscreenElement) document.body.style.overflow = '';
+            updateFullscreenButton();
+            resizeGameFrameContent();
+            focusGameFrame();
+        });
+        window.addEventListener('keydown', handleFullscreenShortcut);
+
+        async function loadGame() {
+            const params = new URLSearchParams(location.search);
+            const requestedPath = params.get('path') || '';
+            const messageEl = document.getElementById('message');
+
+            if (!isSafeGamePath(requestedPath)) {
+                messageEl.dataset.zh = '游戏路径无效。';
+                messageEl.dataset.en = 'Invalid game path.';
+                messageEl.textContent = t(messageEl.dataset.zh, messageEl.dataset.en);
+                return;
+            }
+
+            try {
+                const response = await fetch('game-map.yaml', { cache: 'no-store' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                allGames = parseGameMap(await response.text());
+                const game = allGames.find(item => item.path === requestedPath);
+                if (!game) {
+                    messageEl.dataset.zh = 'game-map.yaml 中没有找到这个游戏。';
+                    messageEl.dataset.en = 'This game is not in game-map.yaml.';
+                    messageEl.textContent = t(messageEl.dataset.zh, messageEl.dataset.en);
+                    return;
+                }
+
+                currentGame = game;
+                if (!isGameSupported(game)) {
+                    messageEl.dataset.zh = '这个游戏仅支持 Windows、Mac 或 Linux 电脑。';
+                    messageEl.dataset.en = 'This game only supports Windows, Mac, or Linux computers.';
+                    messageEl.textContent = t(messageEl.dataset.zh, messageEl.dataset.en);
+                    return;
+                }
+                currentGameStartedAt = Date.now();
+                renderLoadedGame(game);
+                refreshPlayRecommendationStats(game);
+                const gameFrame = document.getElementById('game-frame');
+                gameFrame.onload = () => {
+                    focusGameFrame();
+                    setupFrameKeyboardShortcuts();
+                };
+                gameFrame.src = requestedPath;
+                document.getElementById('play-layout').classList.remove('hidden');
+                messageEl.classList.add('hidden');
+                focusGameFrame();
+            } catch (error) {
+                console.error(error);
+                messageEl.dataset.zh = '读取游戏失败，请检查 game-map.yaml。';
+                messageEl.dataset.en = 'Could not load this game. Check game-map.yaml.';
+                messageEl.textContent = t(messageEl.dataset.zh, messageEl.dataset.en);
+            }
+        }
+
+        applyI18n();
+        loadGame();
+    </script>
+</body>
+
+</html>

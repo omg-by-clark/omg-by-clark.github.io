@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="../../../privacy.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockverse</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css?v=basic-5">
+</head>
+<body>
+    <main id="game">
+        <canvas id="world" aria-label="Blockverse world"></canvas>
+        <section class="coords" aria-label="coordinates">
+            <strong id="coords">X 50  Y 20  Z 50</strong>
+        </section>
+        <div class="crosshair" aria-hidden="true"></div>
+        <section class="hotbar" aria-label="hotbar">
+            <button class="slot selected" type="button" title="Grass Block">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M10 20 32 8l22 12-22 12z" fill="#5f9b3d"/>
+                    <path d="M10 20v25l22 12V32z" fill="#765033"/>
+                    <path d="M54 20v25L32 57V32z" fill="#5c3b28"/>
+                </svg>
+            </button>
+        </section>
+    </main>
+    <script type="module" src="game.js?v=basic-5"></script>
+</body>
+</html>

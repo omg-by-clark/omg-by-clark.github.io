@@ -13,23 +13,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 */
-/**
- * 根据用户的背包数据，返回昵称的 CSS 样式
- * @param {Object} inventory 用户背包对象
- */
+/* 用途：根据用户背包数据返回昵称的 CSS 样式。
+原理：检查 inventory 中指定道具的过期时间；如果道具仍有效，就返回对应的行内样式字符串，否则返回空字符串。
+*/
 function getNicknameStyle(inventory) {
     if (!inventory) return '';
     const now = new Date();
 
-    // 检查 100: 彩虹色
+    // 检查 100: 彩虹色昵称
     if (inventory['100'] && new Date(inventory['100']) > now) {
         return 'background: linear-gradient(to right, #f38ba8, #fab387, #f9e2af, #c4d695, #a6e3a1, #89dceb, #89b4fa, #cba6f7); -webkit-background-clip: text; color: transparent; font-weight: bold;';
     }
-    // 检查 101: 极客蓝
+    // 检查 101: 极客蓝昵称
     if (inventory['101'] && new Date(inventory['101']) > now) {
         return 'color: #0059ff; font-weight: bold;';
     }
-    // 检查 102: 土豪金
+    // 检查 102: 土豪金昵称
     if (inventory['102'] && new Date(inventory['102']) > now) {
         return 'color: #ffa600; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); font-weight: bold;';
     }

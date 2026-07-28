@@ -284,6 +284,12 @@ function unwrapRpcRows(data) {
     return data ? [data] : [];
 }
 
+function isMissingRpcError(error) {
+    if (!error) return false;
+    const message = String(error.message || '');
+    return error.code === 'PGRST202' || message.includes('Could not find') || message.includes('not found');
+}
+
 async function loginUserWithRpc(username, passwordSha256) {
     if (isOfflineTestMode()) {
         const fallback = await _supabase
@@ -374,6 +380,204 @@ async function createCommentWithRpc(postId, nickname, content, replyTo) {
     });
 
     return { data: unwrapRpcRow(data), error };
+}
+
+async function fetchAdminPostsWithRpc() {
+    if (isOfflineTestMode()) {
+        return _supabase.from('posts').select('*').order('created_at', { ascending: false });
+    }
+
+    const { data, error } = await _supabase.rpc('admin_list_posts');
+    if (!error) return { data: unwrapRpcRows(data), error: null };
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return _supabase.from('posts').select('*').order('created_at', { ascending: false });
+}
+
+async function fetchAdminUsersWithRpc() {
+    if (isOfflineTestMode()) {
+        return _supabase.from('users').select('*').order('id', { ascending: true });
+    }
+
+    const { data, error } = await _supabase.rpc('admin_list_users');
+    if (!error) return { data: unwrapRpcRows(data), error: null };
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return _supabase.from('users').select('*').order('id', { ascending: true });
+}
+
+async function deletePostDirect(postId) {
+    const photoRemoval = _supabase.storage.from('photos').remove([`${postId}.webp`]).catch(() => ({ error: null }));
+    const commentsDeletion = _supabase.from('comments').delete().eq('post_id', postId);
+    const postDeletion = _supabase.from('posts').delete().eq('id', postId);
+
+    const [, commentsResult, postResult] = await Promise.all([photoRemoval, commentsDeletion, postDeletion]);
+    if (commentsResult.error) return { data: null, error: commentsResult.error };
+    if (postResult.error) return { data: null, error: postResult.error };
+    return { data: { id: postId }, error: null };
+}
+
+async function deletePostWithRpc(postId) {
+    if (isOfflineTestMode()) return deletePostDirect(postId);
+
+    const { data, error } = await _supabase.rpc('admin_delete_post', {
+        p_post_id: postId
+    });
+
+    if (!error) return { data: unwrapRpcRow(data) || { id: postId }, error: null };
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return deletePostDirect(postId);
+}
+
+async function markPostSuspectedRepostDirect(postId) {
+    const { data: post, error: postError } = await _supabase.from('posts').select('*').eq('id', postId).maybeSingle();
+    if (postError) return { data: null, error: postError };
+    if (!post) return { data: null, error: { message: 'Post not found.' } };
+
+    const keywords = Array.isArray(post.keywords) ? [...post.keywords] : [];
+    if (!keywords.includes('#疑似搬运 Suspected Repost')) keywords.push('#疑似搬运 Suspected Repost');
+
+    const updateResult = await _supabase.from('posts').update({ keywords }).eq('id', postId);
+    if (updateResult.error) return { data: null, error: updateResult.error };
+
+    return { data: { ...post, keywords }, error: null };
+}
+
+async function markPostSuspectedRepostWithRpc(postId) {
+    if (isOfflineTestMode()) return markPostSuspectedRepostDirect(postId);
+
+    const { data, error } = await _supabase.rpc('admin_mark_post_suspected_repost', {
+        p_post_id: postId
+    });
+
+    if (!error) {
+        const rpcRow = unwrapRpcRow(data);
+        if (rpcRow && rpcRow.keywords) return { data: rpcRow, error: null };
+        const refetch = await _supabase.from('posts').select('*').eq('id', postId).maybeSingle();
+        return { data: refetch.data || { id: postId }, error: refetch.error };
+    }
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return markPostSuspectedRepostDirect(postId);
+}
+
+async function deleteUserWithRpc(userId) {
+    if (isOfflineTestMode()) {
+        return _supabase.from('users').delete().eq('id', userId);
+    }
+
+    const { data, error } = await _supabase.rpc('admin_delete_user', {
+        p_user_id: userId
+    });
+
+    if (!error) return { data: unwrapRpcRow(data) || { id: userId }, error: null };
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return _supabase.from('users').delete().eq('id', userId);
+}
+
+async function banUserDirect(userId, banInfo) {
+    const updateResult = await _supabase.from('users').update({ ban_info: banInfo }).eq('id', userId);
+    if (updateResult.error) return { data: null, error: updateResult.error };
+    const refetch = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+    return { data: refetch.data || { id: userId, ban_info: banInfo }, error: refetch.error };
+}
+
+async function banUserWithRpc(userId, banInfo) {
+    if (isOfflineTestMode()) return banUserDirect(userId, banInfo);
+
+    const { data, error } = await _supabase.rpc('admin_ban_user', {
+        p_user_id: userId,
+        p_ban_info: banInfo
+    });
+
+    if (!error) {
+        const rpcRow = unwrapRpcRow(data);
+        if (rpcRow) return { data: rpcRow, error: null };
+        const refetch = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+        return { data: refetch.data || { id: userId, ban_info: banInfo }, error: refetch.error };
+    }
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return banUserDirect(userId, banInfo);
+}
+
+async function deductUserPointsDirect(userId, pointsToDeduct) {
+    const userResult = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+    if (userResult.error) return { data: null, error: userResult.error };
+    if (!userResult.data) return { data: null, error: { message: 'User not found.' } };
+
+    const nextPoints = Math.max(0, Number(userResult.data.points || 0) - Number(pointsToDeduct || 0));
+    const updateResult = await _supabase.from('users').update({ points: nextPoints }).eq('id', userId);
+    if (updateResult.error) return { data: null, error: updateResult.error };
+
+    return { data: { ...userResult.data, points: nextPoints }, error: null };
+}
+
+async function deductUserPointsWithRpc(userId, pointsToDeduct) {
+    if (isOfflineTestMode()) return deductUserPointsDirect(userId, pointsToDeduct);
+
+    const { data, error } = await _supabase.rpc('admin_deduct_user_points', {
+        p_user_id: userId,
+        p_points_to_deduct: pointsToDeduct
+    });
+
+    if (!error) {
+        const rpcRow = unwrapRpcRow(data);
+        if (rpcRow) return { data: rpcRow, error: null };
+        const refetch = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+        return { data: refetch.data || { id: userId }, error: refetch.error };
+    }
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return deductUserPointsDirect(userId, pointsToDeduct);
+}
+
+async function renameUserDirect(userId, newUsername) {
+    const userResult = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+    if (userResult.error) return { data: null, error: userResult.error };
+    if (!userResult.data) return { data: null, error: { message: 'User not found.' } };
+
+    const oldUsername = userResult.data.username;
+    const userUpdate = await _supabase.from('users').update({ username: newUsername }).eq('id', userId);
+    if (userUpdate.error) return { data: null, error: userUpdate.error };
+
+    const [postsUpdate, commentsUpdate] = await Promise.all([
+        _supabase.from('posts').update({ nickname: newUsername }).eq('nickname', oldUsername),
+        _supabase.from('comments').update({ nickname: newUsername }).eq('nickname', oldUsername)
+    ]);
+
+    if (postsUpdate.error) return { data: { username: newUsername, old_username: oldUsername, sync_error: 'posts' }, error: postsUpdate.error };
+    if (commentsUpdate.error) return { data: { username: newUsername, old_username: oldUsername, sync_error: 'comments' }, error: commentsUpdate.error };
+
+    return {
+        data: {
+            ...userResult.data,
+            username: newUsername,
+            old_username: oldUsername
+        },
+        error: null
+    };
+}
+
+async function renameUserWithRpc(userId, newUsername) {
+    if (isOfflineTestMode()) return renameUserDirect(userId, newUsername);
+
+    const { data, error } = await _supabase.rpc('admin_rename_user', {
+        p_user_id: userId,
+        p_new_username: newUsername
+    });
+
+    if (!error) {
+        const rpcRow = unwrapRpcRow(data);
+        if (rpcRow) return { data: rpcRow, error: null };
+        const refetch = await _supabase.from('users').select('*').eq('id', userId).maybeSingle();
+        return { data: refetch.data || { id: userId, username: newUsername }, error: refetch.error };
+    }
+    if (!isMissingRpcError(error)) return { data: null, error };
+
+    return renameUserDirect(userId, newUsername);
 }
 
 /* 用途：根据用户积分计算等级名称和对应 CSS 类名。

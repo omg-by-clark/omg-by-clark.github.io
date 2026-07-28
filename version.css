@@ -1,3 +1,6 @@
+/* 用途：定义版本页面浅色模式下的基础颜色变量。
+原理：把背景、文字、品牌色、卡片色和分割线集中到 :root，方便后续主题统一维护。
+*/
 :root {
     --bg: #fffdf5;
     --text: #333;
@@ -6,6 +9,9 @@
     --line: #eee;
 }
 
+/* 用途：定义版本页面深色模式下的颜色变量覆盖。
+原理：当 body 带有 dark 类时覆盖 :root 变量，让同一套组件样式自动切换到暗色主题。
+*/
 body.dark {
     --bg: #121212;
     --text: #f1f2f6;
@@ -14,6 +20,9 @@ body.dark {
     --line: #333;
 }
 
+/* 用途：设置版本页面的整体版心、字体、背景和主题切换过渡。
+原理：通过 max-width 和左右 auto margin 让内容居中，通过 CSS 变量响应浅色/深色模式。
+*/
 body {
     font-family: sans-serif;
     max-width: 600px;
@@ -24,6 +33,9 @@ body {
     transition: 0.3s;
 }
 
+/* 用途：设置版本页主标题的品牌色、底部分割线和居中排版。
+原理：用 var(--brand) 复用主题色，保持标题与站点其它页面的视觉一致性。
+*/
 h1 {
     font-family: Microsoft YaHei, PingFang SC, Helvetica, sans-serif;
     color: var(--brand);
@@ -33,6 +45,9 @@ h1 {
     text-align: center;
 }
 
+/* 用途：设置单个版本更新卡片的容器样式。
+原理：用主题卡片色、圆角、阴影和边框把每个版本条目从页面背景中分离出来。
+*/
 .v-card {
     background: var(--card);
     padding: 25px;
@@ -43,22 +58,34 @@ h1 {
     position: relative;
 }
 
+/* 用途：突出显示当前或重点版本卡片。
+原理：用品牌色渐变、白色文字和更强阴影提高视觉层级，并移除普通边框避免样式冲突。
+*/
 .v-card-highlight {
-    background: linear-gradient(135deg, #ff6b81, #ff4757); /* 添加渐变背景 */
-    color: white; /* 突出显示的文字颜色 */
-    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.5); /* 更强的阴影效果 */
-    border: none; /* 去掉边框 */
+    background: linear-gradient(135deg, #ff6b81, #ff4757);
+    color: white;
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.5);
+    border: none;
 }
 
+/* 用途：让高亮版本卡片里的版本标签保持可读。
+原理：反转标签配色，使用白色背景承托品牌色文字。
+*/
 .v-card-highlight .v-tag {
     background: white;
     color: var(--brand);
 }
 
+/* 用途：让高亮版本卡片里的主题标题使用白色。
+原理：覆盖普通版本标题的品牌色，避免在红色渐变背景上对比度不足。
+*/
 .v-card-highlight .v-theme {
-    color: white; /* 修改为白色，与其他内容一致 */
+    color: white;
 }
 
+/* 用途：设置版本号或版本代号的小标签样式。
+原理：使用等宽字体和胶囊形背景，让版本标识在卡片里更容易被快速扫到。
+*/
 .v-tag {
     font-family: Consolas, monospace;
     background: var(--brand);
@@ -69,6 +96,9 @@ h1 {
     font-weight: bold;
 }
 
+/* 用途：设置每个版本卡片中的更新主题标题。
+原理：使用块级显示、品牌色和加粗字号，让主题与下面的更新列表形成清晰层级。
+*/
 .v-theme {
     display: block;
     margin: 15px 0 10px 0;
@@ -77,17 +107,26 @@ h1 {
     color: var(--brand);
 }
 
+/* 用途：设置版本更新列表的基础缩进和外边距。
+原理：保留左侧空间承载列表内容，同时去掉默认外边距，避免卡片内部间距失控。
+*/
 ul {
     padding-left: 20px;
     margin: 0;
 }
 
+/* 用途：设置每条更新说明的行距和列表样式。
+原理：去掉默认项目符号，并通过 margin-bottom 和 line-height 提高长文本可读性。
+*/
 li {
     margin-bottom: 10px;
     line-height: 1.6;
     list-style-type: none;
 }
 
+/* 用途：设置返回链接的基础视觉和点击反馈准备。
+原理：使用品牌色和加粗文字让导航入口明显，transition 给 active 状态提供顺滑动画。
+*/
 .back-link {
     display: inline-block;
     margin-top: 20px;
@@ -97,6 +136,9 @@ li {
     transition: 0.2s;
 }
 
+/* 用途：设置返回链接按下时的缩放反馈。
+原理：沿用站点其它按钮的点击动效，让页面交互手感保持一致。
+*/
 .back-link:active {
     transform: scale(1.1);
 }

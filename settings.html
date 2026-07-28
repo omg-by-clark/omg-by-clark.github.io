@@ -17,7 +17,9 @@
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="privacy.js"></script>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>设置 Settings • omg-by-Clark</title>
@@ -28,7 +30,6 @@
             --card: #ffffff;
             --brand: #ff4757;
             --green: #28a745;
-            /* 用途：鸣谢名单按钮在浅色模式下的专属绿色文字色 */
             --btn-credits-color: #40a02b;
         }
 
@@ -37,7 +38,6 @@
             --text: #f0f0f0;
             --card: #2d2d2d;
             --brand: #ff6b81;
-            /* 用途：鸣谢名单按钮在深色模式下的专属绿色文字色 */
             --btn-credits-color: #a6d189;
         }
 
@@ -151,6 +151,8 @@
             transform: scale(1.1);
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
 </head>
 
 <body>
@@ -170,6 +172,7 @@
             <select id="themeSelect">
                 <option value="light">浅色 (Light)</option>
                 <option value="dark">深色 (Dark)</option>
+                <option value="catppuccin">Catppuccin Macchiato</option>
             </select>
         </div>
     </div>
@@ -208,7 +211,8 @@
             const mode = localStorage.getItem('theme') || 'light';
 
             // 切换主题样式类
-            document.body.className = (mode === 'dark' ? 'dark' : '');
+            document.documentElement.dataset.theme = mode;
+            document.body.className = mode === 'dark' ? 'dark' : (mode === 'catppuccin' ? 'catppuccin' : '');
 
             // 批量应用双语翻译文本
             document.querySelectorAll('[data-zh]').forEach(el => {

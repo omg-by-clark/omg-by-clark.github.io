@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	    <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../../../privacy.js"></script>
+<meta charset="UTF-8">
+	<title>T-Rex Run 3D</title>
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="css/style.min.css?patch=3x1">
+	<style>
+		body.is-night #game-restart h1 {
+			color: #fff;
+			text-shadow: 0 2px 10px rgba(255, 255, 255, 0.35);
+		}
+	</style>
+
+	<!-- Preload -->
+	<link rel="preload" as="image" href="media/repeat.png" />
+	<link rel="preload" as="image" href="media/preloader-dino.png">
+	<link rel="preload" as="image" href="media/3d-title.png">
+
+</head>
+<body>
+
+	<div id="preloader">
+		<div class="progress">
+	        <div class="chart">
+	            <div id="game-load-progress" class="bar lime bar-0">
+	                <div class="face top">
+	                    <div class="growing-bar"></div>
+	                </div>
+	                <div class="face side-0">
+	                    <div class="growing-bar"></div>
+	                </div>
+	                <div class="face floor">
+	                    <div class="growing-bar"></div>
+	                </div>
+	                <div class="face side-a"></div>
+	                <div class="face side-b"></div>
+	                <div class="face side-1">
+	                    <div class="growing-bar"></div>
+	                </div>
+	            </div>
+	        </div>
+		</div>
+	</div>
+
+	<div id="chrome-no-internet">
+		<div class="poster"></div>
+		<h1 data-zh="无网络" data-en="No internet">No internet</h1>
+		<div class="info">
+			<p data-zh="试试这样：" data-en="Try this:">Try this:</p>
+			<ul>
+				<li data-zh="检查网络连接。" data-en="Check your network.">Check your network.</li>
+				<li data-zh="重新连接 Wi-Fi。" data-en="Try Wi-Fi again.">Try Wi-Fi again.</li>
+				<li id="game-start" class="hidden" data-zh="&laquo;开始游戏&raquo;" data-en="&laquo;Start game&raquo;">&laquo;Start game&raquo;</li>
+			</ul>
+			<small>ERR_LOADING_ASSETS</small>
+			<small id="game-load-progress">0%</small>
+		</div>
+	</div>
+
+	<div id="game-restart" class="hidden">
+		<h1 data-zh="GAME OVER" data-en="GAME OVER">GAME OVER</h1>
+		<img src="media/repeat.png">
+	</div>
+
+	<script>
+		(function () {
+			var lang = localStorage.getItem('lang') === 'en' ? 'en' : 'zh';
+			document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+			document.querySelectorAll('[data-zh][data-en]').forEach(function (element) {
+				element.innerHTML = element.dataset[lang];
+			});
+		}());
+	</script>
+
+	<script src="libs/three/three.min.js"></script>
+	<script src="libs/three/controls/OrbitControls.js"></script>
+	<script src="libs/three/loaders/OBJLoader.js"></script>
+	<script src="libs/vox/vox.min.js"></script>
+
+	<!-- Shaders & Postprocessing -->
+	<script src="libs/three/postprocessing/EffectComposer.js"></script>
+	<script src="libs/three/postprocessing/RenderPass.js"></script>
+	<script src="libs/three/postprocessing/ShaderPass.js"></script>
+	<script src="libs/three/shaders/CopyShader.js"></script>
+	<script src="libs/three/shaders/ConvolutionShader.js"></script>
+	<script src="libs/three/postprocessing/SAOPass.js"></script>
+	<script src="libs/three/shaders/SAOShader.js"></script>
+	<script src="libs/three/shaders/DepthLimitedBlurShader.js"></script>
+	<script src="libs/three/shaders/UnpackDepthRGBAShader.js"></script>
+
+	<script src="libs/nebula/three-nebula.js"></script>
+	<script src="libs/howler/howler.min.js"></script>
+
+	<script src="libs/visibly/visibly.js"></script>
+	<script src="js/config-low.js?patch=3x1"></script>
+	<script src="js/build.min.js?patch=3x4"></script>
+
+</body>
+</html>

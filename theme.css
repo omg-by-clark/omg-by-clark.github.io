@@ -1,0 +1,563 @@
+/* Catppuccin Macchiato 主题
+用途：集中维护 Macchiato 色板，并覆盖主站各页面已有的主题变量和语义颜色。
+原理：theme.js 会把当前主题写入 html 的 data-theme 属性；本文件通过该属性提高覆盖范围，同时不影响原有浅色和深色主题。
+*/
+html[data-theme="catppuccin"] body {
+    --ctp-rosewater: #f4dbd6;
+    --ctp-flamingo: #f0c6c6;
+    --ctp-pink: #f5bde6;
+    --ctp-mauve: #c6a0f6;
+    --ctp-red: #ed8796;
+    --ctp-maroon: #ee99a0;
+    --ctp-peach: #f5a97f;
+    --ctp-yellow: #eed49f;
+    --ctp-green: #a6da95;
+    --ctp-teal: #8bd5ca;
+    --ctp-sky: #91d7e3;
+    --ctp-sapphire: #7dc4e4;
+    --ctp-blue: #8aadf4;
+    --ctp-lavender: #b7bdf8;
+    --ctp-text: #cad3f5;
+    --ctp-subtext-1: #b8c0e0;
+    --ctp-subtext-0: #a5adcb;
+    --ctp-overlay-2: #939ab7;
+    --ctp-overlay-1: #8087a2;
+    --ctp-overlay-0: #6e738d;
+    --ctp-surface-2: #5b6078;
+    --ctp-surface-1: #494d64;
+    --ctp-surface-0: #363a4f;
+    --ctp-base: #24273a;
+    --ctp-mantle: #1e2030;
+    --ctp-crust: #181926;
+    --brand: #c6a0f6;
+    --link: #8aadf4;
+    --success: #a6da95;
+    --warning: #eed49f;
+    --error: #ed8796;
+    --error-text: #ed8796;
+    --surface-0: #363a4f;
+    --surface-1: #494d64;
+    --surface-2: #5b6078;
+    --text: #cad3f5;
+    --title-text: #cad3f5;
+    --body-text: #cad3f5;
+    --subtext: #b8c0e0;
+    --subtext-0: #a5adcb;
+    --bg: #24273a;
+    --card: #1e2030;
+    --card-bg: #1e2030;
+    --line: #363a4f;
+    --license-bg: #181926;
+    --unliked: #5b6078;
+    --disliked: #8aadf4;
+    --vote-bg-neutral: #5b6078;
+    --vote-bg-liked: #ed8796;
+    --vote-bg-disliked: #8aadf4;
+    --green: #a6da95;
+    --kw-active: #8aadf4;
+    --repost-color: #a6da95;
+    --btn-credits-color: #a6da95;
+    --btn-cap-bg-success: #a6da95;
+    --nsfw-color: #f5a97f;
+    --kw-nsfw-active: #f5a97f;
+    --kw-text: #8aadf4;
+    --kw-default: #8aadf4;
+    --kw-dark-default: #8aadf4;
+    --greeting-bg: #6e738d;
+    --checkin: #eed49f;
+    --disabled: #5b6078;
+    --hot-border: #c6a0f6;
+    --read-more: #8aadf4;
+    --post-list-marker: hsl(217deg, 92%, 82%);
+}
+
+/* 用途：正文和主标题统一使用 Text，副标题与标签使用 Subtext 1，弱提示使用 Overlay 1。 */
+html[data-theme="catppuccin"] .card b,
+html[data-theme="catppuccin"] #t,
+html[data-theme="catppuccin"] h1,
+html[data-theme="catppuccin"] body > h2,
+html[data-theme="catppuccin"] .auth-card > h2,
+html[data-theme="catppuccin"] #profile-name {
+    color: #cad3f5;
+}
+
+html[data-theme="catppuccin"] h2,
+html[data-theme="catppuccin"] h3,
+html[data-theme="catppuccin"] .kw-label {
+    color: #b8c0e0 !important;
+}
+
+/* 用途：“热搜 Top 5”“全部帖子”“Ta 的帖子”等区块标题使用品牌 Mauve，和普通副标题区分层级。 */
+html[data-theme="catppuccin"] .section-title {
+    color: #c6a0f6 !important;
+}
+
+html[data-theme="catppuccin"] .desc,
+html[data-theme="catppuccin"] .role,
+html[data-theme="catppuccin"] .image-status,
+html[data-theme="catppuccin"] .advice,
+html[data-theme="catppuccin"] .loading,
+html[data-theme="catppuccin"] .end-message {
+    color: #8087a2;
+}
+
+/* 用途：链接和 URL 使用 Blue；按钮形式的链接会在后续规则中改回对应按钮颜色。 */
+html[data-theme="catppuccin"] a:not(.btn-common) {
+    color: #8aadf4 !important;
+}
+
+/* 用途：文本选区使用 25% 透明度的 Overlay 2，处于设计建议的 20% 至 30% 范围内。 */
+html[data-theme="catppuccin"] ::selection {
+    background: rgba(147, 154, 183, 0.25);
+    color: #cad3f5;
+}
+
+/* 用途：让表单控件和卡片保持 Macchiato 深色表面，避免主题中出现浅色输入框。 */
+html[data-theme="catppuccin"] input,
+html[data-theme="catppuccin"] textarea,
+html[data-theme="catppuccin"] select {
+    background-color: #363a4f;
+    border-color: #5b6078;
+    color: #cad3f5;
+}
+
+html[data-theme="catppuccin"] input::placeholder,
+html[data-theme="catppuccin"] textarea::placeholder {
+    color: #8087a2;
+}
+
+/* 用途：通用强调按钮使用 Mauve，按钮文字使用 Base；标签和搜索胶囊使用 Blue。 */
+html[data-theme="catppuccin"] .btn-common,
+html[data-theme="catppuccin"] .btn-upload-image,
+html[data-theme="catppuccin"] .btn-send {
+    background: #c6a0f6;
+    color: #24273a;
+}
+
+html[data-theme="catppuccin"] .selected-keyword-chip {
+    background: #8aadf4;
+    color: #24273a;
+}
+
+/* 用途：确保点赞使用 Red，而不是默认主题中与品牌色共用的颜色。 */
+html[data-theme="catppuccin"] .vote-pill.is-liked .like-btn {
+    background-color: #ed8796;
+    color: #24273a;
+}
+
+/* 用途：确保点踩和未投票胶囊分别使用 Blue 与 Surface 2。 */
+html[data-theme="catppuccin"] .vote-pill {
+    background-color: #5b6078;
+}
+
+html[data-theme="catppuccin"] .vote-pill.is-disliked .dislike-btn {
+    background-color: #8aadf4;
+    color: #24273a;
+}
+
+/* 用途：统一搬运标签、保存设置、发布按钮及页面中其它绿色操作。 */
+html[data-theme="catppuccin"] .repost-keyword,
+html[data-theme="catppuccin"] .repost-tag {
+    color: #a6da95 !important;
+}
+
+html[data-theme="catppuccin"] .btn-save,
+html[data-theme="catppuccin"] .btn-post,
+html[data-theme="catppuccin"] .copy-btn {
+    background: #a6da95 !important;
+    color: #24273a !important;
+}
+
+/* 用途：让发帖页的普通关键词、NSFW 关键词分别使用 Green 与 Peach。 */
+html[data-theme="catppuccin"] .kw-btn {
+    background: #8aadf4;
+    color: #24273a;
+}
+
+html[data-theme="catppuccin"] .kw-btn.active {
+    background: #8aadf4 !important;
+    color: #24273a !important;
+}
+
+html[data-theme="catppuccin"] .kw-btn.nsfw-btn.active {
+    background: #f5a97f !important;
+    color: #24273a !important;
+}
+
+html[data-theme="catppuccin"] .kw-btn.repost-btn.active {
+    background: #a6da95 !important;
+    color: #24273a !important;
+}
+
+/* 用途：每日签到按钮固定使用 Yellow；禁用后仍回到 Surface 2。 */
+html[data-theme="catppuccin"] .btn-checkin {
+    background: #eed49f;
+    color: #24273a;
+}
+
+html[data-theme="catppuccin"] .btn-checkin.disabled {
+    background: #5b6078 !important;
+    color: #cad3f5;
+}
+
+/* 用途：错误提示固定使用 Red，成功状态继续使用之前指定的 Green。 */
+html[data-theme="catppuccin"] .error,
+html[data-theme="catppuccin"] #pwd-error {
+    color: #ed8796;
+}
+
+/* Markdown 正文样式
+        用途：统一帖子里 Markdown 生成的代码块、行内代码、引用和公式的展示。
+        原理：omg-render.js 只输出安全 HTML 结构，颜色和间距交给全站主题变量处理。
+*/
+.post-body blockquote,
+#post-content-text blockquote {
+    margin: 0.8em 0;
+    padding-left: 12px;
+    border-left: 3px solid var(--brand);
+    color: var(--body-text, var(--text));
+    opacity: 0.9;
+}
+
+.post-body p,
+#post-content-text p {
+    margin: 0.45em 0;
+}
+
+.post-body ul,
+.post-body ol,
+#post-content-text ul,
+#post-content-text ol {
+    margin: 0.45em 0;
+    padding-left: 1.6em;
+}
+
+.md-inline-code {
+    padding: 0.12em 0.35em;
+    border-radius: 6px;
+    background: rgba(128, 128, 128, 0.16);
+    font-family: 'Google Sans Code', Consolas, monospace;
+}
+
+.omg-render-link {
+    color: var(--repost-color);
+    text-decoration: none;
+}
+
+.omg-render-link:hover {
+    text-decoration: underline;
+}
+
+.md-bold-italic {
+    font-style: italic;
+    font-weight: 800;
+}
+
+.md-code-block {
+    --ctp-rosewater: #dc8a78;
+    --ctp-flamingo: #dd7878;
+    --ctp-pink: #ea76cb;
+    --ctp-mauve: #8839ef;
+    --ctp-red: #d20f39;
+    --ctp-maroon: #e64553;
+    --ctp-peach: #fe640b;
+    --ctp-yellow: #df8e1d;
+    --ctp-green: #40a02b;
+    --ctp-teal: #179299;
+    --ctp-sky: #04a5e5;
+    --ctp-sapphire: #209fb5;
+    --ctp-blue: #1e66f5;
+    --ctp-lavender: #7287fd;
+    --ctp-text: #4c4f69;
+    --ctp-subtext-1: #5c5f77;
+    --ctp-subtext-0: #6c6f85;
+    --ctp-overlay-2: #7c7f93;
+    --ctp-overlay-1: #8c8fa1;
+    --ctp-overlay-0: #9ca0b0;
+    --ctp-surface-2: #acb0be;
+    --ctp-surface-1: #bcc0cc;
+    --ctp-surface-0: #ccd0da;
+    --ctp-base: #eff1f5;
+    --ctp-mantle: #e6e9ef;
+    --ctp-crust: #dce0e8;
+    --syntax-text: var(--ctp-text);
+    --syntax-bg: var(--ctp-base);
+    --syntax-panel: var(--ctp-mantle);
+    --syntax-border: var(--ctp-surface-0);
+    --syntax-keyword: var(--ctp-mauve);
+    --syntax-string: var(--ctp-green);
+    --syntax-atom: var(--ctp-red);
+    --syntax-escape: var(--ctp-pink);
+    --syntax-comment: var(--ctp-overlay-2);
+    --syntax-number: var(--ctp-peach);
+    --syntax-operator: var(--ctp-teal);
+    --syntax-delimiter: var(--ctp-overlay-2);
+    --syntax-function: var(--ctp-blue);
+    --syntax-parameter: var(--ctp-maroon);
+    --syntax-builtin: var(--ctp-red);
+    --syntax-type: var(--ctp-yellow);
+    --syntax-enum: var(--ctp-teal);
+    --syntax-property: var(--ctp-blue);
+    --syntax-attribute: var(--ctp-yellow);
+    --syntax-macro: var(--ctp-rosewater);
+    --syntax-preprocessor: var(--ctp-yellow);
+    --syntax-header: var(--ctp-green);
+    --syntax-namespace: var(--ctp-yellow);
+    margin: 0.9em 0;
+}
+
+body.dark .md-code-block {
+    --ctp-rosewater: #f4dbd6;
+    --ctp-flamingo: #f0c6c6;
+    --ctp-pink: #f5bde6;
+    --ctp-mauve: #c6a0f6;
+    --ctp-red: #ed8796;
+    --ctp-maroon: #ee99a0;
+    --ctp-peach: #f5a97f;
+    --ctp-yellow: #eed49f;
+    --ctp-green: #a6da95;
+    --ctp-teal: #8bd5ca;
+    --ctp-sky: #91d7e3;
+    --ctp-sapphire: #7dc4e4;
+    --ctp-blue: #8aadf4;
+    --ctp-lavender: #b7bdf8;
+    --ctp-text: #cad3f5;
+    --ctp-subtext-1: #b8c0e0;
+    --ctp-subtext-0: #a5adcb;
+    --ctp-overlay-2: #939ab7;
+    --ctp-overlay-1: #8087a2;
+    --ctp-overlay-0: #6e738d;
+    --ctp-surface-2: #5b6078;
+    --ctp-surface-1: #494d64;
+    --ctp-surface-0: #363a4f;
+    --ctp-base: #24273a;
+    --ctp-mantle: #1e2030;
+    --ctp-crust: #181926;
+    --syntax-text: var(--ctp-text);
+    --syntax-bg: var(--ctp-base);
+    --syntax-panel: var(--ctp-mantle);
+    --syntax-border: var(--ctp-surface-0);
+    --syntax-keyword: var(--ctp-mauve);
+    --syntax-string: var(--ctp-green);
+    --syntax-atom: var(--ctp-red);
+    --syntax-escape: var(--ctp-pink);
+    --syntax-comment: var(--ctp-overlay-2);
+    --syntax-number: var(--ctp-peach);
+    --syntax-operator: var(--ctp-teal);
+    --syntax-delimiter: var(--ctp-overlay-2);
+    --syntax-function: var(--ctp-blue);
+    --syntax-parameter: var(--ctp-maroon);
+    --syntax-builtin: var(--ctp-red);
+    --syntax-type: var(--ctp-yellow);
+    --syntax-enum: var(--ctp-teal);
+    --syntax-property: var(--ctp-blue);
+    --syntax-attribute: var(--ctp-yellow);
+    --syntax-macro: var(--ctp-rosewater);
+    --syntax-preprocessor: var(--ctp-yellow);
+    --syntax-header: var(--ctp-green);
+    --syntax-namespace: var(--ctp-yellow);
+}
+
+html[data-theme="catppuccin"] .md-code-block {
+    --syntax-text: var(--ctp-text);
+    --syntax-bg: var(--ctp-base);
+    --syntax-panel: var(--ctp-mantle);
+    --syntax-border: var(--ctp-surface-0);
+    --syntax-keyword: var(--ctp-mauve);
+    --syntax-string: var(--ctp-green);
+    --syntax-atom: var(--ctp-red);
+    --syntax-escape: var(--ctp-pink);
+    --syntax-comment: var(--ctp-overlay-2);
+    --syntax-number: var(--ctp-peach);
+    --syntax-operator: var(--ctp-teal);
+    --syntax-delimiter: var(--ctp-overlay-2);
+    --syntax-function: var(--ctp-blue);
+    --syntax-parameter: var(--ctp-maroon);
+    --syntax-builtin: var(--ctp-red);
+    --syntax-type: var(--ctp-yellow);
+    --syntax-enum: var(--ctp-teal);
+    --syntax-property: var(--ctp-blue);
+    --syntax-attribute: var(--ctp-yellow);
+    --syntax-macro: var(--ctp-rosewater);
+    --syntax-preprocessor: var(--ctp-yellow);
+    --syntax-header: var(--ctp-green);
+    --syntax-namespace: var(--ctp-yellow);
+}
+
+.md-code-block figcaption {
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 4px 10px;
+    border: 1px solid var(--syntax-border);
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    background: var(--syntax-panel);
+    color: var(--syntax-keyword);
+    font-size: 0.78em;
+    font-weight: bold;
+}
+
+.md-code-block pre {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    border: 1px solid var(--syntax-border);
+    border-radius: 0 10px 10px 10px;
+    background: var(--syntax-bg);
+    color: var(--syntax-text);
+}
+
+.md-code-block code {
+    font-family: 'Google Sans Code', Consolas, monospace;
+    white-space: pre;
+}
+
+.md-token-keyword {
+    color: var(--syntax-keyword);
+}
+
+.md-token-string {
+    color: var(--syntax-string);
+}
+
+.md-token-atom {
+    color: var(--syntax-atom);
+}
+
+.md-token-escape {
+    color: var(--syntax-escape);
+}
+
+.md-token-comment {
+    color: var(--syntax-comment);
+    font-style: italic;
+}
+
+.md-token-number {
+    color: var(--syntax-number);
+}
+
+.md-token-operator {
+    color: var(--syntax-operator);
+}
+
+.md-token-delimiter {
+    color: var(--syntax-delimiter);
+}
+
+.md-token-function {
+    color: var(--syntax-function);
+    font-style: italic;
+}
+
+.md-token-parameter {
+    color: var(--syntax-parameter);
+}
+
+.md-token-builtin {
+    color: var(--syntax-builtin);
+}
+
+.md-token-type {
+    color: var(--syntax-type);
+    font-style: italic;
+}
+
+.md-token-enum {
+    color: var(--syntax-enum);
+}
+
+.md-token-property {
+    color: var(--syntax-property);
+}
+
+.md-token-attribute {
+    color: var(--syntax-attribute);
+}
+
+.md-token-macro {
+    color: var(--syntax-macro);
+}
+
+.md-token-preprocessor {
+    color: var(--syntax-preprocessor);
+}
+
+.md-token-header {
+    color: var(--syntax-header);
+}
+
+.md-token-namespace {
+    color: var(--syntax-namespace);
+}
+
+.md-math-block {
+    overflow-x: auto;
+    margin: 0.9em 0;
+}
+
+.md-inline-math {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    vertical-align: middle;
+}
+
+.md-hr {
+    border: 0;
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+    margin: 1em 0;
+}
+
+/* 胶囊按钮
+        用途：让带文字的主要操作按钮使用真正的全圆角胶囊轮廓，而不是普通圆角矩形。
+        原理：999px 会被浏览器限制为元素高度的一半，因此不同高度的按钮都能稳定形成胶囊。
+*/
+.btn-common,
+.btn-upload-image,
+.btn-send,
+.btn-save,
+.btn-post,
+.btn-checkin,
+.btn-go,
+.btn-captcha,
+.btn-update,
+.btn-go-credits,
+.kw-btn,
+.card-action button {
+    border-radius: 999px !important;
+}
+
+/* 用途：保持主站顶栏按钮最初的尺寸，只保留胶囊外形。
+原理：显式恢复原版 4px 12px 内边距和 0.85rem 字号，防止其它共享按钮规则改变顶栏大小。
+*/
+.header-actions .btn-common {
+    padding: 4px 12px !important;
+    font-size: 0.85rem !important;
+}
+
+/* 点击放大反馈
+用途：恢复旧版按钮和链接按下时放大 1.1 倍的反馈。
+原理：覆盖之前写入的缩小或取消 transform 规则，让交互回到最早的直接缩放手感。
+*/
+button:active,
+a:active,
+[role="button"]:active,
+[onclick]:active,
+[ondblclick]:active {
+    transform: scale(1.1) !important;
+}
+
+/* 帖子卡片按下反馈
+用途：帖子卡片本身只变暗一点，不跟按钮一样放大。
+原理：卡片带 onclick 时会被上面的通用点击规则命中，所以这里用更靠后的规则把 transform 关掉，只保留背景变暗反馈。
+*/
+.card:active {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    transform: none !important;
+}
+
+body.dark .card:active,
+html[data-theme="catppuccin"] .card:active {
+    background-color: rgba(0, 0, 0, 0.16) !important;
+}

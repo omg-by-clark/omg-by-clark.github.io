@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<!-- admin.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
+<html lang="zh-CN">
+
+<head>
+    <script src="privacy.js"></script>
+    <link href="logo.svg" rel="icon" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="omg-by-Clark 管理员页面，可管理帖子与用户。">
+    <title>管理员 Admin - omg-by-Clark</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #fff;
+            --card-soft: rgba(255, 255, 255, 0.76);
+            --brand: #ff4757;
+            --brand-2: #fe640b;
+            --line: rgba(150, 150, 150, 0.18);
+            --muted: #6b7280;
+            --success: #2f9e44;
+            --warning: #e67700;
+            --danger: #d94841;
+            --info: #1d4ed8;
+            --shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+            --panel-shadow: 0 14px 30px rgba(230, 69, 83, 0.12);
+            --button-grad: linear-gradient(45deg, #e64553, #fe640b);
+            --soft-grad: linear-gradient(135deg, rgba(255, 113, 133, 0.16), rgba(254, 100, 11, 0.1));
+            --grid-grad: radial-gradient(circle at top left, rgba(255, 71, 87, 0.14), transparent 36%),
+                radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.12), transparent 28%);
+        }
+
+        body.dark {
+            --bg: #161616;
+            --text: #f2f2f2;
+            --card: #242424;
+            --card-soft: rgba(36, 36, 36, 0.9);
+            --line: rgba(255, 255, 255, 0.1);
+            --muted: #b8b8b8;
+            --shadow: 0 20px 45px rgba(0, 0, 0, 0.36);
+            --panel-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+            --soft-grad: linear-gradient(135deg, rgba(255, 113, 133, 0.14), rgba(254, 100, 11, 0.08));
+            --grid-grad: radial-gradient(circle at top left, rgba(255, 71, 87, 0.18), transparent 36%),
+                radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.18), transparent 28%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            color: var(--text);
+            background:
+                var(--grid-grad),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 22%),
+                var(--bg);
+            padding: 24px 18px 80px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            transition: 0.3s;
+        }
+
+        ::selection {
+            background: rgba(255, 71, 87, 0.22);
+        }
+
+        .page-shell {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 28px;
+            background:
+                linear-gradient(135deg, rgba(255, 71, 87, 0.12), rgba(254, 100, 11, 0.08)),
+                var(--card-soft);
+            border: 1px solid var(--line);
+            box-shadow: var(--panel-shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -42px -52px auto;
+            width: 180px;
+            height: 180px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.2), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .hero-title {
+            margin: 0;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            margin: 10px 0 0;
+            color: var(--muted);
+            max-width: 760px;
+            line-height: 1.65;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-common,
+        .btn-soft,
+        .btn-danger,
+        .btn-warning {
+            border: none;
+            border-radius: 14px;
+            padding: 11px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s, background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-common {
+            color: white;
+            background: var(--button-grad);
+            box-shadow: 0 8px 20px rgba(230, 69, 83, 0.22);
+        }
+
+        .btn-soft {
+            color: var(--text);
+            background: rgba(127, 127, 127, 0.12);
+            border: 1px solid var(--line);
+        }
+
+        .btn-warning {
+            color: white;
+            background: linear-gradient(135deg, #f08c00, #f76707);
+            box-shadow: 0 8px 18px rgba(240, 140, 0, 0.22);
+        }
+
+        .btn-danger {
+            color: white;
+            background: linear-gradient(135deg, #e03131, #c92a2a);
+            box-shadow: 0 8px 18px rgba(224, 49, 49, 0.24);
+        }
+
+        .btn-common:hover,
+        .btn-soft:hover,
+        .btn-danger:hover,
+        .btn-warning:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-common:active,
+        .btn-soft:active,
+        .btn-danger:active,
+        .btn-warning:active {
+            transform: scale(1.03);
+        }
+
+        .btn-common:disabled,
+        .btn-soft:disabled,
+        .btn-danger:disabled,
+        .btn-warning:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .summary-card {
+            border-radius: 18px;
+            padding: 16px 18px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+
+        .summary-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .summary-value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        .guard-card,
+        .empty-card {
+            margin-top: 22px;
+            border-radius: 24px;
+            padding: 24px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+
+        .guard-card {
+            text-align: center;
+        }
+
+        .guard-card p,
+        .empty-card p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .guard-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .section {
+            margin-top: 26px;
+            border-radius: 28px;
+            padding: 24px;
+            background: var(--card-soft);
+            border: 1px solid var(--line);
+            box-shadow: var(--panel-shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 1.35rem;
+        }
+
+        .section-note {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .admin-card {
+            display: flex;
+            gap: 18px;
+            justify-content: space-between;
+            align-items: stretch;
+            border-radius: 22px;
+            padding: 18px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            min-width: 0;
+        }
+
+        .card-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.08rem;
+            line-height: 1.35;
+        }
+
+        .card-subtitle,
+        .card-meta,
+        .soft-note {
+            color: var(--muted);
+        }
+
+        .card-subtitle {
+            margin: 0 0 12px;
+            line-height: 1.65;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 14px;
+            margin-bottom: 14px;
+        }
+
+        .meta-item {
+            min-width: 0;
+        }
+
+        .meta-label {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .meta-value {
+            font-size: 0.96rem;
+            font-weight: 700;
+            min-width: 0;
+        }
+
+        .tag-list,
+        .status-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag-chip,
+        .status-chip,
+        .lv-badge,
+        .mod-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .tag-chip {
+            background: rgba(127, 127, 127, 0.12);
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .tag-chip.repost {
+            color: white;
+            background: linear-gradient(135deg, #2b8a3e, #40a02b);
+        }
+
+        .status-chip.active-ban {
+            color: white;
+            background: linear-gradient(135deg, #e03131, #c92a2a);
+        }
+
+        .status-chip.expired-ban {
+            color: white;
+            background: linear-gradient(135deg, #2f9e44, #40c057);
+        }
+
+        .status-chip.idle-status {
+            color: white;
+            background: linear-gradient(135deg, #495057, #6c757d);
+        }
+
+        .lv-badge {
+            color: white;
+            background: #a1662f;
+        }
+
+        .lv-iron {
+            background: #555555;
+        }
+
+        .lv-bronze {
+            background: #cd7f32;
+        }
+
+        .lv-silver {
+            background: #e0e0e0;
+            color: #222;
+        }
+
+        .lv-gold {
+            background: #ffd700;
+            color: #222;
+        }
+
+        .lv-diamond {
+            background: #add8e6;
+            color: #0b57d0;
+        }
+
+        .lv-king {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+        }
+
+        .lv-epic {
+            background: linear-gradient(45deg, #a333c8, #6d28d9);
+        }
+
+        .mod-badge {
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.28);
+        }
+
+        .card-actions {
+            width: 176px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .card-actions .btn-common,
+        .card-actions .btn-soft,
+        .card-actions .btn-danger,
+        .card-actions .btn-warning {
+            width: 100%;
+        }
+
+        .card-meta {
+            margin-top: 12px;
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+
+        .loading-card {
+            border-radius: 20px;
+            padding: 18px;
+            background: var(--card);
+            border: 1px dashed var(--line);
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay[hidden] {
+            display: none;
+        }
+
+        .modal-card {
+            width: min(100%, 480px);
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 22px;
+            position: relative;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .modal-desc {
+            margin: 10px 0 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .modal-body {
+            margin-top: 18px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(127, 127, 127, 0.12);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .form-field,
+        .form-select {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--text);
+            padding: 12px 14px;
+            font-size: 0.96rem;
+            outline: none;
+        }
+
+        .form-field:focus,
+        .form-select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.16);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .form-row > * {
+            min-width: 0;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--soft-grad);
+            margin-bottom: 14px;
+        }
+
+        .switch-copy {
+            min-width: 0;
+        }
+
+        .switch-title {
+            font-weight: 800;
+        }
+
+        .switch-desc {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        .switch {
+            position: relative;
+            width: 54px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            background: rgba(127, 127, 127, 0.34);
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            left: 4px;
+            top: 4px;
+            border-radius: 999px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            transition: 0.2s;
+        }
+
+        .switch input:checked + .slider {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(24px);
+        }
+
+        .toast-region {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast {
+            min-width: 220px;
+            max-width: 360px;
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: white;
+            box-shadow: var(--shadow);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            animation: toast-in 0.22s ease;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #2f9e44, #40c057);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #e03131, #c92a2a);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .summary-row,
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 16px 12px 64px;
+            }
+
+            .hero,
+            .section,
+            .guard-card,
+            .empty-card {
+                padding: 18px;
+                border-radius: 22px;
+            }
+
+            .admin-card {
+                flex-direction: column;
+            }
+
+            .card-actions {
+                width: 100%;
+            }
+
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-shell">
+        <section class="hero">
+            <div class="hero-top">
+                <div>
+                    <h1 class="hero-title" data-zh="🛡️ 管理员页面" data-en="🛡️ Admin Console">🛡️ 管理员页面</h1>
+                    <p class="hero-subtitle" data-zh="在这里统一管理帖子和用户。所有封禁时间都按 UTC 写入数据库，帖子和用户操作会立即刷新到当前列表。"
+                        data-en="Manage posts and users in one place. Ban timestamps are written to the database in UTC, and changes refresh in the current list right away.">
+                        在这里统一管理帖子和用户。所有封禁时间都按 UTC 写入数据库，帖子和用户操作会立即刷新到当前列表。
+                    </p>
+                </div>
+                <div class="hero-actions">
+                    <a class="btn-soft" href="index.html" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+                    <button class="btn-common" id="btn-jump-users" type="button" data-zh="👥 跳转到用户管理"
+                        data-en="👥 Jump to User Management">👥 跳转到用户管理</button>
+                    <button class="btn-soft" id="btn-refresh" type="button" data-zh="🔄 刷新数据"
+                        data-en="🔄 Refresh Data">🔄 刷新数据</button>
+                </div>
+            </div>
+
+            <div class="summary-row" id="summary-row">
+                <div class="summary-card">
+                    <div class="summary-label" data-zh="帖子总数" data-en="Total Posts">帖子总数</div>
+                    <div class="summary-value" id="summary-posts">-</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label" data-zh="用户总数" data-en="Total Users">用户总数</div>
+                    <div class="summary-value" id="summary-users">-</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label" data-zh="当前管理员" data-en="Current Admin">当前管理员</div>
+                    <div class="summary-value" id="summary-admin">-</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="guard-card" id="access-guard" hidden>
+            <h2 data-zh="🚫 当前不是管理员身份" data-en="🚫 You are not in an admin session">🚫 当前不是管理员身份</h2>
+            <p data-zh="这个页面只给管理员使用。请先用管理员账号登录，或者返回首页继续浏览。"
+                data-en="This page is only for admins. Sign in with an admin account first, or go back home.">
+                这个页面只给管理员使用。请先用管理员账号登录，或者返回首页继续浏览。
+            </p>
+            <div class="guard-actions">
+                <a class="btn-common" href="sign-in.html" data-zh="🔑 去登录" data-en="🔑 Sign In">🔑 去登录</a>
+                <a class="btn-soft" href="index.html" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+            </div>
+        </section>
+
+        <main id="admin-main">
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title" data-zh="🧵 帖子管理" data-en="🧵 Post Management">🧵 帖子管理</h2>
+                        <p class="section-note" data-zh="每张卡片都可以删帖，或者一键追加“#疑似搬运 Suspected Repost”标签。"
+                            data-en="Each card lets you delete a post or append the “#疑似搬运 Suspected Repost” tag in one click.">
+                            每张卡片都可以删帖，或者一键追加“#疑似搬运 Suspected Repost”标签。
+                        </p>
+                    </div>
+                </div>
+                <div class="admin-grid" id="post-grid">
+                    <div class="loading-card" data-zh="帖子加载中..." data-en="Loading posts...">帖子加载中...</div>
+                </div>
+            </section>
+
+            <section class="section" id="user-management">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title" data-zh="👥 用户管理" data-en="👥 User Management">👥 用户管理</h2>
+                        <p class="section-note" data-zh="可以删用户、封禁用户、扣积分，或者同步改名到对应帖子和评论。"
+                            data-en="Delete users, ban them, deduct points, or rename them and sync the change to their posts and comments.">
+                            可以删用户、封禁用户、扣积分，或者同步改名到对应帖子和评论。
+                        </p>
+                    </div>
+                </div>
+                <div class="admin-grid" id="user-grid">
+                    <div class="loading-card" data-zh="用户加载中..." data-en="Loading users...">用户加载中...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" hidden>
+        <div class="modal-card" aria-modal="true" aria-labelledby="modal-title" role="dialog">
+            <button class="close-btn" id="modal-close" type="button" aria-label="Close">✕</button>
+            <h3 class="modal-title" id="modal-title"></h3>
+            <p class="modal-desc" id="modal-desc"></p>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn-soft" id="modal-cancel" type="button"></button>
+                <button class="btn-common" id="modal-confirm" type="button"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

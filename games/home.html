@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<!-- home.html -->
+<!--
+    omg-by-clark.github.io/games: A website for playing games and have fun.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
+<html lang="zh-CN">
+
+<head>
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../privacy.js"></script>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title data-zh="游戏 • omg-by-Clark" data-en="Games • omg-by-Clark">游戏 • omg-by-Clark</title>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #333;
+            --card: #fff;
+            --brand: #ff4757;
+            --muted: #6b7280;
+            --line: rgba(107, 114, 128, 0.22);
+            --topbar: #e5e7eb;
+            --topbar-text: #1f2937;
+            --shadow: 0 14px 35px rgba(31, 41, 55, 0.1);
+            --button-grad: linear-gradient(45deg, #e64553, #fe640b);
+            --arcade-blue: #1e66f5;
+            --arcade-green: #40a02b;
+            --arcade-yellow: #df8e1d;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --text: #f0f0f0;
+            --card: #2d2d2d;
+            --brand: #ff6b81;
+            --muted: #c6d0f5;
+            --line: rgba(198, 208, 245, 0.18);
+            --topbar: #333;
+            --topbar-text: #f0f0f0;
+            --shadow: 0 14px 35px rgba(0, 0, 0, 0.28);
+            --button-grad: linear-gradient(45deg, #ff6b81, #fab387);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                radial-gradient(circle at 15% 12%, rgba(255, 71, 87, 0.08), transparent 28%),
+                radial-gradient(circle at 80% 18%, rgba(30, 102, 245, 0.08), transparent 25%),
+                var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans SC', 'Source Han Sans', 'Pingfang SC', sans-serif;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        ::selection {
+            background: rgba(255, 71, 87, 0.28);
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: grid;
+            grid-template-columns: minmax(170px, 240px) minmax(180px, 1fr) auto auto;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 12px clamp(14px, 3vw, 34px);
+            background: color-mix(in srgb, var(--topbar) 90%, transparent);
+            color: var(--topbar-text);
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 6px 22px rgba(31, 41, 55, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            display: block;
+            width: min(100%, 230px);
+            height: 42px;
+            object-fit: contain;
+            object-position: left center;
+        }
+
+        .search-box {
+            position: relative;
+            width: min(100%, 560px);
+            justify-self: center;
+        }
+
+        .search-box::before {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            content: "🔎";
+            font-size: 0.94rem;
+            pointer-events: none;
+        }
+
+        #game-search {
+            width: 100%;
+            height: 42px;
+            padding: 0 16px 0 42px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            outline: none;
+            background: var(--card);
+            color: var(--text);
+            font-size: 0.96rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #game-search:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.16);
+        }
+
+        .details-command-popover {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            z-index: 30;
+            display: grid;
+            gap: 10px;
+            width: min(100%, 520px);
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+        }
+
+        .details-command-popover p {
+            margin: 0;
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .details-command-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .details-command-actions button {
+            min-height: 34px;
+            padding: 6px 12px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--brand);
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 800;
+            transition: transform 0.1s ease;
+        }
+
+        .details-command-actions button:last-child {
+            background: color-mix(in srgb, var(--muted) 24%, var(--card));
+            color: var(--text);
+        }
+
+        .details-command-actions button:active {
+            transform: scale(1.1);
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: var(--brand);
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 8px 18px rgba(255, 71, 87, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(255, 71, 87, 0.32);
+        }
+
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            max-width: 220px;
+            gap: 9px;
+            padding: 5px 10px 5px 5px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--topbar-text);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        body.dark .user-chip {
+            background: rgba(45, 45, 45, 0.7);
+        }
+
+        .user-avatar {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            background: var(--button-grad);
+            color: #fff;
+            font-weight: 800;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .page {
+            width: min(1120px, calc(100% - 28px));
+            margin: 0 auto;
+            padding: 24px 0 54px;
+        }
+
+        .game-sections {
+            display: grid;
+            gap: 24px;
+        }
+
+        .game-section {
+            min-width: 0;
+        }
+
+        .section-title {
+            margin: 0 0 10px;
+            color: var(--brand);
+            font-size: 1.18rem;
+            line-height: 1.35;
+        }
+
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
+            gap: 12px;
+            justify-content: start;
+            min-width: 0;
+            padding: 2px 2px 4px;
+        }
+
+        .section-empty {
+            margin: 0;
+            padding: 14px 0;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .game-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 126px;
+            padding: 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            box-shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .back-home:active,
+        .user-chip:active,
+        .game-card:active,
+        .game-cover:active {
+            transform: scale(1.1);
+        }
+
+        .game-cover {
+            display: grid;
+            place-items: center;
+            width: 70px;
+            height: 70px;
+            flex: 0 0 auto;
+            border-radius: 8px;
+            background:
+                linear-gradient(135deg, rgba(255, 71, 87, 0.9), rgba(254, 100, 11, 0.84)),
+                repeating-linear-gradient(45deg, transparent 0 10px, rgba(255, 255, 255, 0.12) 10px 20px);
+            color: #fff;
+            font-size: 2.7rem;
+            font-weight: 900;
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+            transition: transform 0.1s ease;
+        }
+
+        .game-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+
+        .game-cover.dino-cover img {
+            object-fit: contain;
+            transform: translateY(-10px) scale(0.62);
+        }
+
+        .game-cover.dino-cover {
+            background: transparent;
+            text-shadow: none;
+        }
+
+        .game-body {
+            min-width: 0;
+        }
+
+        .game-title {
+            margin: 0;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.35;
+        }
+
+        .game-desc {
+            display: -webkit-box;
+            margin: 6px 0 0;
+            overflow: hidden;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.45;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+        }
+
+        .message {
+            margin: 0;
+            padding: 34px 18px;
+            color: var(--muted);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 820px) {
+            .topbar {
+                grid-template-columns: 1fr auto;
+            }
+
+            .search-box {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                width: 100%;
+                justify-self: stretch;
+            }
+
+            .back-home {
+                grid-column: 1;
+                grid-row: 3;
+                justify-self: start;
+            }
+
+            .user-chip {
+                grid-column: 2;
+                grid-row: 3;
+                max-width: 170px;
+            }
+
+        }
+
+        @media (max-width: 540px) {
+            .topbar {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-logo {
+                width: 210px;
+            }
+
+            .search-box,
+            .back-home,
+            .user-chip {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .back-home,
+            .user-chip {
+                width: 100%;
+            }
+
+            .user-chip {
+                justify-content: flex-start;
+                max-width: none;
+            }
+            .game-cover {
+                width: 62px;
+                height: 62px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar"><a class="brand-link" href="home.html" aria-label="omg games">
+            <img class="brand-logo" src="logo-longer.svg" alt="omg-by-Clark Games">
+        </a>
+
+        <div class="search-box">
+            <input id="game-search" type="search" placeholder="搜索游戏、标签或路径" data-placeholder-zh="搜索游戏、标签或路径" data-placeholder-en="Search games, tags, or paths" autocomplete="off">
+            <div id="details-command-popover" class="details-command-popover hidden" role="dialog" aria-live="polite">
+                <p id="details-command-text" data-zh="是否确定展示游戏的所有信息（这将会使游戏窗口过大）" data-en="Are you sure you want to show all game information? This will make the game window too large.">是否确定展示游戏的所有信息（这将会使游戏窗口过大）</p>
+                <div class="details-command-actions">
+                    <button id="details-command-yes" type="button" data-zh="✔️ 是" data-en="✔️ Yes">✔️ 是</button>
+                    <button id="details-command-no" type="button" data-zh="❌ 否" data-en="❌ No">❌ 否</button>
+                </div>
+            </div>
+        </div>
+
+        <a class="back-home" href="../index.html" data-zh="⬅️ 返回主站" data-en="⬅️ Main site">⬅️ 返回主站</a>
+
+        <div class="user-chip" title="当前登录的 omg 账号" data-title-zh="当前登录的 omg 账号" data-title-en="Current omg account">
+            <div id="user-avatar" class="user-avatar">?</div>
+            <div id="user-name" class="user-name" data-zh="未登录" data-en="Not signed in">未登录</div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div id="game-sections" class="game-sections"></div>
+        <p id="empty-message" class="message hidden" data-zh="game-map.yaml 还没有游戏，先把第一条游戏塞进去吧。" data-en="game-map.yaml has no games yet. Add the first one.">game-map.yaml 还没有游戏，先把第一条游戏塞进去吧。</p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../db.js"></script>
+    <script src="game-db.js"></script>
+    <script>
+        let lang = localStorage.getItem('lang') || 'zh';
+        let allGames = [];
+        let recommendationPlayInfo = {};
+        let recommendationRefreshTimer = null;
+        let pendingDetailsValue = false;
+
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+        function escapeHTML(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function t(zh, en) {
+            return lang === 'en' ? en : zh;
+        }
+
+        function applyI18n() {
+            document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+            document.title = t('游戏 • omg-by-Clark', 'Games • omg-by-Clark');
+            document.querySelectorAll('[data-zh][data-en]').forEach(element => {
+                element.textContent = element.dataset[lang];
+            });
+            document.querySelectorAll('[data-placeholder-zh][data-placeholder-en]').forEach(element => {
+                element.placeholder = element.dataset[`placeholder${lang === 'en' ? 'En' : 'Zh'}`];
+            });
+            document.querySelectorAll('[data-title-zh][data-title-en]').forEach(element => {
+                element.title = element.dataset[`title${lang === 'en' ? 'En' : 'Zh'}`];
+            });
+            document.querySelectorAll('[data-label-zh][data-label-en]').forEach(element => {
+                element.setAttribute('aria-label', element.dataset[`label${lang === 'en' ? 'En' : 'Zh'}`]);
+            });
+            renderUser();
+        }
+
+        function stripQuote(value) {
+            const text = String(value || '').trim();
+            if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
+                return text.slice(1, -1);
+            }
+            return text;
+        }
+
+        function parseYamlValue(value) {
+            const text = stripQuote(value);
+            if (text === 'true') return true;
+            if (text === 'false') return false;
+            if (text.startsWith('[') && text.endsWith(']')) {
+                return text.slice(1, -1).split(',').map(item => stripQuote(item.trim())).filter(Boolean);
+            }
+            return text;
+        }
+
+        function parseGameMap(yamlText) {
+            const games = [];
+            let currentGame = null;
+
+            yamlText.split(/\r?\n/).forEach(line => {
+                const cleanLine = line.replace(/\t/g, '    ');
+                const trimmed = cleanLine.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+
+                const itemMatch = trimmed.match(/^-\s*([^:]+)?(?::\s*(.*))?$/);
+                if (itemMatch) {
+                    if (currentGame) games.push(currentGame);
+                    currentGame = {};
+                    if (itemMatch[1]) currentGame[itemMatch[1].trim()] = parseYamlValue(itemMatch[2] || '');
+                    return;
+                }
+
+                const pairMatch = trimmed.match(/^([^:]+):\s*(.*)$/);
+                if (pairMatch && currentGame) {
+                    currentGame[pairMatch[1].trim()] = parseYamlValue(pairMatch[2] || '');
+                }
+            });
+
+            if (currentGame) games.push(currentGame);
+            return games.filter(game => Object.keys(game).length > 0);
+        }
+
+        function getSafeFileName(username) {
+            return btoa(encodeURIComponent(username)).replace(/=/g, "");
+        }
+
+        function getAvatarUrl(username) {
+            const safeName = getSafeFileName(username);
+            const { data } = _supabase.storage.from('avatars').getPublicUrl(`${safeName}.webp`);
+            return data.publicUrl + "?t=" + Date.now();
+        }
+
+        function renderUser() {
+            const username = localStorage.getItem('username');
+            const userNameEl = document.getElementById('user-name');
+            const userAvatarEl = document.getElementById('user-avatar');
+            if (!username) {
+                userNameEl.textContent = t('未登录', 'Not signed in');
+                userNameEl.dataset.zh = '未登录';
+                userNameEl.dataset.en = 'Not signed in';
+                userAvatarEl.textContent = '?';
+                document.querySelector('.user-chip').onclick = () => {
+                    window.location.href = `../sign-in.html?redirect=${encodeURIComponent('games/home.html')}`;
+                };
+                return;
+            }
+
+            userNameEl.textContent = username;
+            document.querySelector('.user-chip').onclick = () => {
+                window.location.href = `../info.html?from=games&redirect=${encodeURIComponent('games/home.html')}`;
+            };
+            const firstChar = username.charAt(0).toUpperCase();
+            userAvatarEl.textContent = firstChar;
+            const img = new Image();
+            img.alt = t(`${username} 的头像`, `${username}'s avatar`);
+            img.src = getAvatarUrl(username);
+            img.onload = () => {
+                userAvatarEl.innerHTML = '';
+                userAvatarEl.appendChild(img);
+            };
+        }
+
+        function getGameName(game) {
+            return lang === 'en'
+                ? (game['name-en'] || game.name_en || game.name || game['name-zh'] || game.name_zh || 'Untitled Game')
+                : (game['name-zh'] || game.name_zh || game.name || game['name-en'] || game.name_en || '未命名游戏');
+        }
+
+        function getGameDesc(game) {
+            return lang === 'en'
+                ? (game['desc-en'] || game.desc_en || game.desc || game['desc-zh'] || game.desc_zh || 'No description yet.')
+                : (game['desc-zh'] || game.desc_zh || game.desc || game['desc-en'] || game.desc_en || '这个游戏还没有介绍。');
+        }
+
+        function normalizeTags(tags) {
+            if (Array.isArray(tags)) return tags;
+            if (!tags) return [];
+            return String(tags).split(/[，,]/).map(tag => tag.trim()).filter(Boolean);
+        }
+
+        function normalizeCategories(game) {
+            const raw = game.categories || game.category || game.kind || '';
+            if (Array.isArray(raw)) return raw;
+            if (!raw) return [];
+            return String(raw).split(/[，,]/).map(category => category.trim()).filter(Boolean);
+        }
+
+        function isDesktopPlatform() {
+            const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+            return platform.includes('win') || platform.includes('mac') || platform.includes('linux');
+        }
+
+        function isGameSupported(game) {
+            return !(game['desktop-only'] === true || game['desktop-only'] === 'true') || isDesktopPlatform();
+        }
+
+        function filterSupportedGames(games) {
+            return games.filter(isGameSupported);
+        }
+
+        function getCoverText(name) {
+            const chars = Array.from(name.replace(/\s/g, ''));
+            return chars.slice(0, 2).join('') || '🎮';
+        }
+
+        function createGameRow(game) {
+            const name = getGameName(game);
+            const desc = getGameDesc(game);
+            const path = game.path || '#';
+            const icon = game.icon || game.photo || game.cover || game.image || '';
+            const playHref = path === '#' ? '#' : `play.html?path=${encodeURIComponent(path)}`;
+            const isDino = path.includes('chrome-dino-3d');
+            const card = document.createElement('a');
+            card.className = 'game-card';
+            card.href = playHref;
+            card.setAttribute('aria-label', t(`开始 ${name}`, `Play ${name}`));
+            card.dataset.labelZh = `开始 ${name}`;
+            card.dataset.labelEn = `Play ${name}`;
+            card.innerHTML = `
+                <div class="game-cover ${isDino ? 'dino-cover' : ''}">
+                    ${icon ? `<img src="${escapeHTML(icon)}" alt="${escapeHTML(name)}">` : `<span>${escapeHTML(getCoverText(name))}</span>`}
+                </div>
+                <div class="game-body">
+                    <h3 class="game-title">${escapeHTML(name)}</h3>
+                    <p class="game-desc">${escapeHTML(desc)}</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function getSectionGames(games, sectionKey) {
+            return games.filter(game => {
+                const categories = normalizeCategories(game);
+                const tags = normalizeTags(game.tags || game.tag || game.type);
+                return categories.includes(sectionKey) || tags.includes(sectionKey);
+            });
+        }
+
+        function getGameKey(game) {
+            return window.omgGameStats?.normalizeGameKey
+                ? window.omgGameStats.normalizeGameKey(game)
+                : String(game.path || game.name || '');
+        }
+
+        function getPlayedEntries(playInfo = recommendationPlayInfo) {
+            return Object.entries(playInfo || {})
+                .map(([gameKey, stats]) => ({
+                    gameKey,
+                    plays: Number(stats?.plays) || 0
+                }))
+                .filter(item => item.plays > 0)
+                .sort((a, b) => b.plays - a.plays);
+        }
+
+        function getWeightedRecommendations(games, playInfo = recommendationPlayInfo, sourceLimit = 3, maxItems = 8) {
+            const playedEntries = getPlayedEntries(playInfo);
+            const topPlayed = playedEntries.slice(0, sourceLimit);
+            if (!topPlayed.length) return [];
+
+            const playedKeys = new Set(playedEntries.map(item => item.gameKey));
+            const sourceByKey = new Map(topPlayed.map(item => [item.gameKey, item]));
+            const sourceCategories = new Map();
+
+            games.forEach(game => {
+                const source = sourceByKey.get(getGameKey(game));
+                if (source) sourceCategories.set(source.gameKey, normalizeCategories(game));
+            });
+
+            const weighted = games
+                .map(game => {
+                    const gameKey = getGameKey(game);
+                    if (playedKeys.has(gameKey)) return null;
+                    const categories = normalizeCategories(game);
+                    const weight = topPlayed.reduce((sum, source) => {
+                        const relatedCategories = sourceCategories.get(source.gameKey) || [];
+                        return relatedCategories.some(category => categories.includes(category))
+                            ? sum + source.plays
+                            : sum;
+                    }, 0);
+                    return weight > 0 ? { game, weight, randomRank: Math.random() / weight } : null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.randomRank - b.randomRank);
+
+            const recommended = weighted.slice(0, maxItems).map(item => item.game);
+            if (recommended.length >= 2) return recommended;
+
+            const usedPaths = new Set(recommended.map(game => game.path));
+            const fallback = games
+                .filter(game => !usedPaths.has(game.path))
+                .filter(game => !playedKeys.has(getGameKey(game)))
+                .sort(() => Math.random() - 0.5);
+
+            return [...recommended, ...fallback].slice(0, Math.min(maxItems, Math.max(2, recommended.length)));
+        }
+
+        function renderGameSection(container, title, games) {
+            const section = document.createElement('section');
+            section.className = 'game-section';
+            section.innerHTML = `
+                <h2 class="section-title" data-zh="${escapeHTML(title.zh)}" data-en="${escapeHTML(title.en)}">${escapeHTML(t(title.zh, title.en))}</h2>
+                <div class="game-list"></div>
+            `;
+            const list = section.querySelector('.game-list');
+            games.forEach(game => list.appendChild(createGameRow(game)));
+            if (!games.length) {
+                list.remove();
+                section.insertAdjacentHTML('beforeend', `<p class="section-empty" data-zh="暂无游戏" data-en="No games yet">${t('暂无游戏', 'No games yet')}</p>`);
+            }
+            container.appendChild(section);
+        }
+
+        function renderGames(games) {
+            const sectionsContainer = document.getElementById('game-sections');
+            const emptyMessage = document.getElementById('empty-message');
+            const isSearching = document.getElementById('game-search').value.trim() !== '';
+
+            sectionsContainer.innerHTML = '';
+
+            if (!games.length) {
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+            emptyMessage.classList.add('hidden');
+
+            if (isSearching) {
+                renderGameSection(sectionsContainer, { zh: '🔎 搜索结果', en: '🔎 Search results' }, games);
+                return;
+            }
+
+            const recommendedGames = getWeightedRecommendations(games);
+            if (recommendedGames.length) {
+                renderGameSection(sectionsContainer, { zh: '✨ 推荐', en: '✨ Recommended' }, recommendedGames);
+            }
+
+            [
+                { title: { zh: '🎈 益智', en: '🎈 Puzzle' }, key: '益智' },
+                { title: { zh: '🃏 卡牌', en: '🃏 Cards' }, key: '卡牌' },
+                { title: { zh: '⚽️ 体育', en: '⚽️ Sports' }, key: '体育' },
+                { title: { zh: '👥多人', en: '👥 Multiplayer' }, key: '多人' },
+                { title: { zh: '🕹 动作', en: '🕹 Action' }, key: '动作' }
+            ].forEach(section => {
+                const sectionGames = getSectionGames(games, section.key);
+                renderGameSection(sectionsContainer, section.title, sectionGames);
+            });
+        }
+
+        function filterGames() {
+            const keyword = document.getElementById('game-search').value.trim().toLowerCase();
+            if (isDetailsCommand(keyword)) {
+                showDetailsCommandPopover();
+                return;
+            }
+            hideDetailsCommandPopover();
+            if (!keyword) {
+                renderGames(allGames);
+                return;
+            }
+
+            renderGames(allGames.filter(game => {
+                const haystack = [
+                    getGameName(game),
+                    getGameDesc(game),
+                    game.path,
+                    normalizeCategories(game).join(' '),
+                    normalizeTags(game.tags || game.tag || game.type).join(' ')
+                ].join(' ').toLowerCase();
+                return haystack.includes(keyword);
+            }));
+        }
+
+        function isDetailsCommand(value) {
+            return value === '/showdetails' || value === '/sd';
+        }
+
+        function showDetailsCommandPopover() {
+            const isShowingAll = localStorage.getItem('omg-games-show-details') === 'true';
+            pendingDetailsValue = !isShowingAll;
+            const text = document.getElementById('details-command-text');
+            if (isShowingAll) {
+                text.dataset.zh = '是否确定隐藏游戏的详细信息（这会让游戏窗口更清爽）';
+                text.dataset.en = 'Are you sure you want to hide detailed game information? This will keep the game window cleaner.';
+            } else {
+                text.dataset.zh = '是否确定展示游戏的所有信息（这将会使游戏窗口过大）';
+                text.dataset.en = 'Are you sure you want to show all game information? This will make the game window too large.';
+            }
+            text.textContent = t(text.dataset.zh, text.dataset.en);
+            document.getElementById('details-command-popover').classList.remove('hidden');
+        }
+
+        function hideDetailsCommandPopover() {
+            document.getElementById('details-command-popover').classList.add('hidden');
+        }
+
+        function finishDetailsCommand(confirmed) {
+            const enabled = confirmed ? pendingDetailsValue : !pendingDetailsValue;
+            localStorage.setItem('omg-games-show-details', enabled ? 'true' : 'false');
+            const search = document.getElementById('game-search');
+            search.value = '';
+            hideDetailsCommandPopover();
+            renderGames(allGames);
+            search.focus();
+        }
+
+        async function refreshRecommendationStats() {
+            if (!window.omgGameStats) return;
+            try {
+                const stats = await window.omgGameStats.getCurrentUserStats();
+                recommendationPlayInfo = stats?.play_info || {};
+                if (!document.getElementById('game-search').value.trim()) renderGames(allGames);
+            } catch (error) {
+                console.warn('Could not load game recommendations:', error);
+            }
+        }
+
+        function scheduleRecommendationRefresh() {
+            clearTimeout(recommendationRefreshTimer);
+            recommendationRefreshTimer = setTimeout(refreshRecommendationStats, 700);
+        }
+
+        async function loadGames() {
+            try {
+                const response = await fetch('game-map.yaml', { cache: 'no-store' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const yamlText = await response.text();
+                allGames = filterSupportedGames(parseGameMap(yamlText));
+                renderGames(allGames);
+                refreshRecommendationStats();
+            } catch (error) {
+                console.error(error);
+                const emptyMessage = document.getElementById('empty-message');
+                emptyMessage.dataset.zh = 'game-map.yaml 读取失败，请检查路径或 YAML 格式。';
+                emptyMessage.dataset.en = 'Could not read game-map.yaml. Check the path or YAML format.';
+                emptyMessage.textContent = t(emptyMessage.dataset.zh, emptyMessage.dataset.en);
+                document.getElementById('empty-message').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('game-search').addEventListener('input', () => {
+            filterGames();
+            scheduleRecommendationRefresh();
+        });
+        document.getElementById('details-command-yes').addEventListener('click', () => finishDetailsCommand(true));
+        document.getElementById('details-command-no').addEventListener('click', () => finishDetailsCommand(false));
+        document.addEventListener('keydown', event => {
+            if (document.getElementById('details-command-popover').classList.contains('hidden')) return;
+            if (event.key.toLowerCase() === 'y') {
+                event.preventDefault();
+                finishDetailsCommand(true);
+            }
+            if (event.key.toLowerCase() === 'n') {
+                event.preventDefault();
+                finishDetailsCommand(false);
+            }
+        });
+        applyI18n();
+        loadGames();
+    </script>
+</body>
+
+</html>

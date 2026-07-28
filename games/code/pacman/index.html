@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../../../privacy.js"></script>
+<meta charset="utf-8" />
+    <title>Pacman</title>
+    <link rel="stylesheet" href="design/style.css" />
+    <link rel="stylesheet" href="design/omg-embed.css" />
+    <script type="module" src="source/Main.js"></script>
+</head>
+
+<body>
+    <div id="container" class="mainScreen">
+        <canvas class="board"></canvas>
+        <canvas class="game"></canvas>
+        <canvas class="screen"></canvas>
+
+        <div class="main display">
+            <ul>
+                <li><a href="#" data-action="play" data-zh="开始游戏" data-en="Start Game">Start Game</a></li>
+                <li><a href="#" data-action="highScores" data-zh="排行榜" data-en="High Scores">High Scores</a></li>
+                <li><a href="#" data-action="help" data-zh="操作方法" data-en="Controls">Controls</a></li>
+            </ul>
+            <div class="audio" data-action="sound">
+                <div class="waves">
+                    <div></div><div></div>
+                    <div></div><div></div>
+                </div>
+                <div class="triangle"></div>
+                <div class="box"></div>
+            </div>
+        </div>
+
+        <div class="input display">
+            <h2 data-zh="游戏结束" data-en="Game Over">Game Over</h2>
+            <p data-zh="你的名字：" data-en="Your name:">Your name:</p>
+            <input type="text" />
+            <a href="#" data-action="save" data-zh="确定" data-en="Ok">Ok</a>
+            <a class="restart" href="#" data-action="mainScreen" data-zh="新游戏" data-en="New Game">New Game</a>
+        </div>
+
+        <div class="high display">
+            <h2 data-zh="排行榜" data-en="High Scores">High Scores</h2>
+            <div class="scores"></div>
+            <div class="none" data-zh="还没有分数" data-en="No scores available">No scores available</div>
+            <a class="restore" href="#" data-action="restore" data-zh="清空" data-en="Restore">Restore</a>
+            <a class="back" href="#" data-action="mainScreen" data-zh="返回" data-en="Back">Back</a>
+        </div>
+
+        <div class="controls display">
+            <h1 data-zh="操作方法" data-en="Controls">Controls</h1>
+            <ol>
+                <li><span data-zh="用方向键或 WASD 移动。" data-en="Use the arrows or WASD keys to move the blob.">Use the arrows or WASD keys to move the blob.</span></li>
+                <li><span data-zh="按空格或 P 暂停。" data-en="Space or P will pause the game.">Space or P will pause the game.</span></li>
+                <li><span data-zh="按 M 开关声音。" data-en="M will trigger the sound on or off.">M will trigger the sound on or off.</span></li>
+                <li><span data-zh="点链接或按菜单字母来切换页面。" data-en="Use the links or keys (underline letters) to navigate through the screens.">Use the links or keys (underline letters) to navigate through the screens.</span></li>
+            </ol>
+            <a href="#" data-action="mainScreen" data-zh="返回" data-en="Back">Back</a>
+        </div>
+    </div>
+    <script type="module">
+        import { applyDomI18n } from "./source/I18n.js";
+        applyDomI18n();
+    </script>
+</body>
+</html>

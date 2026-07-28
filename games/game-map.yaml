@@ -1,0 +1,128 @@
+# game-map.yaml: 帮助 home.html 获取游戏的名称、介绍、和路径
+
+# desc-zh = 中文介绍
+# desc-en = 英文介绍
+#    path = 路径
+
+- name: "2048"
+  desc-zh: "经典数字合成小游戏。移动方块，让相同数字相撞合并，目标是做出 2048。"
+  desc-en: "A classic number-merging puzzle game. Slide the tiles, merge matching numbers, and try to reach 2048."
+  controls-zh: "使用方向键移动方块；相同数字相撞会合并。"
+  controls-en: "Use the arrow keys to move tiles; matching tiles merge when they touch."
+  path: "code/2048/index.html"
+  icon: "code/2048/meta/apple-touch-icon.png"
+  author: "Gabriele Cirulli"
+  license: "MIT License"
+  source: "https://github.com/gabrielecirulli/2048"
+  category: "益智"
+  tags: ["puzzle", "number"]
+
+- name: "Pacman"
+  desc-zh: "经典吃豆人游戏。吃掉豆子，躲开幽灵，争取更高分。"
+  desc-en: "A classic Pac-Man style game. Eat pellets, dodge ghosts, and chase a high score."
+  controls-zh: "使用方向键移动，按空格暂停或继续。"
+  controls-en: "Use the arrow keys to move; press Space to pause or continue."
+  path: "code/pacman/index.html"
+  author: "Tomás Malbrán"
+  license: "MIT License"
+  source: "https://github.com/TomMalbran/games/tree/master/pacman"
+  category: "动作"
+  tags: ["arcade", "maze"]
+
+- name: "Chrome Dino 3D"
+  desc-zh: "Chrome 小恐龙的 3D 重制版。跳过仙人掌和飞行障碍，尽量跑得更远。"
+  desc-en: "A 3D remake of the Chrome Dino runner. Jump over cacti and flying obstacles, and run as far as you can."
+  controls-zh: "按空格或方向键上跳跃；方向键下蹲下；撞到障碍后重新开始。"
+  controls-en: "Press Space or Arrow Up to jump; press Arrow Down to duck; restart after hitting an obstacle."
+  path: "code/chrome-dino-3d/low.html"
+  icon: "code/chrome-dino-3d/media/preloader-dino.png"
+  author: "Abraham Tugalov"
+  license: "GNU GPLv3"
+  source: "https://github.com/Priler/dino3d"
+  category: "动作"
+  tags: ["runner", "3d", "dino"]
+
+- name: "Neon Turbo Racer"
+  desc-zh: "霓虹城市里的 3D 赛车。和电脑车手跑完三圈，抢第一名。"
+  desc-en: "A 3D city racing game. Race AI drivers for three laps and fight for first place."
+  controls-zh: "WASD 或方向键驾驶；按住 Shift 使用氮气；按住鼠标可加速，鼠标在屏幕左侧/右侧会向左/右转；R 重置车辆。"
+  controls-en: "Drive with WASD or arrow keys; hold Shift for nitro; hold the mouse to accelerate and move it left/right to steer; press R to reset the car."
+  path: "code/racing-game/index.html"
+  icon: "code/racing-game/public/start.png"
+  author: "Bhanu Pratap Saini"
+  license: "MIT License"
+  source: "https://github.com/bhanu2006-24/racing-game"
+  category: "动作"
+  tags: ["racing", "3d", "action"]
+
+- name: "HexGL"
+  desc-zh: "未来感 WebGL 竞速游戏。驾驶反重力飞船，在高速赛道上刷新圈速。"
+  desc-en: "A futuristic WebGL racing game. Pilot an anti-gravity ship and chase faster lap times."
+  controls-zh: "菜单里可选择键盘或触控。键盘模式用方向键控制；Q/A 与 D/E 控制侧向触发；撞墙会减速。"
+  controls-en: "Choose keyboard or touch controls in the menu. In keyboard mode, use the arrow keys; Q/A and D/E control side triggers; avoid walls."
+  path: "code/hexgl/index.html"
+  icon: "code/hexgl/icon_256.png"
+  compact-frame: true
+  author: "Thibaut Despoulain (BKcore)"
+  license: "MIT License"
+  source: "https://github.com/BKcore/HexGL"
+  category: "动作"
+  tags: ["racing", "webgl", "3d", "action"]
+
+- name: "反应力测试"
+  name-en: "Reaction Time Test"
+  desc-zh: "双人反应力小游戏。等屏幕变白后立刻按键，谁更快谁赢。"
+  desc-en: "A two-player reaction game. Wait for the screen to turn white, then press first to win."
+  controls-zh: "玩家 1 使用 1-5 或 Q W E A S D Z；玩家 2 使用 6-0 或 P [ ] L ; ' , . /；Ctrl+1 可设置下一局延迟。"
+  controls-en: "Player 1 uses 1-5 or Q W E A S D Z; Player 2 uses 6-0 or P [ ] L ; ' , . /; Ctrl+1 changes the next-round delay."
+  path: "code/reaction-time-test/index.html"
+  icon: "code/reaction-time-test/icon.svg"
+  compact-frame: true
+  desktop-only: true
+  author: "OMG by Clark"
+  license: "AGPL-3.0"
+  category: "多人"
+  tags: ["reaction", "keyboard", "multiplayer"]
+
+- name: "单机斗地主"
+  name-en: "Solo Dou Dizhu"
+  desc-zh: "单机斗地主，不洗牌发牌，玩得更爽。"
+  desc-en: "Solo Dou Dizhu with wilder hands."
+  controls-zh: "选择难度后开始；按住鼠标滑过手牌可连续切换选择，点单张牌也可切换；电脑端按 Enter 出牌；没有能压的牌可以点不要。"
+  controls-en: "Pick a difficulty and deal; hold the mouse and drag across cards to toggle them, or click one card. Press Enter to play on desktop. Pass when you cannot beat the last combo."
+  path: "code/doudizhu/index.html"
+  icon: "code/doudizhu/icon.svg"
+  compact-frame: true
+  author: "OMG by Clark"
+  license: "AGPL-3.0"
+  category: "卡牌"
+  tags: ["cards", "doudizhu", "single-player"]
+
+- name: "文明之岛"
+  name-en: "Civilization Island"
+  desc-zh: "在小岛上安置居民，建造住房与生产设施，经营食物和木材资源，让文明延续下去。"
+  desc-en: "Settle a island, build homes and production chains, and keep your people fed, housed, and working."
+  controls-zh: "拖动旋转视角，滚轮缩放；从左侧选择建筑后点击空地建造；点击农田选择作物；顶部可暂停或加速时间。"
+  controls-en: "Drag to orbit and use the wheel to zoom; choose a building on the left and click an empty tile; select fields to plant crops; pause or speed up time from the top bar."
+  path: "code/civilization-island/index.html"
+  icon: "code/civilization-island/icon.svg"
+  compact-frame: true
+  desktop-only: true
+  author: "OMG by Clark"
+  license: "AGPL-3.0"
+  category: "益智"
+  tags: ["civilization", "strategy", "simulation", "webgl"]
+
+- name: "Blockverse"
+  desc-zh: "第一视角方块小原型。一个 100 x 100 x 20 的陆地，可以走路、跳跃，并放置 Grass Block。"
+  desc-en: "A small first-person block prototype: a 100 x 100 x 20 land where you can walk, jump, and place Grass Blocks."
+  controls-zh: "WASD 或方向键移动，空格跳跃，鼠标控制视角；右键放置 Grass Block，左键移除自己放置的方块。"
+  controls-en: "Move with WASD or arrow keys, jump with Space, and look with the mouse. Right-click to place Grass Blocks; left-click removes blocks you placed."
+  path: "code/blockverse/index.html"
+  icon: "code/blockverse/icon.svg"
+  compact-frame: true
+  desktop-only: true
+  author: "OMG by Clark"
+  license: "AGPL-3.0"
+  category: "动作"
+  tags: ["block", "sandbox", "first-person", "webgl", "minecraft-like"]

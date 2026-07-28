@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+      <!-- 本地数据同意脚本必须先于所有业务脚本加载。 -->
+    <script src="../../../privacy.js"></script>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单机斗地主</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="table mood-fresh">
+    <section id="start-screen" class="start-screen">
+      <div class="brand">
+        <img src="icon.svg" alt="">
+        <div>
+          <h1 data-zh="单机斗地主" data-en="Solo Dou Dizhu">单机斗地主</h1>
+          <p data-zh="不洗牌发牌，炸弹和对子更容易出现。" data-en="Biased dealing: more pairs and bombs, more fun.">不洗牌发牌，炸弹和对子更容易出现。</p>
+        </div>
+      </div>
+      <div class="difficulty" role="group" aria-label="difficulty">
+        <button class="difficulty-btn active" data-level="easy" data-zh="简单" data-en="Easy">简单</button>
+        <button class="difficulty-btn" data-level="normal" data-zh="中等" data-en="Normal">中等</button>
+        <button class="difficulty-btn" data-level="hard" data-zh="困难" data-en="Hard">困难</button>
+      </div>
+      <button id="new-game" class="primary" data-zh="开始发牌" data-en="Deal cards">开始发牌</button>
+    </section>
+
+    <main id="game-screen" class="game-screen hidden">
+      <header class="hud"><div>
+          <h1 data-zh="单机斗地主" data-en="Solo Dou Dizhu">单机斗地主</h1>
+          <p id="status" class="sr-only" data-zh="准备发牌..." data-en="Getting ready...">准备发牌...</p>
+        </div>
+        <div class="hud-actions">
+          <button id="restart" data-zh="重开" data-en="Restart">重开</button>
+        </div>
+      </header>
+
+      <section class="opponents">
+        <article class="player enemy" id="player-1">
+          <div class="avatar">AI</div>
+          <div>
+            <h2 data-zh="左家" data-en="Left AI">左家</h2>
+            <p><span data-zh="手牌" data-en="Cards">手牌</span> <strong id="count-1">17</strong></p>
+          </div>
+        </article>
+        <article class="center-board">
+          <div class="kitty">
+            <span data-zh="底牌" data-en="Kitty">底牌</span>
+            <div id="kitty-cards" class="mini-cards"></div>
+          </div>
+          <div class="last-play">
+            <span data-zh="上手牌" data-en="Last play">上手牌</span>
+            <div id="last-play" class="played-cards"></div>
+          </div>
+        </article>
+        <article class="player enemy" id="player-2">
+          <div class="avatar">AI</div>
+          <div>
+            <h2 data-zh="右家" data-en="Right AI">右家</h2>
+            <p><span data-zh="手牌" data-en="Cards">手牌</span> <strong id="count-2">17</strong></p>
+          </div>
+        </article>
+      </section>
+
+      <section class="log-panel">
+        <div id="play-log" class="play-log"></div>
+      </section>
+
+      <section class="me player" id="player-0">
+        <div class="me-head">
+          <div>
+            <h2 data-zh="你" data-en="You">你</h2>
+            <p id="role-line" data-zh="等待叫地主" data-en="Waiting to call landlord">等待叫地主</p>
+          </div>
+          <div class="call-actions" id="call-actions">
+            <button id="call-landlord" class="primary" data-zh="叫地主" data-en="Call landlord">叫地主</button>
+            <button id="pass-landlord" data-zh="不叫" data-en="Pass">不叫</button>
+          </div>
+          <div class="play-actions hidden" id="play-actions">
+            <button id="hint" data-zh="提示" data-en="Hint">提示</button>
+            <button id="pass" data-zh="不要" data-en="Pass">不要</button>
+            <button id="play-selected" class="primary" data-zh="出牌" data-en="Play">出牌</button>
+          </div>
+        </div>
+        <div id="hand" class="hand"></div>
+      </section>
+    </main>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+html,
+body {
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 0;
+  padding: 12px 0 0;
+}
+
+.container {
+  width: 500px;
+  margin: 0;
+  transform: scale(var(--omg-embed-scale, 0.8));
+  transform-origin: top center;
+}
+
+.game-container {
+  margin-top: 24px;
+}
