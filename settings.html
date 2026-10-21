@@ -108,13 +108,15 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
             box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
             margin-top: 10px;
         }
 
         .btn-save:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
         /* 用途：将鸣谢按钮重置为纯文字链接样式，去除背景和边框，设置绿色下划线 */
@@ -128,12 +130,14 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* 用途：鸣谢按钮按下时的放大反馈 */
         .btn-go-credits:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
         .cancel-link {
@@ -144,11 +148,13 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 1rem;
-            transition: transform 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .cancel-link:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
     </style>
     <link rel="stylesheet" href="theme.css">

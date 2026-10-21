@@ -74,7 +74,7 @@ body {
 }
 
 /* 用途：设置页面顶部大标题的字体样式、颜色、大小，并禁止用户选中文本 */
-h1 {
+.fuck-xiao-tian-cai {
     font-family: Consolas, Monaco, monospace;
     font-weight: bold;
     color: var(--brand);

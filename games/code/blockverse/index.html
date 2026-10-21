@@ -5,26 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blockverse</title>
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="style.css?v=basic-5">
+    <link rel="icon" href="texture-packs/default-1/grass3.png" type="image/png">
+    <link rel="stylesheet" href="style.css?v=textures-1">
 </head>
 <body>
     <main id="game">
         <canvas id="world" aria-label="Blockverse world"></canvas>
         <section class="coords" aria-label="coordinates">
-            <strong id="coords">X 50  Y 20  Z 50</strong>
+            <strong id="coords">X 50  Y 4  Z 50</strong>
         </section>
         <div class="crosshair" aria-hidden="true"></div>
         <section class="hotbar" aria-label="hotbar">
-            <button class="slot selected" type="button" title="Grass Block">
-                <svg viewBox="0 0 64 64" aria-hidden="true">
-                    <path d="M10 20 32 8l22 12-22 12z" fill="#5f9b3d"/>
-                    <path d="M10 20v25l22 12V32z" fill="#765033"/>
-                    <path d="M54 20v25L32 57V32z" fill="#5c3b28"/>
-                </svg>
+            <button class="slot selected" type="button" title="Grass Block" data-block="grass" aria-pressed="true" tabindex="-1">
+                <img src="texture-packs/default-1/grass3.png" alt="">
+                <span class="slot-key">1</span>
+            </button>
+            <button class="slot" type="button" title="Dirt" data-block="dirt" aria-pressed="false" tabindex="-1">
+                <img src="texture-packs/default-1/dirt1.png" alt="">
+                <span class="slot-key">2</span>
+            </button>
+            <button class="slot" type="button" title="Stone" data-block="stone" aria-pressed="false" tabindex="-1">
+                <img src="texture-packs/default-1/stone1.png" alt="">
+                <span class="slot-key">3</span>
+            </button>
+            <button class="slot" type="button" title="Bedrock" data-block="bedrock" aria-pressed="false" tabindex="-1">
+                <img src="texture-packs/default-1/bedrock1.png" alt="">
+                <span class="slot-key">4</span>
             </button>
         </section>
+        <section id="death-screen" class="death-screen" aria-live="assertive" hidden>
+            <div class="death-content">
+                <h1>你死了！</h1>
+                <p id="death-reason-zh" class="death-reason-zh">坠入虚空</p>
+                <p class="respawn-message">将于 <strong id="respawn-countdown">3</strong> 秒重生</p>
+            </div>
+        </section>
     </main>
-    <script type="module" src="game.js?v=basic-5"></script>
+    <script src="../chrome-dino-3d/libs/three/three.min.js"></script>
+    <script src="game.js?v=sprint-order-1"></script>
 </body>
 </html>

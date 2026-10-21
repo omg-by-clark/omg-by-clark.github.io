@@ -114,10 +114,10 @@
   tags: ["civilization", "strategy", "simulation", "webgl"]
 
 - name: "Blockverse"
-  desc-zh: "第一视角方块小原型。一个 100 x 100 x 20 的陆地，可以走路、跳跃，并放置 Grass Block。"
-  desc-en: "A small first-person block prototype: a 100 x 100 x 20 land where you can walk, jump, and place Grass Blocks."
-  controls-zh: "WASD 或方向键移动，空格跳跃，鼠标控制视角；右键放置 Grass Block，左键移除自己放置的方块。"
-  controls-en: "Move with WASD or arrow keys, jump with Space, and look with the mouse. Right-click to place Grass Blocks; left-click removes blocks you placed."
+  desc-zh: "第一视角方块世界。探索由草、泥土、石头和基岩组成的体素岛屿，所有方块都可以自由放置或移除。"
+  desc-en: "A first-person block world with a voxel island made of grass, dirt, stone, and bedrock; every block can be placed or removed."
+  controls-zh: "WASD 或方向键移动，可自动跨上一格方块；X 切换疾跑，按住 Shift 潜行，空格跳跃，鼠标控制视角；数字键 1-4 选择草、泥土、石头或基岩，右键放置，左键移除任意方块。"
+  controls-en: "Move with WASD or arrow keys and automatically step up one block; toggle sprint with X, hold Shift to sneak, jump with Space, and look with the mouse. Press 1-4 to select grass, dirt, stone, or bedrock; right-click places and left-click removes any block."
   path: "code/blockverse/index.html"
   icon: "code/blockverse/icon.svg"
   compact-frame: true

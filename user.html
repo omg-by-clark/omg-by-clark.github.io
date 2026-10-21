@@ -587,12 +587,23 @@
 
         async function fetchPublicUserProfileCompat(username) {
             if (typeof fetchPublicUserProfileWithRpc === 'function') {
-                return fetchPublicUserProfileWithRpc(username);
+                const result = await fetchPublicUserProfileWithRpc(username);
+                if (result && !result.error && result.data) return result;
             }
             const { data, error } = await _supabase.rpc('get_public_user_profile', {
                 p_username: username
             });
-            return { data: unwrapCompatRpcRow(data), error };
+            const row = unwrapCompatRpcRow(data);
+            if (row || !username) {
+                return { data: row, error };
+            }
+
+            const { data: users, error: listError } = await _supabase.rpc('list_public_user_profiles');
+            if (listError) return { data: null, error: listError };
+
+            const normalizedUsername = String(username);
+            const fallbackRow = (Array.isArray(users) ? users : users ? [users] : []).find(user => user && user.username === normalizedUsername) || null;
+            return { data: fallbackRow, error: error || null };
         }
 
         /* pageshow

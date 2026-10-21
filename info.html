@@ -213,13 +213,15 @@
             font-weight: bold;
             margin: 10px 0 20px 0;
             box-shadow: 0 4px 12px rgba(250, 179, 135, 0.3);
-            transition: transform 0.2s, filter 0.2s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s, box-shadow 0.2s;
             position: relative; /* 方便气泡在其上方显示 */
         }
 
         /* [.btn-checkin:active] 按钮点击时放大 1.1 倍。 */
         .btn-checkin:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
         /* [.btn-checkin.disabled] 签到后的禁用状态样式 */
@@ -290,12 +292,30 @@
             width: 100%;
             font-weight: bold;
             margin-top: 12px;
-            transition: transform 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* [.btn-update:active] 确认修改按钮点击时放大 1.1 倍。 */
         .btn-update:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
+        }
+
+        .pwd-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--brand);
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .pwd-toggle-btn:active {
+            transform: scale(1.08, 0.94);
         }
 
         /* [.back-link] 返回首页链接样式 */
@@ -305,12 +325,14 @@
             font-weight: bold;
             margin-top: 25px;
             display: block;
-            transition: transform 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* [.back-link:active] 返回链接点击缩放 */
         .back-link:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
     </style>
     <link rel="stylesheet" href="theme.css">
@@ -348,8 +370,7 @@
         </button>
 
         <div class="pwd-section">
-            <button data-en="🔐 Change Password" data-zh="🔐 修改密码" onclick="togglePwdForm()"
-                style="background:none; border:none; color:var(--brand); cursor:pointer; font-weight:bold;">🔐 修改密码
+            <button class="pwd-toggle-btn" data-en="🔐 Change Password" data-zh="🔐 修改密码" onclick="togglePwdForm()">🔐 修改密码
             </button>
             <div id="pwd-form" style="display:none; margin-top:10px;">
                 <input class="pwd-input" data-en-ph="Current Password" data-zh-ph="输入原密码" id="old-pwd" type="password">
@@ -366,7 +387,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
+    <script src="db.js?v=20260729-ban-hotfix-2"></script>
     <script src="games/game-db.js"></script>
     <script>
         const lang = localStorage.getItem('lang') || 'zh';
@@ -387,10 +408,10 @@
 
         function getSafeInfoRedirect() {
             const redirect = pageParams.get('redirect');
-            if (!redirect) return fromGames ? 'games/home.html' : 'index.html';
-            if (/^(https?:|\/\/)/i.test(redirect)) return fromGames ? 'games/home.html' : 'index.html';
-            if (redirect.includes('..') || redirect.startsWith('/') || redirect.startsWith('\\')) return fromGames ? 'games/home.html' : 'index.html';
-            if (fromGames && !redirect.startsWith('games/')) return 'games/home.html';
+            if (!redirect) return fromGames ? 'games/index.html' : 'index.html';
+            if (/^(https?:|\/\/)/i.test(redirect)) return fromGames ? 'games/index.html' : 'index.html';
+            if (redirect.includes('..') || redirect.startsWith('/') || redirect.startsWith('\\')) return fromGames ? 'games/index.html' : 'index.html';
+            if (fromGames && !redirect.startsWith('games/')) return 'games/index.html';
             return redirect;
         }
 
@@ -594,6 +615,31 @@
             return data.publicUrl + "?t=" + new Date().getTime();
         }
 
+        /* fetchPrivateProfile
+        用途：读取当前登录用户的个人中心私有资料。
+        原理：优先调用 get_private_user_profile RPC，避免直接查询 users 表撞上 RLS；只有函数缺失时才退回旧查询。
+        */
+        async function fetchPrivateProfile(username) {
+            const { data, error } = await _supabase.rpc('get_private_user_profile', {
+                p_username: username
+            });
+
+            if (!error) {
+                const row = Array.isArray(data) ? data[0] : data;
+                return { data: row || null, error: null };
+            }
+
+            if (!isMissingRpcError(error)) return { data: null, error };
+
+            const fallback = await _supabase
+                .from('users')
+                .select('username, points, inventory, check_in_count, daily_streak, last_check_in')
+                .eq('username', username)
+                .single();
+
+            return fallback;
+        }
+
         // init 函数在页面加载时运行，初始化翻译、读取用户信息以及加载用户头像
         async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
@@ -608,6 +654,15 @@
                 return;
             }
 
+            if (window.OMG_BAN && typeof window.OMG_BAN.ensureAccess === 'function') {
+                const access = await window.OMG_BAN.ensureAccess({
+                    username: user,
+                    denyOnError: true,
+                    redirectOnDeny: true
+                });
+                if (!access.allowed) return;
+            }
+
             document.querySelectorAll('[data-zh]').forEach(el => {
                 el.innerText = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
             });
@@ -617,11 +672,18 @@
 
             document.getElementById('avatar-img').src = loadAvatarUrl(user);
 
-            const { data } = await _supabase
-                .from('users')
-                .select('username, points, inventory, check_in_count, daily_streak, last_check_in')
-                .eq('username', user)
-                .single();
+            const { data, error } = await fetchPrivateProfile(user);
+            if (error) {
+                if (error.code === 'OMG_BANNED') return;
+                console.error('加载个人信息失败', error);
+                document.getElementById('u-name').innerText = lang === 'zh' ? '👤 加载失败' : '👤 Load Failed';
+                document.getElementById('u-points').innerText = lang === 'zh' ? '💰 积分: 加载失败' : '💰 Points: Load Failed';
+                document.getElementById('u-level').innerHTML = (lang === 'zh' ? '🥇 等级: ' : '🥇 Level: ') + '<span class="lv-badge lv-log">!</span>';
+                document.getElementById('u-last-check').innerText = lang === 'zh' ? '📅 最后签到: 加载失败' : '📅 Last Check-in: Load Failed';
+                document.getElementById('u-check-count').innerText = lang === 'zh' ? '🔢 签到次数: 加载失败' : '🔢 Total Check-ins: Load Failed';
+                return;
+            }
+
             if (data) {
                 currentPoints = data.points || 0;
                 currentCheckInCount = data.check_in_count || 0;

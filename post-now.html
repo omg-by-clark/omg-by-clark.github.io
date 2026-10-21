@@ -138,12 +138,14 @@
             padding: 8px 12px;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.18s, filter 0.18s;
         }
 
         /* .btn-upload-image:active 用途：点击上传图片按钮时放大 1.1 倍。 */
         .btn-upload-image:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
         /* .image-status 用途：展示当前图片选择 / 转换状态，文字保持轻量，不打断发帖流程。 */
@@ -239,7 +241,9 @@
             font-size: 1.1em;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.18s, filter 0.18s;
         }
 
         /* 按钮被禁用时的样式 */
@@ -255,7 +259,9 @@
             color: var(--button);
             text-decoration: none;
             font-size: 0.9em;
-            transition: 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.18s;
         }
 
         /* 返回首页按钮：红色样式 */
@@ -266,13 +272,17 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 1.1em;
-            transition: 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.18s;
         }
 
         /* 统一 1.1 倍缩放 */
+        .btn-upload-image:active,
         .btn-post:active:not(:disabled),
+        .btn-go-to-advice:active,
         .back-link:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
     </style>
     <link rel="stylesheet" href="theme.css">
@@ -319,7 +329,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
+    <script src="db.js?v=20260729-ban-hotfix-2"></script>
     <script>
         // 初始化变量
         const user = localStorage.getItem('username');
@@ -354,7 +364,7 @@
             3. 抓取带 data- 属性的 DOM 元素，处理中英文文本及输入框占位符的翻译。
             4. 遍历 KEYWORDS_LIST 动态生成关键词按钮。如果是新加的 '#NSFW'，则单独为其赋予 'nsfw-btn' 类，以便与 CSS 中的高亮变量呼应。
         */
-        function init() {
+        async function init() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
             if (!user) {
@@ -362,6 +372,16 @@
                 window.location.href = 'index.html';
                 return;
             }
+
+            if (window.OMG_BAN && typeof window.OMG_BAN.ensureAccess === 'function') {
+                const access = await window.OMG_BAN.ensureAccess({
+                    username: user,
+                    denyOnError: true,
+                    redirectOnDeny: true
+                });
+                if (!access.allowed) return;
+            }
+
             document.getElementById('who-am-i').innerText = user;
 
             // 翻译
@@ -613,6 +633,20 @@
                 .map(btn => btn.innerText);
 
             try {
+                if (window.OMG_BAN && typeof window.OMG_BAN.ensureAccess === 'function') {
+                    const access = await window.OMG_BAN.ensureAccess({
+                        username: user,
+                        denyOnError: true,
+                        redirectOnDeny: true
+                    });
+                    if (!access.allowed) {
+                        isSubmitting = false;
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = originalText;
+                        return;
+                    }
+                }
+
                 // 如果用户刚刚粘贴/拖拽了图片，等待转换结束，保证上传到 Storage 的一定是 WebP。
                 if (photoConversionPromise) {
                     await photoConversionPromise;

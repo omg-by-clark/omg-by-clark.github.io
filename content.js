@@ -56,12 +56,23 @@ function unwrapCompatRpcRows(data) {
 
 async function fetchPublicUserProfileCompat(username) {
     if (typeof fetchPublicUserProfileWithRpc === 'function') {
-        return fetchPublicUserProfileWithRpc(username);
+        const result = await fetchPublicUserProfileWithRpc(username);
+        if (result && !result.error && result.data) return result;
     }
     const { data, error } = await _supabase.rpc('get_public_user_profile', {
         p_username: username
     });
-    return { data: unwrapCompatRpcRow(data), error };
+    const row = unwrapCompatRpcRow(data);
+    if (row || !username) {
+        return { data: row, error };
+    }
+
+    const listResult = await fetchPublicUserProfilesCompat();
+    if (listResult.error) return { data: null, error: listResult.error };
+
+    const normalizedUsername = String(username);
+    const fallbackRow = (listResult.data || []).find(user => user && user.username === normalizedUsername) || null;
+    return { data: fallbackRow, error: error || null };
 }
 
 async function fetchPublicUserProfilesCompat() {

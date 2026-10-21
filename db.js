@@ -260,9 +260,434 @@ function createOfflineSupabaseClient() {
 /* 用途：创建全站共用的 Supabase 客户端。
 原理：页面加载 db.js 后即可通过 _supabase 访问数据库和 Storage；离线测试模式下改用内存客户端，避免连接真实数据库。
 */
-const _supabase = isOfflineTestMode()
+const BAN_CACHE_STORAGE_KEY = 'omg_ban_state_v1';
+const BAN_REFRESH_INTERVAL_MS = 60 * 60 * 1000;
+const BAN_TRACE_STORAGE_KEY = 'omg_ban_trace_v1';
+
+const _supabaseRaw = isOfflineTestMode()
     ? createOfflineSupabaseClient()
     : createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function getBanCheckUsername(explicitUsername = '') {
+    const username = explicitUsername || localStorage.getItem('username') || '';
+    return String(username || '').trim();
+}
+
+function getCurrentPageName() {
+    try {
+        return String(window.location.pathname.split('/').pop() || '').toLowerCase();
+    } catch (error) {
+        return '';
+    }
+}
+
+function isBannedPage() {
+    return getCurrentPageName() === 'banned.html';
+}
+
+function isSignInPage() {
+    return getCurrentPageName() === 'sign-in.html';
+}
+
+function appendBanTrace(event, details = {}) {
+    try {
+        const raw = sessionStorage.getItem(BAN_TRACE_STORAGE_KEY);
+        const entries = raw ? JSON.parse(raw) : [];
+        const safeEntries = Array.isArray(entries) ? entries : [];
+        safeEntries.push({
+            time: new Date().toISOString(),
+            page: getCurrentPageName(),
+            event: String(event || ''),
+            details: details && typeof details === 'object' ? details : { value: details }
+        });
+        while (safeEntries.length > 40) safeEntries.shift();
+        sessionStorage.setItem(BAN_TRACE_STORAGE_KEY, JSON.stringify(safeEntries));
+    } catch (error) {
+        // 调试追踪失败时不影响正常业务逻辑。
+    }
+}
+
+function readBanCache() {
+    try {
+        const raw = localStorage.getItem(BAN_CACHE_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function writeBanCache(state) {
+    if (!state) {
+        localStorage.removeItem(BAN_CACHE_STORAGE_KEY);
+        return null;
+    }
+    localStorage.setItem(BAN_CACHE_STORAGE_KEY, JSON.stringify(state));
+    return state;
+}
+
+function clearBanCache(username = '') {
+    if (!username) {
+        localStorage.removeItem(BAN_CACHE_STORAGE_KEY);
+        return;
+    }
+    const cached = readBanCache();
+    if (!cached || cached.username === username) localStorage.removeItem(BAN_CACHE_STORAGE_KEY);
+}
+
+function normalizeBanState(username, rawBanInfo, extra = {}) {
+    if (!rawBanInfo || typeof rawBanInfo !== 'object') return null;
+
+    const bannedAtUtc = rawBanInfo.banned_at_utc || rawBanInfo.banned_at || rawBanInfo.started_at_utc || '';
+    const permanent = Boolean(rawBanInfo.permanent);
+    const durationHours = rawBanInfo.duration_hours == null ? null : Number(rawBanInfo.duration_hours);
+    const expiresAtUtc = rawBanInfo.expires_at_utc
+        || (!permanent && bannedAtUtc && Number.isFinite(durationHours)
+            ? new Date(new Date(bannedAtUtc).getTime() + durationHours * 3600000).toISOString()
+            : '');
+
+    if (!bannedAtUtc && !expiresAtUtc && !permanent) return null;
+
+    return {
+        username,
+        bannedAtUtc,
+        durationHours: Number.isFinite(durationHours) ? durationHours : null,
+        permanent,
+        expiresAtUtc,
+        lastCheckedAtUtc: extra.lastCheckedAtUtc || '',
+        lastRefreshAtUtc: extra.lastRefreshAtUtc || ''
+    };
+}
+
+function isBanStateActive(state, nowMs = Date.now()) {
+    if (!state || !state.bannedAtUtc) return false;
+    if (state.permanent) return true;
+    if (!state.expiresAtUtc) return false;
+    const expiresAtMs = new Date(state.expiresAtUtc).getTime();
+    return Number.isFinite(expiresAtMs) && expiresAtMs > nowMs;
+}
+
+function getBanCacheForUser(username = '') {
+    const cached = readBanCache();
+    if (!cached) return null;
+    if (username && cached.username && cached.username !== username) return null;
+    return cached;
+}
+
+function formatBanUtc(isoString) {
+    if (!isoString) return '-';
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return String(isoString);
+    return date.toISOString().replace('T', ' ').replace('.000Z', ' UTC').replace('Z', ' UTC');
+}
+
+function getBanRefreshRemainingMs(state, nowMs = Date.now()) {
+    if (!state || !state.lastRefreshAtUtc) return 0;
+    const lastRefreshMs = new Date(state.lastRefreshAtUtc).getTime();
+    if (!Number.isFinite(lastRefreshMs)) return 0;
+    return Math.max(0, BAN_REFRESH_INTERVAL_MS - (nowMs - lastRefreshMs));
+}
+
+function buildBannedMessage(state) {
+    const currentLang = localStorage.getItem('lang') || 'zh';
+    if (!state) return currentLang === 'zh' ? '该账号当前不可用。' : 'This account is currently unavailable.';
+    if (state.permanent) return currentLang === 'zh' ? '该账号已被永久封禁。' : 'This account has been permanently banned.';
+    if (state.expiresAtUtc) {
+        return currentLang === 'zh'
+            ? `该账号已被封禁至 ${formatBanUtc(state.expiresAtUtc)}。`
+            : `This account is banned until ${formatBanUtc(state.expiresAtUtc)}.`;
+    }
+    return currentLang === 'zh' ? '该账号当前已被封禁。' : 'This account is currently banned.';
+}
+
+function createBannedError(state) {
+    return {
+        code: 'OMG_BANNED',
+        message: buildBannedMessage(state),
+        banState: state
+    };
+}
+
+function createBanVerificationError(username, error) {
+    const currentLang = localStorage.getItem('lang') || 'zh';
+    const message = currentLang === 'zh'
+        ? '当前无法完成封禁校验，此页面暂时不可访问。'
+        : 'Ban verification failed, so this page is temporarily unavailable.';
+
+    return {
+        code: 'OMG_BAN_CHECK_FAILED',
+        message,
+        originalError: error || null,
+        banState: {
+            username,
+            bannedAtUtc: '',
+            durationHours: null,
+            permanent: false,
+            expiresAtUtc: '',
+            verificationFailed: true,
+            verificationMessage: error && error.message ? String(error.message) : ''
+        }
+    };
+}
+
+function redirectToBannedPage(state, options = {}) {
+    if (state) writeBanCache(state);
+    appendBanTrace('redirect_to_banned', {
+        username: state && state.username ? state.username : '',
+        permanent: Boolean(state && state.permanent),
+        forceOnSignInPage: Boolean(options.forceOnSignInPage)
+    });
+    if (isSignInPage() && !options.forceOnSignInPage) return;
+    if (isBannedPage()) return;
+    window.location.replace('banned.html');
+}
+
+function unwrapMaybeSingleRow(data) {
+    if (Array.isArray(data)) return data[0] || null;
+    return data || null;
+}
+
+async function fetchBanStateViaPrivateProfile(username, extra = {}) {
+    if (!username || isOfflineTestMode()) return { state: null, error: null, supported: false };
+
+    const { data, error } = await _supabaseRaw.rpc('get_private_user_profile', {
+        p_username: username
+    });
+
+    if (error) return { state: null, error, supported: true };
+
+    const row = unwrapMaybeSingleRow(data);
+    if (!row || !Object.prototype.hasOwnProperty.call(row, 'ban_info')) {
+        return { state: null, error: null, supported: false };
+    }
+
+    return {
+        state: normalizeBanState(username, row.ban_info, {
+            lastCheckedAtUtc: new Date().toISOString(),
+            lastRefreshAtUtc: extra.lastRefreshAtUtc || ''
+        }),
+        error: null,
+        supported: true
+    };
+}
+
+async function fetchBanStateFromDatabase(username, extra = {}) {
+    if (!username || isOfflineTestMode()) return { state: null, error: null };
+
+    const rpcResult = await fetchBanStateViaPrivateProfile(username, extra);
+    if (rpcResult.error) return { state: null, error: rpcResult.error };
+    if (rpcResult.supported) return { state: rpcResult.state, error: null };
+
+    const { data, error } = await _supabaseRaw
+        .from('users')
+        .select('ban_info')
+        .eq('username', username)
+        .maybeSingle();
+
+    if (error) return { state: null, error };
+
+    const state = normalizeBanState(username, data ? data.ban_info : null, {
+        lastCheckedAtUtc: new Date().toISOString(),
+        lastRefreshAtUtc: extra.lastRefreshAtUtc || ''
+    });
+
+    return { state, error: null };
+}
+
+let activeBanCheckPromise = null;
+
+async function ensureUserNotBanned(options = {}) {
+    const username = getBanCheckUsername(options.username);
+    appendBanTrace('ensure_user_not_banned:start', {
+        username,
+        forceRefresh: Boolean(options.forceRefresh),
+        redirectOnDeny: Boolean(options.redirectOnDeny),
+        forceOnSignInPage: Boolean(options.forceOnSignInPage)
+    });
+    if (!username || isOfflineTestMode()) return { allowed: true, state: null, error: null };
+
+    const cached = getBanCacheForUser(username);
+    if (!options.forceRefresh && isBanStateActive(cached)) {
+        appendBanTrace('ensure_user_not_banned:cached_active', {
+            username,
+            permanent: Boolean(cached && cached.permanent)
+        });
+        redirectToBannedPage(cached, { forceOnSignInPage: Boolean(options.forceOnSignInPage) });
+        return { allowed: false, state: cached, error: createBannedError(cached), fromCache: true };
+    }
+
+    if (!options.forceRefresh && activeBanCheckPromise && activeBanCheckPromise.username === username) {
+        return activeBanCheckPromise.promise;
+    }
+
+    const lastRefreshAtUtc = options.markManualRefresh ? new Date().toISOString() : ((cached && cached.lastRefreshAtUtc) || '');
+    const runner = (async () => {
+        const result = await fetchBanStateFromDatabase(username, { lastRefreshAtUtc });
+        if (result.error) {
+            appendBanTrace('ensure_user_not_banned:error', {
+                username,
+                message: String(result.error.message || result.error.code || 'unknown')
+            });
+            const verificationError = createBanVerificationError(username, result.error);
+            if (options.denyOnError) {
+                if (options.redirectOnDeny) {
+                    redirectToBannedPage(verificationError.banState, {
+                        forceOnSignInPage: Boolean(options.forceOnSignInPage)
+                    });
+                }
+                return { allowed: false, state: verificationError.banState, error: verificationError };
+            }
+            return { allowed: true, state: null, error: result.error };
+        }
+
+        if (result.state && isBanStateActive(result.state)) {
+            appendBanTrace('ensure_user_not_banned:active_from_db', {
+                username,
+                permanent: Boolean(result.state.permanent)
+            });
+            writeBanCache(result.state);
+            redirectToBannedPage(result.state, { forceOnSignInPage: Boolean(options.forceOnSignInPage) });
+            return { allowed: false, state: result.state, error: createBannedError(result.state), fromCache: false };
+        }
+
+        appendBanTrace('ensure_user_not_banned:allowed', { username });
+        clearBanCache(username);
+        return { allowed: true, state: null, error: null };
+    })();
+
+    if (!options.forceRefresh) activeBanCheckPromise = { username, promise: runner };
+
+    try {
+        return await runner;
+    } finally {
+        if (!options.forceRefresh && activeBanCheckPromise && activeBanCheckPromise.promise === runner) {
+            activeBanCheckPromise = null;
+        }
+    }
+}
+
+async function refreshCurrentUserBanState() {
+    const username = getBanCheckUsername();
+    if (!username) {
+        return {
+            state: null,
+            error: { code: 'OMG_BAN_NO_USER', message: localStorage.getItem('lang') === 'en' ? 'No signed-in account.' : '当前没有已登录账号。' }
+        };
+    }
+
+    const cached = getBanCacheForUser(username);
+    const remainingMs = getBanRefreshRemainingMs(cached);
+    if (remainingMs > 0) {
+        return {
+            state: cached,
+            error: {
+                code: 'OMG_BAN_REFRESH_LIMIT',
+                message: localStorage.getItem('lang') === 'en'
+                    ? 'You can only refresh the ban status once per hour.'
+                    : '封禁状态每小时只能手动刷新一次。',
+                remainingMs
+            }
+        };
+    }
+
+    const result = await ensureUserNotBanned({ username, forceRefresh: true, markManualRefresh: true });
+    if (!result.allowed) return { state: result.state, error: null };
+    return { state: null, error: result.error || null };
+}
+
+function createGuardedQueryProxy(query, options = {}) {
+    if (!query || (typeof query !== 'object' && typeof query !== 'function')) return query;
+
+    return new Proxy(query, {
+        get(target, prop, receiver) {
+            if (prop === 'then') {
+                return (resolve, reject) => ensureUserNotBanned(options).then(result => {
+                    if (!result.allowed) {
+                        return Promise.resolve({ data: null, error: createBannedError(result.state) }).then(resolve, reject);
+                    }
+                    return target.then(resolve, reject);
+                }, reject);
+            }
+
+            const value = Reflect.get(target, prop, target);
+            if (typeof value !== 'function') return value;
+
+            return (...args) => {
+                const result = value.apply(target, args);
+                return createGuardedQueryProxy(result, options);
+            };
+        }
+    });
+}
+
+async function runGuardedRpc(name, args = {}) {
+    const rpcName = String(name || '');
+    appendBanTrace('run_guarded_rpc', {
+        rpcName,
+        usernameHint: args && typeof args.p_username === 'string' ? args.p_username : ''
+    });
+    if (rpcName === 'login_user' || rpcName === 'register_user') {
+        return _supabaseRaw.rpc(name, args);
+    }
+
+    const usernameHint = args && typeof args.p_username === 'string' ? args.p_username : '';
+    const check = await ensureUserNotBanned({ username: usernameHint });
+    if (!check.allowed) return { data: null, error: createBannedError(check.state) };
+    return _supabaseRaw.rpc(name, args);
+}
+
+const _supabase = Object.create(_supabaseRaw);
+_supabase.from = function from(tableName) {
+    return createGuardedQueryProxy(_supabaseRaw.from(tableName));
+};
+_supabase.rpc = function rpc(name, args) {
+    return runGuardedRpc(name, args);
+};
+_supabase.storage = _supabaseRaw.storage;
+
+window.OMG_BAN = {
+    storageKey: BAN_CACHE_STORAGE_KEY,
+    traceKey: BAN_TRACE_STORAGE_KEY,
+    readState() {
+        return getBanCacheForUser(getBanCheckUsername()) || readBanCache();
+    },
+    readTrace() {
+        try {
+            return JSON.parse(sessionStorage.getItem(BAN_TRACE_STORAGE_KEY) || '[]');
+        } catch (error) {
+            return [];
+        }
+    },
+    clearTrace() {
+        sessionStorage.removeItem(BAN_TRACE_STORAGE_KEY);
+    },
+    isActive(state) {
+        return isBanStateActive(state);
+    },
+    formatUtc(isoString) {
+        return formatBanUtc(isoString);
+    },
+    getRefreshRemainingMs() {
+        return getBanRefreshRemainingMs(this.readState());
+    },
+    async refresh() {
+        return refreshCurrentUserBanState();
+    },
+    async ensureAccess(options = {}) {
+        return ensureUserNotBanned(options);
+    },
+    clear(username = '') {
+        clearBanCache(username || getBanCheckUsername());
+    },
+    switchAccount() {
+        localStorage.removeItem('username');
+        localStorage.removeItem('userPoints');
+        sessionStorage.removeItem('omg_admin_session_v1');
+        clearBanCache();
+        window.location.replace('sign-in.html');
+    }
+};
 
 /* 用途：将用户输入的明文密码转换成 SHA-256 哈希。
 原理：使用浏览器原生 crypto.subtle.digest 计算哈希，再把 Uint8Array 转成十六进制字符串，避免把明文密码直接写入数据库。

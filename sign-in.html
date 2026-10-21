@@ -126,39 +126,91 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 15px;
-            transition: 0.1s;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s, background-color 0.18s;
         }
 
         /* .btn-go:active 用途：实现按钮点击时的放大特效。 */
         .btn-go:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
-        /* .btn-captcha 用途：用于验证码按钮的默认灰色外观及布局。 */
-        .btn-captcha {
-            width: 100%;
-            padding: 12px;
-            background: var(--btn-cap-bg);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: 0.3s;
+        .checkbox-verification {
             display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--unliked, #bbb);
+            text-align: left;
         }
 
-        /* .btn-captcha.success 用途：验证码通过后，将按钮背景修改为绿色并取消可点击状态。 */
-        .btn-captcha.success {
-            background: var(--btn-cap-bg-success) !important;
+        .checkbox-progress {
+            color: var(--text, #222);
+            font-size: 1rem;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .verify-box {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 9px;
+            background: var(--brand);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+            cursor: pointer;
+            touch-action: manipulation;
+            user-select: none;
+            padding: 0;
+            position: relative;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s, box-shadow 0.18s;
+        }
+
+        .verify-box:focus-visible {
+            outline: 3px solid rgba(255, 255, 255, 0.65);
+            outline-offset: 3px;
+        }
+
+        .verify-box.is-drawing {
+            transform: scale(1.04, 0.98);
+            filter: brightness(1.02);
+        }
+
+        .verify-box.is-verified {
+            background: var(--btn-cap-bg-success);
             cursor: default;
-            transform: none !important;
         }
 
-        /* .btn-captcha:active 用途：给验证码按钮添加物理点击放大反馈。 */
-        .btn-captcha:not(.success):active {
-            transform: scale(1.1);
+        .verify-box-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .verify-final-check {
+            fill: none;
+            stroke: #fff;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .verify-final-check {
+            stroke-width: 7;
+            opacity: 0;
+            transition: opacity 0.16s ease;
+        }
+
+        .verify-box.is-verified .verify-final-check {
+            opacity: 1;
         }
 
         /* .mode-toggle 用途：设置切换登录/注册及游客模式的链接文字样式。 */
@@ -169,11 +221,14 @@
             text-decoration: underline;
             cursor: pointer;
             display: block;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.18s;
         }
 
         /* .mode-toggle:active 用途：实现切换链接点击时的放大特效。 */
         .mode-toggle:active {
-            transform: scale(1.1);
+            transform: scale(1.08, 0.94);
         }
 
         /* .math-challenge 用途：承载低概率出现的数学人机验证题，并与登录卡片保持一致的排版。 */
@@ -204,6 +259,13 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s, background-color 0.18s;
+        }
+
+        .btn-math-submit:active {
+            transform: scale(1.08, 0.94);
         }
 
         /* .slider-verification 用途：行为验证连续失败三次后，显示基于拖动速度与轨迹的备用验证方式。 */
@@ -289,15 +351,20 @@
         <div id="pwd-error" data-zh="❗ 密码需要超过 6 位" data-en="❗ Password must be over 6 chars">❗ 密码需要超过 6 位</div>
 
         <button class="btn-go" onclick="handleAuth()" id="btn" data-zh="立即登录" data-en="Login">立即登录</button>
-        <button id="btn-captcha" class="btn-captcha" data-zh="👆 我不是机器人" data-en="👆 I am not a robot" onclick="verifyCaptcha()">👆 我不是机器人</button>
-
-        <div id="math-challenge" class="math-challenge">
-            <strong data-zh="请完成人机验证：" data-en="Complete this verification:">请完成人机验证：</strong>
-            <div id="math-challenge-formula" class="math-challenge-formula" aria-label="Mathematics verification question"></div>
-            <input type="text" id="math-challenge-answer" autocomplete="off"
-                data-zh-ph="输入你的回答" data-en-ph="Enter your response" placeholder="输入你的回答">
-            <button type="button" class="btn-math-submit" onclick="submitMathChallenge()"
-                data-zh="提交回答" data-en="Submit response">提交回答</button>
+        <div id="checkbox-verification" class="checkbox-verification">
+            <div class="checkbox-row">
+                <button type="button" id="verify-box" class="verify-box" role="checkbox" aria-checked="false"
+                    aria-label="Robot verification checkbox">
+                    <svg class="verify-box-svg" viewBox="0 0 78 78" aria-hidden="true">
+                        <path id="verify-final-check" class="verify-final-check" d="M18 41 L31 54 L57 23"></path>
+                    </svg>
+                </button>
+                <div id="checkbox-progress" class="checkbox-progress"
+                    data-zh="我不是机器人"
+                    data-en="I'm not a robot">
+                    我不是机器人
+                </div>
+            </div>
         </div>
 
         <div id="slider-verification" class="slider-verification">
@@ -320,7 +387,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js"></script>
+    <script src="db.js?v=20260801-ban-login-flow-3"></script>
     <script>
         /* getLang
         用途：读取当前页面语言；如果 localStorage 还没有记录，就默认写入中文。
@@ -401,6 +468,25 @@
             return data || null;
         }
 
+        function appendSignInTrace(event, details = {}) {
+            try {
+                const traceKey = window.OMG_BAN && window.OMG_BAN.traceKey ? window.OMG_BAN.traceKey : 'omg_ban_trace_v1';
+                const raw = sessionStorage.getItem(traceKey);
+                const entries = raw ? JSON.parse(raw) : [];
+                const safeEntries = Array.isArray(entries) ? entries : [];
+                safeEntries.push({
+                    time: new Date().toISOString(),
+                    page: 'sign-in.html',
+                    event: String(event || ''),
+                    details: details && typeof details === 'object' ? details : { value: details }
+                });
+                while (safeEntries.length > 40) safeEntries.shift();
+                sessionStorage.setItem(traceKey, JSON.stringify(safeEntries));
+            } catch (error) {
+                // 调试追踪失败时不影响正常登录流程。
+            }
+        }
+
         async function loginUserCompat(username, passwordSha256) {
             if (typeof loginUserWithRpc === 'function') {
                 return loginUserWithRpc(username, passwordSha256);
@@ -465,6 +551,7 @@
             const pass = document.getElementById('p').value.trim();
             const pwdError = document.getElementById('pwd-error');
             const lang = getLang();
+            appendSignInTrace('handle_auth:start', { user, isReg });
 
             pwdError.style.display = 'none';
 
@@ -487,9 +574,15 @@
             } else {
                 // 登录模式：先查数据库确认密码是否正确
                 const hp = await s256(pass);
-                const { data } = await loginUserCompat(user, hp);
+                const { data, error } = await loginUserCompat(user, hp);
+                appendSignInTrace('handle_auth:login_rpc_result', {
+                    user,
+                    hasData: Boolean(data),
+                    error: error ? String(error.message || error.code || 'unknown') : ''
+                });
                 if (data) {
                     pendingAuthData = { action: 'login', user, data };
+                    appendSignInTrace('handle_auth:show_captcha', { user });
                     showCaptchaUI();
                 } else {
                     alert(lang === 'zh' ? "❌ 账号或密码不对哦" : "❌ Incorrect username or password");
@@ -498,146 +591,242 @@
         }
 
         /* showCaptchaUI
-        用途：切换登录后的验证码界面，并以 5% 概率显示数学题。
-        原理：登录和注册都用 Math.random() 抽取数学题，其余 95% 情况显示“我不是机器人”按钮。
+        用途：切换到登录后的验证界面。
+        原理：默认展示自绘勾选框；若连续失败三次，则切换到滑块作为兜底验证。
         */
         function showCaptchaUI() {
+            appendSignInTrace('show_captcha_ui', {
+                action: pendingAuthData ? pendingAuthData.action : '',
+                user: pendingAuthData ? pendingAuthData.user : ''
+            });
             document.getElementById('btn').style.display = 'none';
             captchaShownAt = performance.now();
+            resetCheckboxVerification();
             if (captchaFailureCount >= 3) {
                 showSliderVerification();
                 return;
             }
-            const mathChallengeChance = localStorage.getItem('verificationMode100') === 'true' ? 1 : 0.05;
-            if (pendingAuthData && Math.random() < mathChallengeChance) {
-                showMathChallenge();
-            } else {
-                document.getElementById('btn-captcha').style.display = 'block';
-            }
-        }
-
-        /* showMathChallenge
-        用途：显示数学人机验证，并用仓库内的 KaTeX 渲染公式。
-        原理：katex.min.js 和字体均从 vendor/katex 本地加载；render() 直接把 LaTeX 转成当前页面的 HTML/MathML，不发起外部网络请求。
-        */
-        function showMathChallenge() {
-            const challenge = document.getElementById('math-challenge');
-            const formula = document.getElementById('math-challenge-formula');
-            const answer = document.getElementById('math-challenge-answer');
-            const latex = String.raw`\left( e^{i\pi} + \int_{0}^{\infty} x^n e^{-x} \, dx \cdot \frac{0}{\Gamma(n+1)} \right) \cdot \frac{d}{dx}(\sin^2 x + \cos^2 x) + 1`;
-
-            challenge.style.display = 'block';
-            answer.value = '';
-
-            if (window.katex) {
-                window.katex.render(latex, formula, {
-                    displayMode: true,
-                    throwOnError: false
-                });
-            } else {
-                // 本地资源意外加载失败时仍显示原始公式，避免验证码区域变成空白。
-                formula.textContent = `$$${latex}$$`;
-            }
-
-            answer.focus();
-        }
-
-        /* submitMathChallenge
-        用途：用反向数学题判断回答者是否像机器人一样算出了正确答案。
-        原理：公式的结果为 1；输入 1、1.0 等等价值时判为机器人，任何其它非空回答（包括指定吐槽语）都直接放行。
-        */
-        function submitMathChallenge() {
-            const input = document.getElementById('math-challenge-answer').value.trim();
-            const normalized = input.toLocaleLowerCase();
-
-            if (!normalized) {
-                alert(getLang() === 'zh' ? '先写点什么再提交。' : 'Enter a response first.');
-                return;
-            }
-
-            const numericAnswer = Number(normalized);
-            if (Number.isFinite(numericAnswer) && numericAnswer === 1) {
-                alert(getLang() === 'zh'
-                    ? '计算得这么认真，系统认为你是机器人。'
-                    : 'That answer was suspiciously precise. The system thinks you are a bot.');
-                resetAuthUI();
-                return;
-            }
-
-            completeCaptchaVerification();
+            showCheckboxVerification();
         }
 
         /* resetAuthUI
         用途：重置按钮和验证码的状态，以便用户切换模式或验证失败后再次操作。
-        原理：恢复默认的 DOM display 属性，清空验证码类名并重置文字。
+        原理：恢复默认的 DOM display 属性，并清空勾选框与滑块的临时状态。
         */
         function resetAuthUI() {
             document.getElementById('btn').style.display = 'block';
-            const capBtn = document.getElementById('btn-captcha');
-            capBtn.style.display = 'none';
-            capBtn.classList.remove('success');
-            capBtn.innerText = getLang() === 'zh' ? "👆 我不是机器人" : "👆 I am not a robot";
-            document.getElementById('math-challenge').style.display = 'none';
-            document.getElementById('math-challenge-answer').value = '';
-            document.getElementById('math-challenge-formula').replaceChildren();
+            document.getElementById('checkbox-verification').style.display = 'none';
             document.getElementById('slider-verification').style.display = 'none';
             captchaPassed = false;
             pendingAuthData = null;
+            resetCheckboxVerification();
         }
 
+        const CAPTCHA_REQUIRED_SPACES = 3;
+        const CAPTCHA_SPACE_WINDOW_MS = 4000;
+        const CAPTCHA_SPACE_MIN_INTERVAL_MS = 3;
         let captchaPassed = false;
         let captchaShownAt = 0;
-        let lastCaptchaPointerDownAt = 0;
         let captchaFailureCount = Number(sessionStorage.getItem('captchaFailureCount') || 0);
         sessionStorage.removeItem('captchaLockedUntil'); // 清理旧版严格验证留下的冷却记录。
         let sliderTargetX = 0;
+        const POINTER_TRAIL_WINDOW_MS = 1400;
         let sliderDragState = null;
+        let checkboxPointerState = null;
+        let checkboxSpaceTimes = [];
+        let recentPointerTrail = [];
         let botMetrics = {
-            mouseMoves: 0,
-            pointerDistance: 0,
-            directionChanges: 0,
-            lastPointerX: null,
-            lastPointerY: null,
-            lastPointerAngle: null,
-            trustedPointerDowns: 0,
+            trustedPointerMoves: 0,
             trustedKeyPresses: 0,
             trustedTouches: 0,
             hasWindowSize: false,
-            touchArea: 0,
-            gyroMoved: false
+            touchArea: 0
         };
+
+        function setCheckboxProgress(zh, en) {
+            const progress = document.getElementById('checkbox-progress');
+            progress.dataset.zh = zh;
+            progress.dataset.en = en;
+            progress.textContent = getLang() === 'zh' ? zh : en;
+        }
+
+        function getCheckboxDefaultProgress() {
+            return {
+                zh: '我不是机器人',
+                en: "I'm not a robot"
+            };
+        }
+
+        function showCheckboxVerification() {
+            document.getElementById('checkbox-verification').style.display = 'block';
+            document.getElementById('slider-verification').style.display = 'none';
+            const text = getCheckboxDefaultProgress();
+            setCheckboxProgress(text.zh, text.en);
+        }
+
+        function resetCheckboxVerification() {
+            const verifyBox = document.getElementById('verify-box');
+            checkboxPointerState = null;
+            checkboxSpaceTimes = [];
+            verifyBox.classList.remove('is-drawing', 'is-verified');
+            verifyBox.setAttribute('aria-checked', 'false');
+            const text = getCheckboxDefaultProgress();
+            setCheckboxProgress(text.zh, text.en);
+        }
+
+        function finishCheckboxVerification() {
+            if (captchaPassed) return;
+            const verifyBox = document.getElementById('verify-box');
+            verifyBox.classList.remove('is-drawing');
+            verifyBox.classList.add('is-verified');
+            verifyBox.setAttribute('aria-checked', 'true');
+            setCheckboxProgress('验证通过，正在登录…', 'Verification passed. Signing in...');
+            completeCaptchaVerification();
+        }
+
+        function pruneRecentPointerTrail(now = performance.now()) {
+            recentPointerTrail = recentPointerTrail.filter(sample => now - sample.time <= POINTER_TRAIL_WINDOW_MS);
+        }
+
+        function getRecentPointerTrail(now = performance.now()) {
+            pruneRecentPointerTrail(now);
+            return recentPointerTrail.slice();
+        }
+
+        function getTrailStats(samples) {
+            let travelled = 0;
+            let maxStep = 0;
+            let directionChanges = 0;
+            let lastAngle = null;
+
+            for (let index = 1; index < samples.length; index++) {
+                const dx = samples[index].x - samples[index - 1].x;
+                const dy = samples[index].y - samples[index - 1].y;
+                const distance = Math.hypot(dx, dy);
+                travelled += distance;
+                maxStep = Math.max(maxStep, distance);
+                if (distance >= 1) {
+                    const angle = Math.atan2(dy, dx);
+                    if (lastAngle !== null) {
+                        let delta = Math.abs(angle - lastAngle);
+                        if (delta > Math.PI) delta = (Math.PI * 2) - delta;
+                        if (delta > 0.16) directionChanges++;
+                    }
+                    lastAngle = angle;
+                }
+            }
+
+            const duration = samples.length > 1 ? samples[samples.length - 1].time - samples[0].time : 0;
+            const uniquePositions = new Set(samples.map(sample => `${Math.round(sample.x)}:${Math.round(sample.y)}`)).size;
+            return {
+                travelled,
+                maxStep,
+                directionChanges,
+                duration,
+                uniquePositions,
+                averageSpeed: duration > 0 ? travelled / (duration / 1000) : 0
+            };
+        }
+
+        function analyzeCheckboxPointer(state, event) {
+            const pageIsActive = document.visibilityState === 'visible' && document.hasFocus();
+            const honeypotIsEmpty = !document.getElementById('auth-website').value.trim();
+            if (!botMetrics.hasWindowSize || !pageIsActive || !honeypotIsEmpty) return false;
+
+            const trail = state.trail || [];
+            const endDelta = trail.length
+                ? Math.hypot(trail[trail.length - 1].x - event.clientX, trail[trail.length - 1].y - event.clientY)
+                : 0;
+            const mobileContactLooksHuman = state.pointerType !== 'touch' || state.maxContactArea > 1 || botMetrics.touchArea > 1;
+
+            if (state.pointerType === 'touch') {
+                return mobileContactLooksHuman && botMetrics.trustedTouches >= 1;
+            }
+
+            if (trail.length < 4) return false;
+
+            const stats = getTrailStats(trail);
+            const first = trail[0];
+            const last = trail[trail.length - 1];
+            const straightDistance = Math.hypot(last.x - first.x, last.y - first.y);
+
+            return (
+                botMetrics.trustedPointerMoves >= 4 &&
+                mobileContactLooksHuman &&
+                stats.duration >= 90 &&
+                stats.duration <= 2600 &&
+                stats.travelled >= 14 &&
+                stats.averageSpeed >= 24 &&
+                stats.averageSpeed <= 2200 &&
+                stats.maxStep <= 180 &&
+                stats.uniquePositions >= 4 &&
+                stats.directionChanges >= 0 &&
+                stats.directionChanges <= 18 &&
+                straightDistance >= 8 &&
+                endDelta <= 28
+            );
+        }
+
+        function pruneSpaceAttempts(now = performance.now()) {
+            checkboxSpaceTimes = checkboxSpaceTimes.filter(time => now - time <= CAPTCHA_SPACE_WINDOW_MS);
+        }
+
+        function updateSpaceProgressLabel() {
+            const count = Math.min(CAPTCHA_REQUIRED_SPACES, checkboxSpaceTimes.length);
+            if (count === 0) {
+                const text = getCheckboxDefaultProgress();
+                setCheckboxProgress(text.zh, text.en);
+                return;
+            }
+
+            setCheckboxProgress(
+                `键盘验证进度：${count}/${CAPTCHA_REQUIRED_SPACES}`,
+                `Keyboard progress: ${count}/${CAPTCHA_REQUIRED_SPACES}`
+            );
+        }
+
+        function verifySpaceSequence() {
+            pruneSpaceAttempts();
+            updateSpaceProgressLabel();
+            if (checkboxSpaceTimes.length < CAPTCHA_REQUIRED_SPACES) return;
+
+            const recent = checkboxSpaceTimes.slice(-CAPTCHA_REQUIRED_SPACES);
+            const intervals = [];
+            for (let index = 1; index < recent.length; index++) {
+                intervals.push(recent[index] - recent[index - 1]);
+            }
+
+            const valid = recent[recent.length - 1] - recent[0] <= CAPTCHA_SPACE_WINDOW_MS &&
+                intervals.every(interval => interval > CAPTCHA_SPACE_MIN_INTERVAL_MS) &&
+                botMetrics.trustedKeyPresses >= CAPTCHA_REQUIRED_SPACES &&
+                document.activeElement === document.getElementById('verify-box');
+
+            if (valid) {
+                finishCheckboxVerification();
+                return;
+            }
+
+            registerCaptchaFailure();
+            checkboxSpaceTimes = [];
+            updateSpaceProgressLabel();
+            if (captchaFailureCount >= 3) {
+                showSliderVerification();
+            } else {
+                alert(getLang() === 'zh' ? '按键节奏不太对，再试一次。' : 'The key rhythm did not look right. Try again.');
+            }
+        }
 
         if (window.innerWidth > 0 && window.innerHeight > 0) botMetrics.hasWindowSize = true;
         window.addEventListener('pointermove', event => {
             if (!event.isTrusted) return;
-
-            botMetrics.mouseMoves++;
-            if (botMetrics.lastPointerX !== null && botMetrics.lastPointerY !== null) {
-                const dx = event.clientX - botMetrics.lastPointerX;
-                const dy = event.clientY - botMetrics.lastPointerY;
-                const distance = Math.hypot(dx, dy);
-
-                // 忽略零距离噪声和异常的大跨度跳点，降低脚本伪造单次移动的收益。
-                if (distance >= 1 && distance <= 250) {
-                    botMetrics.pointerDistance += distance;
-                    const angle = Math.atan2(dy, dx);
-                    if (botMetrics.lastPointerAngle !== null) {
-                        let angleDelta = Math.abs(angle - botMetrics.lastPointerAngle);
-                        if (angleDelta > Math.PI) angleDelta = (Math.PI * 2) - angleDelta;
-                        if (angleDelta > 0.35) botMetrics.directionChanges++;
-                    }
-                    botMetrics.lastPointerAngle = angle;
-                }
-            }
-
-            botMetrics.lastPointerX = event.clientX;
-            botMetrics.lastPointerY = event.clientY;
-        }, { passive: true });
-
-        window.addEventListener('pointerdown', event => {
-            if (!event.isTrusted || !event.isPrimary) return;
-            botMetrics.trustedPointerDowns++;
-            if (event.target.closest('#btn-captcha')) lastCaptchaPointerDownAt = performance.now();
+            botMetrics.trustedPointerMoves++;
+            const now = performance.now();
+            recentPointerTrail.push({
+                x: event.clientX,
+                y: event.clientY,
+                time: now
+            });
+            pruneRecentPointerTrail(now);
         }, { passive: true });
 
         window.addEventListener('keydown', event => {
@@ -649,10 +838,73 @@
         window.addEventListener('touchstart', (e) => {
             if (!e.isTrusted || e.touches.length === 0) return;
             botMetrics.trustedTouches++;
-            botMetrics.touchArea = e.touches[0].radiusX || e.touches[0].radiusY || 1;
+            botMetrics.touchArea = Math.max(e.touches[0].radiusX || 1, e.touches[0].radiusY || 1);
         }, { passive: true });
-        window.addEventListener('deviceorientation', (e) => {
-            if (e.isTrusted && (e.alpha || e.beta || e.gamma)) botMetrics.gyroMoved = true;
+
+        const verifyBox = document.getElementById('verify-box');
+
+        verifyBox.addEventListener('pointerdown', event => {
+            if (!event.isTrusted || !event.isPrimary) return;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+            const now = performance.now();
+            checkboxPointerState = {
+                pointerId: event.pointerId,
+                pointerType: event.pointerType || 'mouse',
+                maxContactArea: Math.max(1, (event.width || 1) * (event.height || 1)),
+                trail: getRecentPointerTrail(now)
+            };
+            checkboxSpaceTimes = [];
+            verifyBox.classList.remove('is-verified');
+            verifyBox.classList.add('is-drawing');
+            setCheckboxProgress('正在检测本次勾选…', 'Checking this checkbox action...');
+        });
+
+        function finishCheckboxPointer(event) {
+            const state = checkboxPointerState;
+            checkboxPointerState = null;
+            if (!state || !event.isTrusted || state.pointerId !== event.pointerId) return;
+
+            state.maxContactArea = Math.max(state.maxContactArea, (event.width || 1) * (event.height || 1));
+            verifyBox.classList.remove('is-drawing');
+
+            if (analyzeCheckboxPointer(state, event)) {
+                finishCheckboxVerification();
+                return;
+            }
+
+            registerCaptchaFailure();
+            const text = getCheckboxDefaultProgress();
+            setCheckboxProgress(
+                '这次勾选前的移动特征不太像真人，再正常点一下试试。',
+                'That approach to the checkbox did not look natural enough. Try a normal click again.'
+            );
+            if (captchaFailureCount >= 3) {
+                showSliderVerification();
+            } else {
+                setTimeout(() => {
+                    if (!captchaPassed) setCheckboxProgress(text.zh, text.en);
+                }, 900);
+            }
+        }
+
+        verifyBox.addEventListener('pointerup', finishCheckboxPointer);
+        verifyBox.addEventListener('pointercancel', () => {
+            checkboxPointerState = null;
+            verifyBox.classList.remove('is-drawing');
+            const text = getCheckboxDefaultProgress();
+            setCheckboxProgress(text.zh, text.en);
+        });
+        verifyBox.addEventListener('keydown', event => {
+            if (!event.isTrusted || (event.key !== ' ' && event.code !== 'Space')) return;
+            event.preventDefault();
+            const now = performance.now();
+            checkboxSpaceTimes.push(now);
+            pruneSpaceAttempts(now);
+            verifyBox.classList.remove('is-drawing');
+            verifyBox.classList.remove('is-verified');
+            verifyBox.setAttribute('aria-checked', 'false');
+            verifySpaceSequence();
         });
 
         /* registerCaptchaFailure
@@ -669,9 +921,9 @@
         原理：每次显示时随机生成轨道 60% 至 90% 之间的目标点，避免机器人把终点位置写死。
         */
         function showSliderVerification() {
-            document.getElementById('btn-captcha').style.display = 'none';
-            document.getElementById('math-challenge').style.display = 'none';
+            document.getElementById('checkbox-verification').style.display = 'none';
             document.getElementById('slider-verification').style.display = 'block';
+            resetCheckboxVerification();
             requestAnimationFrame(resetSliderVerification);
         }
 
@@ -785,73 +1037,17 @@
         sliderThumb.addEventListener('pointerup', finishSliderVerification);
         sliderThumb.addEventListener('pointercancel', finishSliderVerification);
 
-        // 在数学题输入框按 Enter 与点击“提交回答”效果一致。
-        document.getElementById('math-challenge-answer').addEventListener('keydown', event => {
-            if (event.key === 'Enter') submitMathChallenge();
-        });
-
         /* completeCaptchaVerification
-        用途：统一完成行为验证码、数学验证码和滑块验证码的成功流程。
-        原理：清除失败次数，展示绿色“验证通过”状态，短暂停留后执行真正登录，避免三种验证码各自维护重复代码。
+        用途：统一完成勾选验证和滑块验证的成功流程。
+        原理：清除失败次数并短暂停留后执行真正登录，避免不同验证方式重复维护登录收口。
         */
         function completeCaptchaVerification() {
+            if (captchaPassed) return;
             captchaPassed = true;
             captchaFailureCount = 0;
             sessionStorage.removeItem('captchaFailureCount');
-            document.getElementById('math-challenge').style.display = 'none';
             document.getElementById('slider-verification').style.display = 'none';
-
-            const capBtn = document.getElementById('btn-captcha');
-            capBtn.style.display = 'block';
-            capBtn.classList.add('success');
-            capBtn.innerText = getLang() === 'zh' ? "✅ 验证通过" : "✅ Verified";
-
-            setTimeout(executeFinalAuth, 400);
-        }
-
-        /* verifyCaptcha
-        用途：用户点击“我不是机器人”按钮时触发行为判定。
-        原理：组合检查可信点击、停留时间、页面焦点、键盘输入、指针移动距离与方向变化；移动端改查可信触摸和触摸面积。任一关键条件缺失都不放行。
-        */
-        async function verifyCaptcha() {
-            if (captchaPassed) return;
-            const lang = getLang();
-            const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-            const elapsedSinceShown = performance.now() - captchaShownAt;
-            const elapsedSinceCaptchaPress = performance.now() - lastCaptchaPointerDownAt;
-            const hasRecentTrustedPress = elapsedSinceCaptchaPress >= 0 && elapsedSinceCaptchaPress <= 1200;
-            const pageIsActive = document.visibilityState === 'visible' && document.hasFocus();
-            const honeypotIsEmpty = !document.getElementById('auth-website').value.trim();
-            const timingLooksHuman = elapsedSinceShown >= 500;
-
-            const desktopBehaviorLooksHuman =
-                botMetrics.mouseMoves >= 6 &&
-                botMetrics.pointerDistance >= 40 &&
-                botMetrics.directionChanges >= 1 &&
-                botMetrics.trustedPointerDowns >= 2 &&
-                botMetrics.trustedKeyPresses >= 1;
-
-            const mobileBehaviorLooksHuman =
-                botMetrics.trustedTouches >= 1 &&
-                botMetrics.trustedPointerDowns >= 2 &&
-                botMetrics.trustedKeyPresses >= 1 &&
-                (botMetrics.touchArea > 0 || botMetrics.gyroMoved);
-
-            const isHuman =
-                botMetrics.hasWindowSize &&
-                pageIsActive &&
-                honeypotIsEmpty &&
-                timingLooksHuman &&
-                hasRecentTrustedPress &&
-                (isMobile ? mobileBehaviorLooksHuman : desktopBehaviorLooksHuman);
-
-            if (isHuman) {
-                completeCaptchaVerification();
-            } else {
-                registerCaptchaFailure();
-                alert(lang === 'zh' ? '等等！你似乎不是人！' : "Wait! You don't seem to be human!");
-                if (captchaFailureCount >= 3) showSliderVerification();
-            }
+            setTimeout(executeFinalAuth, 280);
         }
 
         /* executeFinalAuth
@@ -860,6 +1056,10 @@
         */
         async function executeFinalAuth() {
             const lang = getLang();
+            appendSignInTrace('execute_final_auth:start', {
+                action: pendingAuthData ? pendingAuthData.action : '',
+                user: pendingAuthData ? pendingAuthData.user : ''
+            });
 
             if (pendingAuthData.action === 'reg') {
                 const hp = await s256(pendingAuthData.pass);
@@ -877,13 +1077,33 @@
                 const data = pendingAuthData.data;
                 const reward = Number(data.login_reward || 5);
                 const currentPoints = Number(data.points || 0);
-
-                alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
+                appendSignInTrace('execute_final_auth:login', {
+                    username: data.username,
+                    reward,
+                    currentPoints
+                });
 
                 localStorage.setItem('username', data.username);
                 localStorage.setItem('id_im', String(data.id));
                 localStorage.setItem('userPoints', currentPoints);
                 if (pendingAuthData.user === 'Clark') localStorage.setItem('isAdmin', 'true');
+
+                if (window.OMG_BAN && typeof window.OMG_BAN.ensureAccess === 'function') {
+                    const banCheck = await window.OMG_BAN.ensureAccess({
+                        username: data.username,
+                        forceRefresh: true,
+                        redirectOnDeny: true,
+                        forceOnSignInPage: true
+                    });
+                    appendSignInTrace('execute_final_auth:ban_check_result', {
+                        username: data.username,
+                        allowed: Boolean(banCheck && banCheck.allowed),
+                        hasState: Boolean(banCheck && banCheck.state)
+                    });
+                    if (!banCheck.allowed) return;
+                }
+
+                alert(lang === 'zh' ? `🎁 登录奖励：+${reward} 积分！` : `🎁 Login Bonus: +${reward} pts!`);
 
                 window.location.href = getSafeRedirectPath();
             }
