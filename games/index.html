@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- index.html -->
+<!--
+    omg-by-clark.github.io/games: A website for playing games and have fun.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+-->
+<html lang="zh-CN">
+
+<head>
+    <script src="../privacy.js"></script>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title data-zh="游戏 • omg-by-Clark" data-en="Games • omg-by-Clark">游戏 • omg-by-Clark</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+    <header class="topbar"><a class="brand-link" href="index.html" aria-label="omg games">
+            <img class="brand-logo" src="logo-longer.svg" alt="omg-by-Clark Games">
+        </a>
+
+        <div class="search-box">
+            <input id="game-search" type="search" placeholder="搜索游戏、标签或路径" data-placeholder-zh="搜索游戏、标签或路径" data-placeholder-en="Search games, tags, or paths" autocomplete="off">
+            <div id="details-command-popover" class="details-command-popover hidden" role="dialog" aria-live="polite">
+                <p id="details-command-text" data-zh="是否确定展示游戏的所有信息（这将会使游戏窗口过大）" data-en="Are you sure you want to show all game information? This will make the game window too large.">是否确定展示游戏的所有信息（这将会使游戏窗口过大）</p>
+                <div class="details-command-actions">
+                    <button id="details-command-yes" type="button" data-zh="✔️ 是" data-en="✔️ Yes">✔️ 是</button>
+                    <button id="details-command-no" type="button" data-zh="❌ 否" data-en="❌ No">❌ 否</button>
+                </div>
+            </div>
+        </div>
+
+        <a class="back-home" href="../index.html" data-zh="⬅️ 返回主站" data-en="⬅️ Main site">⬅️ 返回主站</a>
+
+        <div class="user-chip" title="当前登录的 omg 账号" data-title-zh="当前登录的 omg 账号" data-title-en="Current omg account">
+            <div id="user-avatar" class="user-avatar">?</div>
+            <div id="user-name" class="user-name" data-zh="未登录" data-en="Not signed in">未登录</div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div id="game-sections" class="game-sections"></div>
+        <p id="empty-message" class="message hidden" data-zh="game-map.yaml 还没有游戏，先把第一条游戏塞进去吧。" data-en="game-map.yaml has no games yet. Add the first one.">game-map.yaml 还没有游戏，先把第一条游戏塞进去吧。</p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../db.js"></script>
+    <script src="game-db.js"></script>
+    <script src="home.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!-- banned.html -->
+<!--
+    omg-by-clark.github.io: A website for sharing daily stories.
+    Copyright (C) 2026  Chi (Clark) Zhang
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Affero General Public License for more details.
+-->
+<html lang="zh-CN">
+
+<head>
+    <script src="privacy.js"></script>
+    <link href="logo.svg" rel="icon" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="omg-by-Clark 封禁提示页面">
+    <title>账号受限 Banned • omg-by-Clark</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
+    <style>
+        :root {
+            --bg: #fffdf5;
+            --text: #2f2f2f;
+            --muted: #6b7280;
+            --card: #ffffff;
+            --line: rgba(0, 0, 0, 0.1);
+            --brand: #ff4757;
+            --brand-soft: rgba(255, 71, 87, 0.08);
+            --warning: #b45309;
+            --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+        }
+
+        body.dark {
+            --bg: #171717;
+            --text: #f4f4f5;
+            --muted: #a1a1aa;
+            --card: #1f1f1f;
+            --line: rgba(255, 255, 255, 0.08);
+            --brand: #ff6b81;
+            --brand-soft: rgba(255, 107, 129, 0.12);
+            --warning: #f59e0b;
+            --shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            transition: background-color 0.25s, color 0.25s;
+        }
+
+        ::selection {
+            background: rgba(255, 71, 87, 0.18);
+        }
+
+        .ban-shell {
+            width: min(100%, 720px);
+        }
+
+        .ban-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            padding: 28px 22px 24px;
+        }
+
+        .ban-hero {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .icon-wrap {
+            width: 86px;
+            height: 86px;
+            flex: 0 0 86px;
+            display: grid;
+            place-items: center;
+            border-radius: 24px;
+            background: var(--brand-soft);
+            border: 1px solid var(--line);
+        }
+
+        .icon-wrap img {
+            width: 58px;
+            height: 58px;
+            display: block;
+        }
+
+        .ban-title {
+            margin: 0;
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            line-height: 1.12;
+        }
+
+        .ban-copy {
+            margin: 10px 0 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .status-note {
+            margin: 18px 0 0;
+            padding: 13px 15px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.35);
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        body.dark .status-note {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .detail-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.45);
+            min-height: 112px;
+        }
+
+        body.dark .detail-card {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .detail-label {
+            color: var(--muted);
+            font-size: 0.92rem;
+            margin-bottom: 10px;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            line-height: 1.65;
+            word-break: break-word;
+        }
+
+        .detail-value.emphasis {
+            color: var(--brand);
+            font-weight: 700;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px 18px;
+            font: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transform-origin: center;
+            will-change: transform;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, border-color 0.2s, opacity 0.2s, filter 0.2s;
+        }
+
+        .btn:hover {
+            border-color: color-mix(in srgb, var(--brand) 28%, var(--line));
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(1.08, 0.94);
+            filter: brightness(0.98);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+
+        .btn-soft {
+            background: transparent;
+            color: var(--text);
+        }
+
+        .btn-warning {
+            background: rgba(180, 83, 9, 0.08);
+            color: var(--warning);
+        }
+
+        .footnote {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+
+        @media (max-width: 720px) {
+            .ban-card {
+                border-radius: 24px;
+                padding: 22px 18px 20px;
+            }
+
+            .ban-hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="ban-shell">
+        <section class="ban-card">
+            <div class="ban-hero">
+                <div class="icon-wrap">
+                    <img id="ban-icon" src="error-for-light-mode.svg" alt="Warning">
+                </div>
+                <div>
+                    <h1 class="ban-title" data-zh="账号暂时不可用" data-en="Account Temporarily Unavailable">账号暂时不可用</h1>
+                    <p class="ban-copy" id="ban-copy" data-zh="这个账号当前无法继续访问需要数据库的功能。"
+                        data-en="This account cannot access database-backed features right now.">
+                        这个账号当前无法继续访问需要数据库的功能。
+                    </p>
+                </div>
+            </div>
+
+            <div class="status-note" id="ban-status">
+                读取本地封禁缓存中...
+            </div>
+
+            <div class="detail-grid">
+                <article class="detail-card">
+                    <div class="detail-label" data-zh="封禁开始时间" data-en="Ban Start Time">封禁开始时间</div>
+                    <div class="detail-value" id="ban-start">-</div>
+                </article>
+                <article class="detail-card">
+                    <div class="detail-label" data-zh="持续时间" data-en="Duration">持续时间</div>
+                    <div class="detail-value emphasis" id="ban-duration">-</div>
+                </article>
+                <article class="detail-card">
+                    <div class="detail-label" data-zh="预计解封时间" data-en="Expected Unban Time">预计解封时间</div>
+                    <div class="detail-value" id="ban-expires">-</div>
+                </article>
+            </div>
+
+            <div class="action-row">
+                <a class="btn btn-soft" href="index.html" data-zh="🏠 返回首页" data-en="🏠 Back Home">🏠 返回首页</a>
+                <button class="btn btn-primary" id="btn-refresh" type="button" data-zh="🔄 刷新状态" data-en="🔄 Refresh Status">🔄 刷新状态</button>
+                <button class="btn btn-warning" id="btn-switch-account" type="button" data-zh="🔐 切换账号" data-en="🔐 Switch Account">🔐 切换账号</button>
+            </div>
+
+            <div class="footnote" id="ban-refresh-hint" data-zh="说明：只有点击“刷新状态”才会重新查询数据库，而且每小时最多查询一次。"
+                data-en="Note: The database is only queried when you press Refresh Status, and at most once per hour.">
+                说明：只有点击“刷新状态”才会重新查询数据库，而且每小时最多查询一次。
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js?v=20260801-ban-login-flow-3"></script>
+    <script>
+        function lang() {
+            return localStorage.getItem('lang') || 'zh';
+        }
+
+        function t(zhText, enText) {
+            return lang() === 'zh' ? zhText : enText;
+        }
+
+        function applyThemeMode() {
+            const mode = localStorage.getItem('theme') || 'light';
+            document.documentElement.dataset.theme = mode;
+            document.body.className = mode === 'dark' ? 'dark' : (mode === 'catppuccin' ? 'catppuccin' : '');
+            document.getElementById('ban-icon').src = (mode === 'dark' || mode === 'catppuccin')
+                ? 'error-for-dark-mode.svg'
+                : 'error-for-light-mode.svg';
+        }
+
+        function applyI18n() {
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.innerText = t(el.getAttribute('data-zh'), el.getAttribute('data-en'));
+            });
+        }
+
+        function formatDuration(state) {
+            if (!state) return '-';
+            if (state.permanent) return t('永久封禁', 'Permanent ban');
+            const hours = Number(state.durationHours);
+            if (!Number.isFinite(hours) || hours <= 0) return '-';
+            if (hours % 24 === 0) {
+                const days = hours / 24;
+                return lang() === 'zh'
+                    ? `${days} 天`
+                    : `${days} day${days === 1 ? '' : 's'}`;
+            }
+            return lang() === 'zh'
+                ? `${hours} 小时`
+                : `${hours} hour${hours === 1 ? '' : 's'}`;
+        }
+
+        function setStatusMessage(message) {
+            document.getElementById('ban-status').textContent = message;
+        }
+
+        function redirectGuestsToSignIn() {
+            const username = localStorage.getItem('username') || '';
+            const cachedState = window.OMG_BAN ? window.OMG_BAN.readState() : null;
+            try {
+                const traceKey = window.OMG_BAN && window.OMG_BAN.traceKey ? window.OMG_BAN.traceKey : 'omg_ban_trace_v1';
+                const raw = sessionStorage.getItem(traceKey);
+                const entries = raw ? JSON.parse(raw) : [];
+                const safeEntries = Array.isArray(entries) ? entries : [];
+                safeEntries.push({
+                    time: new Date().toISOString(),
+                    page: 'banned.html',
+                    event: 'redirect_guests_to_signin',
+                    details: {
+                        hasUsername: Boolean(username),
+                        hasCachedState: Boolean(cachedState)
+                    }
+                });
+                while (safeEntries.length > 40) safeEntries.shift();
+                sessionStorage.setItem(traceKey, JSON.stringify(safeEntries));
+            } catch (error) {
+                // 调试追踪失败时不影响封禁页逻辑。
+            }
+            if (username || cachedState) return false;
+            if (window.OMG_BAN) window.OMG_BAN.clear();
+            window.location.replace('sign-in.html?redirect=' + encodeURIComponent('banned.html'));
+            return true;
+        }
+
+        function renderPage() {
+            const state = window.OMG_BAN ? window.OMG_BAN.readState() : null;
+            const isActive = window.OMG_BAN ? window.OMG_BAN.isActive(state) : false;
+            const username = localStorage.getItem('username') || '';
+
+            if (!username && state) {
+                setStatusMessage(t(
+                    '当前正在显示这次登录留下的封禁缓存。你可以刷新状态，或切换账号重新登录。',
+                    'You are viewing the cached ban state from the latest sign-in. You can refresh the status or switch accounts.'
+                ));
+            } else if (!username) {
+                setStatusMessage(t('当前没有已登录账号。你可以直接切换账号重新登录。', 'There is no signed-in account. You can switch accounts and sign in again.'));
+            } else if (state && state.verificationFailed) {
+                setStatusMessage(t(
+                    '当前无法完成封禁校验，所以已临时禁止继续访问需要数据库的页面。',
+                    'Ban verification failed, so access to database-backed pages is temporarily blocked.'
+                ));
+            } else if (!state) {
+                setStatusMessage(t('本地还没有封禁缓存。只有在数据库操作检测到封禁时，这里才会显示封禁详情。', 'There is no local ban cache yet. This page only shows details after a database action detects a ban.'));
+            } else if (isActive && state.permanent) {
+                setStatusMessage(t('这个账号目前处于永久封禁状态。', 'This account is currently permanently banned.'));
+            } else if (isActive) {
+                setStatusMessage(t('这个账号目前处于封禁中。', 'This account is currently banned.'));
+            } else {
+                setStatusMessage(t('本地缓存显示封禁可能已经结束。你可以手动刷新一次进行确认。', 'The local cache suggests the ban may have ended. You can manually refresh once to confirm.'));
+            }
+
+            document.getElementById('ban-start').textContent = state ? window.OMG_BAN.formatUtc(state.bannedAtUtc) : '-';
+            document.getElementById('ban-duration').textContent = state && state.verificationFailed
+                ? t('校验失败', 'Verification failed')
+                : formatDuration(state);
+            document.getElementById('ban-expires').textContent = state
+                ? (state.verificationFailed
+                    ? (state.verificationMessage || t('数据库未返回可用的封禁状态。', 'The database did not return a usable ban state.'))
+                    : (state.permanent ? t('永久封禁', 'Permanent ban') : window.OMG_BAN.formatUtc(state.expiresAtUtc)))
+                : '-';
+
+            const remainingMs = window.OMG_BAN ? window.OMG_BAN.getRefreshRemainingMs() : 0;
+            if (remainingMs > 0) {
+                const minutes = Math.max(1, Math.ceil(remainingMs / 60000));
+                document.getElementById('ban-refresh-hint').textContent = lang() === 'zh'
+                    ? `说明：只有点击“刷新状态”才会重新查询数据库，而且每小时最多查询一次。距离下次可刷新还有 ${minutes} 分钟。`
+                    : `Note: The database is only queried when you press Refresh Status, and at most once per hour. You can refresh again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
+            } else {
+                document.getElementById('ban-refresh-hint').textContent = t(
+                    '说明：只有点击“刷新状态”才会重新查询数据库，而且每小时最多查询一次。',
+                    'Note: The database is only queried when you press Refresh Status, and at most once per hour.'
+                );
+            }
+        }
+
+        async function refreshBanStatus() {
+            const button = document.getElementById('btn-refresh');
+            button.disabled = true;
+            setStatusMessage(t('正在手动刷新封禁状态...', 'Refreshing the ban status...'));
+            try {
+                const result = await window.OMG_BAN.refresh();
+                if (result.error) {
+                    renderPage();
+                    setStatusMessage(result.error.message || t('刷新失败，请稍后再试。', 'Refresh failed. Please try again later.'));
+                    return;
+                }
+
+                if (!result.state) {
+                    window.OMG_BAN.clear();
+                    setStatusMessage(t('封禁已解除，正在返回首页。', 'The ban has been lifted. Redirecting home.'));
+                    setTimeout(() => window.location.replace('index.html'), 700);
+                    return;
+                }
+
+                renderPage();
+                setStatusMessage(t('封禁状态已更新。', 'Ban status updated.'));
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function bindEvents() {
+            document.getElementById('btn-refresh').addEventListener('click', refreshBanStatus);
+            document.getElementById('btn-switch-account').addEventListener('click', () => {
+                if (window.OMG_BAN) window.OMG_BAN.switchAccount();
+            });
+        }
+
+        applyThemeMode();
+        applyI18n();
+        if (!redirectGuestsToSignIn()) {
+            bindEvents();
+            renderPage();
+        }
+    </script>
+</body>
+
+</html>
