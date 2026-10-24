@@ -114,10 +114,10 @@
   tags: ["civilization", "strategy", "simulation", "webgl"]
 
 - name: "Blockverse"
-  desc-zh: "第一视角方块世界。探索由草、泥土、石头和基岩组成的体素岛屿，所有方块都可以自由放置或移除。"
-  desc-en: "A first-person block world with a voxel island made of grass, dirt, stone, and bedrock; every block can be placed or removed."
-  controls-zh: "WASD 或方向键移动，可自动跨上一格方块；X 切换疾跑，按住 Shift 潜行，空格跳跃，鼠标控制视角；数字键 1-4 选择草、泥土、石头或基岩，右键放置，左键移除任意方块。"
-  controls-en: "Move with WASD or arrow keys and automatically step up one block; toggle sprint with X, hold Shift to sneak, jump with Space, and look with the mouse. Press 1-4 to select grass, dirt, stone, or bedrock; right-click places and left-click removes any block."
+  desc-zh: "第一视角方块世界。探索由柏林噪声生成的草原、树林和山地，采集松木并使用斧头、镐子建造自己的世界。"
+  desc-en: "A first-person block world with Perlin-noise plains, pine forests, and mountains. Gather pine wood, use axes and pickaxes, and build freely."
+  controls-zh: "WASD 或方向键移动；X 切换疾跑，按住 Shift 潜行，空格跳跃。数字键 1-0 或鼠标滚轮切换 10 格物品栏；按住左键挖掘，右键放置；E 或 Tab 打开背包，Shift+点击在背包和物品栏之间快速移动物品。"
+  controls-en: "Move with WASD or arrow keys; toggle sprint with X, hold Shift to sneak, and jump with Space. Use 1-0 or the mouse wheel to switch the 10-slot hotbar; hold left click to mine and right click to place. Press E or Tab for the backpack, then Shift-click to quick-move items."
   path: "code/blockverse/index.html"
   icon: "code/blockverse/icon.svg"
   compact-frame: true

@@ -6,32 +6,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blockverse</title>
     <link rel="icon" href="texture-packs/default-1/grass3.png" type="image/png">
-    <link rel="stylesheet" href="style.css?v=textures-1">
+    <link rel="stylesheet" href="style.css?v=reference-tools-1">
 </head>
 <body>
-    <main id="game">
+    <main id="game" class="world-inactive">
         <canvas id="world" aria-label="Blockverse world"></canvas>
+        <section id="front-end" class="front-end" aria-label="Blockverse 菜单">
+            <section id="main-menu" class="menu-screen main-menu">
+                <div class="title-lockup">
+                    <p class="title-kicker">OMG-GAMES</p>
+                    <h1>BLOCKVERSE</h1>
+                    <p>探索、建造，创造属于你的方块世界。</p>
+                </div>
+                <div class="main-actions">
+                    <button id="worlds-button" class="menu-button menu-button-primary" type="button">世界</button>
+                </div>
+                <p class="menu-version">本地单人世界</p>
+            </section>
+            <section id="worlds-menu" class="menu-screen worlds-menu" hidden>
+                <div class="worlds-panel">
+                    <header class="worlds-heading">
+                        <button id="worlds-back" class="text-button" type="button">← 返回</button>
+                        <div>
+                            <h1>世界</h1>
+                            <p>创建新世界，或继续已有的冒险。</p>
+                        </div>
+                    </header>
+                    <form id="create-world-form" class="create-world-form">
+                        <label>
+                            <span>世界名称</span>
+                            <input id="world-name" type="text" maxlength="32" placeholder="我的世界" autocomplete="off">
+                        </label>
+                        <label>
+                            <span>种子</span>
+                            <input id="world-seed" type="text" maxlength="64" placeholder="留空则随机生成" autocomplete="off">
+                        </label>
+                        <label>
+                            <span>默认游戏模式</span>
+                            <select id="world-mode">
+                                <option value="survival">生存模式</option>
+                                <option value="creative">创造模式</option>
+                            </select>
+                        </label>
+                        <button class="menu-button create-world-button" type="submit">生成世界</button>
+                    </form>
+                    <p id="world-storage-status" class="world-storage-status" aria-live="polite"></p>
+                    <div class="saved-worlds-heading">
+                        <h2>已保存的世界</h2>
+                        <span id="saved-world-count">0 个世界</span>
+                    </div>
+                    <div id="saved-world-list" class="saved-world-list"></div>
+                </div>
+            </section>
+        </section>
+        <section id="world-controls" class="world-controls" hidden>
+            <span id="save-indicator">已保存</span>
+            <button id="save-exit" type="button">保存并退出</button>
+        </section>
         <section class="coords" aria-label="coordinates">
             <strong id="coords">X 50  Y 4  Z 50</strong>
+            <span id="biome-label">草原 · Plains</span>
+            <span id="mode-label">生存模式</span>
         </section>
+        <section id="health-bar" class="health-bar" aria-label="生命值" hidden></section>
         <div class="crosshair" aria-hidden="true"></div>
-        <section class="hotbar" aria-label="hotbar">
-            <button class="slot selected" type="button" title="Grass Block" data-block="grass" aria-pressed="true" tabindex="-1">
-                <img src="texture-packs/default-1/grass3.png" alt="">
-                <span class="slot-key">1</span>
-            </button>
-            <button class="slot" type="button" title="Dirt" data-block="dirt" aria-pressed="false" tabindex="-1">
-                <img src="texture-packs/default-1/dirt1.png" alt="">
-                <span class="slot-key">2</span>
-            </button>
-            <button class="slot" type="button" title="Stone" data-block="stone" aria-pressed="false" tabindex="-1">
-                <img src="texture-packs/default-1/stone1.png" alt="">
-                <span class="slot-key">3</span>
-            </button>
-            <button class="slot" type="button" title="Bedrock" data-block="bedrock" aria-pressed="false" tabindex="-1">
-                <img src="texture-packs/default-1/bedrock1.png" alt="">
-                <span class="slot-key">4</span>
-            </button>
+        <section id="break-progress" class="break-progress" aria-label="挖掘进度" hidden>
+            <span id="break-label">挖掘中</span>
+            <div class="break-track"><div id="break-fill" class="break-fill"></div></div>
+        </section>
+        <section id="hotbar" class="hotbar" aria-label="物品栏"></section>
+        <section id="command-console" class="command-console" hidden>
+            <div id="command-log" class="command-log" aria-live="polite"></div>
+            <form id="command-form">
+                <span aria-hidden="true">›</span>
+                <input id="command-input" type="text" autocomplete="off" spellcheck="false" aria-label="输入消息或指令" placeholder="输入消息；以 / 开头执行指令">
+            </form>
+        </section>
+        <section id="inventory-screen" class="inventory-screen" aria-label="背包" hidden>
+            <div class="inventory-panel">
+                <div class="inventory-heading">
+                    <div>
+                        <h1>背包</h1>
+                        <p>按住 Shift 点击物品，可在背包与物品栏之间快速移动。</p>
+                    </div>
+                    <button id="inventory-close" class="inventory-close" type="button" aria-label="关闭背包">×</button>
+                </div>
+                <div id="backpack-grid" class="backpack-grid"></div>
+                <p id="inventory-status" class="inventory-status" aria-live="polite"></p>
+            </div>
         </section>
         <section id="death-screen" class="death-screen" aria-live="assertive" hidden>
             <div class="death-content">
@@ -42,6 +104,6 @@
         </section>
     </main>
     <script src="../chrome-dino-3d/libs/three/three.min.js"></script>
-    <script src="game.js?v=sprint-order-1"></script>
+    <script src="game.js?v=reference-tools-8"></script>
 </body>
 </html>
